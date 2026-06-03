@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>sorasukt | Portfolio</title>
 
-<link id="favicon" rel="icon" href="/img/logo.png">
+<link id="favicon" rel="icon" type="image/png" href="/img/logo.png">
 
     <meta property="og:type" content="website">
     <meta property="og:title" content="About sorasukt">
@@ -74,6 +74,7 @@ nav {
   display: flex;
   gap: 28px;
   list-style: none;
+  align-items: center;
 }
 .nav-links a {
   text-decoration: none;
@@ -83,7 +84,7 @@ nav {
   position: relative;
   transition: color .25s;
 }
-.nav-links a::after {
+.nav-links a:not(.nav-donate)::after {
   content: '';
   position: absolute;
   bottom: -3px; left: 0;
@@ -92,8 +93,35 @@ nav {
   border-radius: 99px;
   transition: width .25s;
 }
-.nav-links a:hover { color: var(--accent); }
-.nav-links a:hover::after { width: 100%; }
+.nav-links a:not(.nav-donate):hover { color: var(--accent); }
+.nav-links a:not(.nav-donate):hover::after { width: 100%; }
+
+/* ─── DONATE BUTTON ─── */
+.nav-donate {
+  color: var(--accent) !important;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: transform 0.2s;
+}
+.nav-donate:hover {
+  transform: scale(1.05);
+}
+.nav-donate svg {
+  width: 16px; height: 16px;
+}
+
+.btn-donate {
+  background: var(--accent-dim);
+  color: var(--accent);
+  border: 1.5px solid rgba(255, 0, 0, 0.15);
+}
+.btn-donate:hover {
+  background: var(--accent);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(255,0,0,.25);
+}
 
 /* ─── HERO ─── */
 .hero {
@@ -140,30 +168,6 @@ nav {
   position: relative;
 }
 
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 7px 16px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  font-size: .85rem;
-  color: var(--muted);
-  margin-bottom: 28px;
-  background: white;
-  box-shadow: 0 2px 8px rgba(0,0,0,.04);
-}
-.badge-dot {
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  background: var(--accent);
-  animation: blink 2s ease-in-out infinite;
-}
-@keyframes blink {
-  0%,100% { opacity: 1; }
-  50% { opacity: .3; }
-}
-
 h1 {
   font-size: clamp(3.2rem, 9vw, 7rem);
   font-weight: 800;
@@ -171,7 +175,6 @@ h1 {
   letter-spacing: -3px;
 }
 h1 .red { color: var(--accent); }
-h1 .thin { font-weight: 300; }
 
 .hero-desc {
   margin-top: 28px;
@@ -489,6 +492,13 @@ footer {
       <li><a href="#about">About</a></li>
       <li><a href="#projects">Projects</a></li>
       <li><a href="#contact">Contact</a></li>
+      <!-- ปุ่ม Donate ในแถบเมนู -->
+      <li>
+        <a href="https://buy.stripe.com/5kQ8wOgsb6EI7yC1MWbjW00" class="nav-donate" target="_blank">
+          <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+          Support Me
+        </a>
+      </li>
     </ul>
   </div>
 </nav>
@@ -515,6 +525,12 @@ footer {
         View Projects
       </a>
       <a href="#contact" class="btn btn-outline">Get in Touch</a>
+      
+      <!-- ปุ่ม Donate ในส่วน Hero CTA -->
+      <a href="https://buy.stripe.com/5kQ8wOgsb6EI7yC1MWbjW00" class="btn btn-donate" target="_blank">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+        Support My Work
+      </a>
     </div>
 
     <div class="social-strip">
