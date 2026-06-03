@@ -1,362 +1,696 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>sorasukt | Portfolio</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
-:root{
-    --bg:#ffffff;
-    --text:#111111;
-    --muted:#666666;
-    --border:#e5e5e5;
-    --accent:#d60000;
+:root {
+  --bg: #ffffff;
+  --bg2: #fafafa;
+  --text: #0a0a0a;
+  --muted: #666;
+  --border: #e8e8e8;
+  --accent: #ff0000;
+  --accent-dim: rgba(255,0,0,.08);
 }
 
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
+*, *::before, *::after {
+  margin: 0; padding: 0; box-sizing: border-box;
 }
 
-html{
-    scroll-behavior:smooth;
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Anuphan', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  overflow-x: hidden;
 }
 
-body{
-    font-family:'Inter','Noto Sans Thai',sans-serif;
-    background:var(--bg);
-    color:var(--text);
-    line-height:1.7;
+/* ─── NAV ─── */
+nav {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background: rgba(255,255,255,.92);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
 }
 
-.container{
-    max-width:1100px;
-    margin:auto;
-    padding:0 24px;
+.nav-inner {
+  max-width: 1140px;
+  margin: auto;
+  padding: 0 28px;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-nav{
-    position:sticky;
-    top:0;
-    background:rgba(255,255,255,.95);
-    backdrop-filter:blur(10px);
-    border-bottom:1px solid var(--border);
-    z-index:100;
+.logo {
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -1px;
+}
+.logo em { color: var(--accent); font-style: normal; }
+
+.nav-links {
+  display: flex;
+  gap: 28px;
+  list-style: none;
+}
+.nav-links a {
+  text-decoration: none;
+  color: var(--text);
+  font-weight: 500;
+  font-size: .95rem;
+  position: relative;
+  transition: color .25s;
+}
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: -3px; left: 0;
+  width: 0; height: 2px;
+  background: var(--accent);
+  border-radius: 99px;
+  transition: width .25s;
+}
+.nav-links a:hover { color: var(--accent); }
+.nav-links a:hover::after { width: 100%; }
+
+/* ─── HERO ─── */
+.hero {
+  min-height: calc(100vh - 68px);
+  display: flex;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
 }
 
-.nav-inner{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    height:72px;
+/* grid noise background */
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+  opacity: .4;
+  pointer-events: none;
 }
 
-.logo{
-    font-size:1.2rem;
-    font-weight:800;
-    letter-spacing:-0.5px;
+.hero-blob {
+  position: absolute;
+  width: 600px; height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,0,0,.12) 0%, transparent 70%);
+  top: -100px; right: -150px;
+  pointer-events: none;
+  animation: pulse 6s ease-in-out infinite;
 }
 
-.logo span{
-    color:var(--accent);
+@keyframes pulse {
+  0%,100% { transform: scale(1); opacity: .6; }
+  50% { transform: scale(1.08); opacity: 1; }
 }
 
-.nav-links{
-    display:flex;
-    gap:24px;
+.hero-inner {
+  max-width: 1140px;
+  margin: auto;
+  padding: 0 28px;
+  position: relative;
 }
 
-.nav-links a{
-    text-decoration:none;
-    color:var(--text);
-    font-weight:500;
-    transition:.3s;
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 16px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: .85rem;
+  color: var(--muted);
+  margin-bottom: 28px;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,.04);
+}
+.badge-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: blink 2s ease-in-out infinite;
+}
+@keyframes blink {
+  0%,100% { opacity: 1; }
+  50% { opacity: .3; }
 }
 
-.nav-links a:hover{
-    color:var(--accent);
+h1 {
+  font-size: clamp(3.2rem, 9vw, 7rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -3px;
+}
+h1 .red { color: var(--accent); }
+h1 .thin { font-weight: 300; }
+
+.hero-desc {
+  margin-top: 28px;
+  font-size: 1.15rem;
+  color: var(--muted);
+  max-width: 560px;
+  line-height: 1.8;
 }
 
-.hero{
-    min-height:85vh;
-    display:flex;
-    align-items:center;
+.hero-cta {
+  margin-top: 44px;
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
-.hero-content{
-    max-width:800px;
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  padding: 13px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-family: 'Anuphan', sans-serif;
+  font-size: .95rem;
+  transition: all .25s;
+  cursor: pointer;
+  border: none;
+}
+.btn-primary {
+  background: var(--accent);
+  color: white;
+  box-shadow: 0 4px 20px rgba(255,0,0,.25);
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(255,0,0,.35);
+}
+.btn-outline {
+  border: 1.5px solid var(--border);
+  color: var(--text);
+  background: white;
+}
+.btn-outline:hover {
+  border-color: var(--text);
+  background: var(--text);
+  color: white;
 }
 
-.badge{
-    display:inline-block;
-    padding:8px 14px;
-    border:1px solid var(--border);
-    border-radius:999px;
-    font-size:.9rem;
-    margin-bottom:24px;
+/* social strip */
+.social-strip {
+  margin-top: 52px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.social-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  padding: 9px 16px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: .85rem;
+  font-weight: 500;
+  color: var(--text);
+  background: white;
+  transition: all .2s;
+}
+.social-pill:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(255,0,0,.12);
+}
+.social-pill svg {
+  width: 16px; height: 16px;
+  flex-shrink: 0;
 }
 
-h1{
-    font-size:clamp(3rem,8vw,6rem);
-    line-height:1;
-    font-weight:800;
-    letter-spacing:-3px;
+/* ─── SECTIONS ─── */
+.section {
+  padding: 110px 0;
+}
+.section.alt { background: var(--bg2); }
+
+.wrap {
+  max-width: 1140px;
+  margin: auto;
+  padding: 0 28px;
 }
 
-h1 span{
-    color:var(--accent);
+.sec-label {
+  font-size: .78rem;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+.sec-title {
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 800;
+  letter-spacing: -1.5px;
+  margin-bottom: 48px;
+  line-height: 1.15;
 }
 
-.hero p{
-    margin-top:24px;
-    font-size:1.2rem;
-    color:var(--muted);
-    max-width:650px;
+/* ─── ABOUT ─── */
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  align-items: start;
+}
+.about-text p {
+  color: var(--muted);
+  font-size: 1.05rem;
+  line-height: 1.85;
+  margin-bottom: 20px;
+}
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.stat-card {
+  padding: 28px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: white;
+  transition: .25s;
+}
+.stat-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-3px);
+}
+.stat-num {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: -2px;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.stat-label {
+  font-size: .85rem;
+  color: var(--muted);
+  font-weight: 500;
 }
 
-.buttons{
-    margin-top:40px;
-    display:flex;
-    gap:16px;
-    flex-wrap:wrap;
+/* ─── PROJECTS ─── */
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
 }
-
-.btn{
-    text-decoration:none;
-    padding:14px 24px;
-    border-radius:12px;
-    font-weight:600;
-    transition:.3s;
+.project-card {
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 36px;
+  background: white;
+  transition: all .3s;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
 }
-
-.btn-primary{
-    background:var(--accent);
-    color:white;
+.project-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .3s;
 }
-
-.btn-primary:hover{
-    transform:translateY(-2px);
+.project-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 24px 60px rgba(0,0,0,.08);
+  border-color: transparent;
 }
-
-.btn-outline{
-    border:1px solid var(--text);
-    color:var(--text);
+.project-card:hover::before {
+  transform: scaleX(1);
 }
-
-.btn-outline:hover{
-    background:#111;
-    color:white;
+.project-icon {
+  width: 48px; height: 48px;
+  border-radius: 14px;
+  background: var(--accent-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 22px;
 }
-
-section{
-    padding:100px 0;
+.project-icon svg { width: 22px; height: 22px; color: var(--accent); }
+.project-card h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 12px;
 }
-
-.section-title{
-    font-size:2.2rem;
-    margin-bottom:12px;
+.project-card p {
+  color: var(--muted);
+  font-size: .95rem;
+  line-height: 1.75;
+  flex: 1;
+  margin-bottom: 24px;
 }
-
-.section-line{
-    width:80px;
-    height:4px;
-    background:var(--accent);
-    border-radius:999px;
-    margin-bottom:40px;
+.project-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: .9rem;
+  transition: gap .2s;
 }
+.project-link:hover { gap: 10px; }
 
-.about{
-    max-width:800px;
+/* ─── CONTACT ─── */
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  align-items: start;
 }
-
-.about p{
-    color:var(--muted);
-    font-size:1.05rem;
+.contact-desc {
+  color: var(--muted);
+  font-size: 1.05rem;
+  line-height: 1.85;
+  margin-bottom: 32px;
 }
-
-.projects{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
-    gap:24px;
+.contact-email {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+  padding: 14px 22px;
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  transition: all .25s;
 }
-
-.card{
-    border:1px solid var(--border);
-    border-radius:20px;
-    padding:32px;
-    transition:.3s;
+.contact-email:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255,0,0,.1);
 }
-
-.card:hover{
-    transform:translateY(-6px);
-    border-color:var(--accent);
+.social-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
-
-.card h3{
-    margin-bottom:12px;
+.social-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  text-decoration: none;
+  color: var(--text);
+  padding: 18px 22px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: white;
+  font-weight: 500;
+  transition: all .25s;
 }
-
-.card p{
-    color:var(--muted);
-    margin-bottom:20px;
+.social-item:hover {
+  border-color: var(--accent);
+  transform: translateX(6px);
+  color: var(--accent);
 }
+.social-item svg { width: 20px; height: 20px; flex-shrink: 0; }
+.social-handle { font-size: .85rem; color: var(--muted); margin-left: auto; }
 
-.card a{
-    color:var(--accent);
-    text-decoration:none;
-    font-weight:600;
+/* ─── FOOTER ─── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 44px 28px;
+  text-align: center;
+  color: var(--muted);
+  font-size: .9rem;
 }
-
-footer{
-    border-top:1px solid var(--border);
-    padding:40px 0;
-    text-align:center;
-    color:var(--muted);
+.footer-logo {
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: -1px;
+  margin-bottom: 12px;
 }
+.footer-logo em { color: var(--accent); font-style: normal; }
 
-.footer-name{
-    color:var(--accent);
-    font-weight:700;
-}
-
-@media(max-width:768px){
-
-    .nav-links{
-        display:none;
-    }
-
-    h1{
-        letter-spacing:-2px;
-    }
-
-    .buttons{
-        flex-direction:column;
-    }
-
-    .btn{
-        text-align:center;
-    }
+/* ─── RESPONSIVE ─── */
+@media (max-width: 768px) {
+  h1 { letter-spacing: -2px; }
+  .nav-links { display: none; }
+  .about-grid, .contact-grid { grid-template-columns: 1fr; gap: 40px; }
+  .stats { grid-template-columns: 1fr 1fr; }
+  .hero-cta { flex-direction: column; align-items: flex-start; }
 }
 </style>
 </head>
-
 <body>
 
+<!-- NAV -->
 <nav>
-    <div class="container nav-inner">
-        <div class="logo">
-            Sora<span>sukt</span>
-        </div>
-
-        <div class="nav-links">
-            <a href="#about">About</a>
-            <a href="#projects">Projects</a>
-        </div>
-    </div>
+  <div class="nav-inner">
+    <div class="logo"><em>/</em>sorasukt</div>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#projects">Projects</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </div>
 </nav>
 
+<!-- HERO -->
 <section class="hero">
-    <div class="container hero-content">
+  <div class="hero-blob"></div>
+  <div class="hero-inner">
 
-        <div class="badge">
-            English Education Student • Educator • Developer
-        </div>
+    <div class="badge">
+      <span class="badge-dot"></span>
+      English Education Student · Educator · Developer
+    </div>
 
-        <h1>
-            Hi, I'm <span>sorasukt</span>
-        </h1>
+    <h1>
+      Hi, I'm<br>
+      <span class="red">sorasukt</span>
+    </h1>
 
+    <p class="hero-desc">
+      Passionate about English education, educational technology,
+      and digital innovation. I build learning experiences that
+      connect education with modern technology.
+    </p>
+
+    <div class="hero-cta">
+      <a href="#projects" class="btn btn-primary">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+        View Projects
+      </a>
+      <a href="#contact" class="btn btn-outline">Get in Touch</a>
+    </div>
+
+    <div class="social-strip">
+      <a href="https://instagram.com/sorasukt" target="_blank" class="social-pill">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+        Instagram
+      </a>
+      <a href="https://x.com/sorasukt" target="_blank" class="social-pill">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        X (Twitter)
+      </a>
+      <a href="https://youtube.com/@sorasukt" target="_blank" class="social-pill">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+        YouTube
+      </a>
+      <a href="https://github.com/sorasukt" target="_blank" class="social-pill">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+        GitHub
+      </a>
+      <a href="https://tiktok.com/@sorasukt" target="_blank" class="social-pill">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.81a8.18 8.18 0 0 0 4.78 1.52V6.89a4.85 4.85 0 0 1-1.01-.2z"/></svg>
+        TikTok
+      </a>
+    </div>
+
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="section alt" id="about">
+  <div class="wrap">
+    <div class="sec-label">About Me</div>
+    <h2 class="sec-title">Who am I?</h2>
+
+    <div class="about-grid">
+      <div class="about-text">
         <p>
-            Passionate about English education, educational technology,
-            and digital innovation. I build learning experiences that
-            connect education with modern technology.
+          I'm an English Education student who enjoys combining
+          teaching, technology, and creativity. My work focuses on
+          developing digital tools and learning environments that
+          make education more engaging, accessible, and meaningful.
         </p>
+        <p>
+          Whether it's building a student portal, designing a classroom
+          activity, or exploring new technologies — I'm always looking
+          for ways to bridge the gap between traditional education and
+          the digital world.
+        </p>
+        <a href="#contact" class="btn btn-primary" style="margin-top:8px;">
+          Let's Connect
+        </a>
+      </div>
 
-        <div class="buttons">
-            <a href="#projects" class="btn btn-primary">
-                View Projects
-            </a>
-
-            <a href="https://github.com/sorasukt" class="btn btn-outline" target="_blank">
-                GitHub Profile
-            </a>
+      <div class="stats">
+        <div class="stat-card">
+          <div class="stat-num">2+</div>
+          <div class="stat-label">Projects Launched</div>
         </div>
-
+        <div class="stat-card">
+          <div class="stat-num">ENG</div>
+          <div class="stat-label">Education Focus</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">EdTech</div>
+          <div class="stat-label">Passion Area</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">TH</div>
+          <div class="stat-label">Based in Thailand</div>
+        </div>
+      </div>
     </div>
+  </div>
 </section>
 
-<section id="about">
-    <div class="container">
+<!-- PROJECTS -->
+<section class="section" id="projects">
+  <div class="wrap">
+    <div class="sec-label">Work</div>
+    <h2 class="sec-title">Featured Projects</h2>
 
-        <h2 class="section-title">About Me</h2>
-        <div class="section-line"></div>
+    <div class="projects-grid">
 
-        <div class="about">
-            <p>
-                I'm an English Education student who enjoys combining
-                teaching, technology, and creativity. My work focuses on
-                developing digital tools and learning environments that
-                make education more engaging, accessible, and meaningful
-                for students.
-            </p>
+      <div class="project-card">
+        <div class="project-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"/></svg>
         </div>
+        <h3>English Education System</h3>
+        <p>
+          A digital platform designed to support English language
+          learning, classroom activities, and educational management.
+          Built with modern web technologies for seamless learning.
+        </p>
+        <a href="https://sorasukt.github.io/enged" target="_blank" class="project-link">
+          Visit Project
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+        </a>
+      </div>
+
+      <div class="project-card">
+        <div class="project-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 0 0-.491 6.347A48.627 48.627 0 0 1 12 20.904a48.627 48.627 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.57 50.57 0 0 0-2.658-.813A59.905 59.905 0 0 1 12 3.493a59.902 59.902 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5"/></svg>
+        </div>
+        <h3>LITALK Education Student Portal</h3>
+        <p>
+          A modern student portal providing educational resources,
+          communication tools, and learning support services for
+          students and educators.
+        </p>
+        <a href="https://sorasukt.github.io/LITALK" target="_blank" class="project-link">
+          Visit Project
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+        </a>
+      </div>
 
     </div>
+  </div>
 </section>
 
-<section id="projects">
-    <div class="container">
+<!-- CONTACT -->
+<section class="section alt" id="contact">
+  <div class="wrap">
+    <div class="sec-label">Contact</div>
+    <h2 class="sec-title">Get in Touch</h2>
 
-        <h2 class="section-title">Featured Projects</h2>
-        <div class="section-line"></div>
+    <div class="contact-grid">
+      <div>
+        <p class="contact-desc">
+          Have a project, collaboration idea, or just want to say hello?
+          Feel free to reach out — I'm always open to new opportunities
+          and interesting conversations.
+        </p>
+        <a href="mailto:sorasukt@stnetradio.com" class="contact-email">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"/></svg>
+          sorasukt@stnetradio.com
+        </a>
+      </div>
 
-        <div class="projects">
+      <div class="social-list">
 
-            <div class="card">
-                <h3>English Education System</h3>
+        <a href="https://instagram.com/sorasukt" target="_blank" class="social-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" stroke="none"/></svg>
+          Instagram
+          <span class="social-handle">@sorasukt</span>
+        </a>
 
-                <p>
-                    A digital platform designed to support English language
-                    learning, classroom activities, and educational management.
-                </p>
+        <a href="https://x.com/sorasukt" target="_blank" class="social-item">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          X (Twitter)
+          <span class="social-handle">@sorasukt</span>
+        </a>
 
-                <a href="https://sorasukt.github.io/enged" target="_blank">
-                    Visit Project →
-                </a>
-            </div>
+        <a href="https://youtube.com/@sorasukt" target="_blank" class="social-item">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+          YouTube
+          <span class="social-handle">@sorasukt</span>
+        </a>
 
-            <div class="card">
-                <h3>LITALK Education Student Portal</h3>
+        <a href="https://github.com/sorasukt" target="_blank" class="social-item">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+          GitHub
+          <span class="social-handle">sorasukt</span>
+        </a>
 
-                <p>
-                    A modern student portal providing educational resources,
-                    communication tools, and learning support services.
-                </p>
+        <a href="https://tiktok.com/@sorasukt" target="_blank" class="social-item">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.81a8.18 8.18 0 0 0 4.78 1.52V6.89a4.85 4.85 0 0 1-1.01-.2z"/></svg>
+          TikTok
+          <span class="social-handle">@sorasukt</span>
+        </a>
 
-                <a href="https://sorasukt.github.io/LITALK" target="_blank">
-                    Visit Project →
-                </a>
-            </div>
-
-        </div>
-
+      </div>
     </div>
+  </div>
 </section>
 
+<!-- FOOTER -->
 <footer>
-    <div class="container">
-        Built and maintained by
-        <span class="footer-name">sorasukt</span>
-        <br><br>
-        © 2026 All Rights Reserved.
-    </div>
+  <div class="footer-logo"><em>/</em>sorasukt</div>
+  <div>Built and maintained by <strong>sorasukt</strong></div>
+  <div style="margin-top:8px;">© 2026 All Rights Reserved.</div>
 </footer>
 
 </body>
