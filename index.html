@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>sorasukt | Portfolio</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+    --bg:#ffffff;
+    --text:#111111;
+    --muted:#666666;
+    --border:#e5e5e5;
+    --accent:#d60000;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html{
+    scroll-behavior:smooth;
+}
+
+body{
+    font-family:'Inter','Noto Sans Thai',sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    line-height:1.7;
+}
+
+.container{
+    max-width:1100px;
+    margin:auto;
+    padding:0 24px;
+}
+
+nav{
+    position:sticky;
+    top:0;
+    background:rgba(255,255,255,.95);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border);
+    z-index:100;
+}
+
+.nav-inner{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    height:72px;
+}
+
+.logo{
+    font-size:1.2rem;
+    font-weight:800;
+    letter-spacing:-0.5px;
+}
+
+.logo span{
+    color:var(--accent);
+}
+
+.nav-links{
+    display:flex;
+    gap:24px;
+}
+
+.nav-links a{
+    text-decoration:none;
+    color:var(--text);
+    font-weight:500;
+    transition:.3s;
+}
+
+.nav-links a:hover{
+    color:var(--accent);
+}
+
+.hero{
+    min-height:85vh;
+    display:flex;
+    align-items:center;
+}
+
+.hero-content{
+    max-width:800px;
+}
+
+.badge{
+    display:inline-block;
+    padding:8px 14px;
+    border:1px solid var(--border);
+    border-radius:999px;
+    font-size:.9rem;
+    margin-bottom:24px;
+}
+
+h1{
+    font-size:clamp(3rem,8vw,6rem);
+    line-height:1;
+    font-weight:800;
+    letter-spacing:-3px;
+}
+
+h1 span{
+    color:var(--accent);
+}
+
+.hero p{
+    margin-top:24px;
+    font-size:1.2rem;
+    color:var(--muted);
+    max-width:650px;
+}
+
+.buttons{
+    margin-top:40px;
+    display:flex;
+    gap:16px;
+    flex-wrap:wrap;
+}
+
+.btn{
+    text-decoration:none;
+    padding:14px 24px;
+    border-radius:12px;
+    font-weight:600;
+    transition:.3s;
+}
+
+.btn-primary{
+    background:var(--accent);
+    color:white;
+}
+
+.btn-primary:hover{
+    transform:translateY(-2px);
+}
+
+.btn-outline{
+    border:1px solid var(--text);
+    color:var(--text);
+}
+
+.btn-outline:hover{
+    background:#111;
+    color:white;
+}
+
+section{
+    padding:100px 0;
+}
+
+.section-title{
+    font-size:2.2rem;
+    margin-bottom:12px;
+}
+
+.section-line{
+    width:80px;
+    height:4px;
+    background:var(--accent);
+    border-radius:999px;
+    margin-bottom:40px;
+}
+
+.about{
+    max-width:800px;
+}
+
+.about p{
+    color:var(--muted);
+    font-size:1.05rem;
+}
+
+.projects{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+    gap:24px;
+}
+
+.card{
+    border:1px solid var(--border);
+    border-radius:20px;
+    padding:32px;
+    transition:.3s;
+}
+
+.card:hover{
+    transform:translateY(-6px);
+    border-color:var(--accent);
+}
+
+.card h3{
+    margin-bottom:12px;
+}
+
+.card p{
+    color:var(--muted);
+    margin-bottom:20px;
+}
+
+.card a{
+    color:var(--accent);
+    text-decoration:none;
+    font-weight:600;
+}
+
+footer{
+    border-top:1px solid var(--border);
+    padding:40px 0;
+    text-align:center;
+    color:var(--muted);
+}
+
+.footer-name{
+    color:var(--accent);
+    font-weight:700;
+}
+
+@media(max-width:768px){
+
+    .nav-links{
+        display:none;
+    }
+
+    h1{
+        letter-spacing:-2px;
+    }
+
+    .buttons{
+        flex-direction:column;
+    }
+
+    .btn{
+        text-align:center;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<nav>
+    <div class="container nav-inner">
+        <div class="logo">
+            Sora<span>sukt</span>
+        </div>
+
+        <div class="nav-links">
+            <a href="#about">About</a>
+            <a href="#projects">Projects</a>
+        </div>
+    </div>
+</nav>
+
+<section class="hero">
+    <div class="container hero-content">
+
+        <div class="badge">
+            English Education Student • Educator • Developer
+        </div>
+
+        <h1>
+            Hi, I'm <span>sorasukt</span>
+        </h1>
+
+        <p>
+            Passionate about English education, educational technology,
+            and digital innovation. I build learning experiences that
+            connect education with modern technology.
+        </p>
+
+        <div class="buttons">
+            <a href="#projects" class="btn btn-primary">
+                View Projects
+            </a>
+
+            <a href="https://github.com/sorasukt" class="btn btn-outline" target="_blank">
+                GitHub Profile
+            </a>
+        </div>
+
+    </div>
+</section>
+
+<section id="about">
+    <div class="container">
+
+        <h2 class="section-title">About Me</h2>
+        <div class="section-line"></div>
+
+        <div class="about">
+            <p>
+                I'm an English Education student who enjoys combining
+                teaching, technology, and creativity. My work focuses on
+                developing digital tools and learning environments that
+                make education more engaging, accessible, and meaningful
+                for students.
+            </p>
+        </div>
+
+    </div>
+</section>
+
+<section id="projects">
+    <div class="container">
+
+        <h2 class="section-title">Featured Projects</h2>
+        <div class="section-line"></div>
+
+        <div class="projects">
+
+            <div class="card">
+                <h3>English Education System</h3>
+
+                <p>
+                    A digital platform designed to support English language
+                    learning, classroom activities, and educational management.
+                </p>
+
+                <a href="https://sorasukt.github.io/enged" target="_blank">
+                    Visit Project →
+                </a>
+            </div>
+
+            <div class="card">
+                <h3>LITALK Education Student Portal</h3>
+
+                <p>
+                    A modern student portal providing educational resources,
+                    communication tools, and learning support services.
+                </p>
+
+                <a href="https://sorasukt.github.io/LITALK" target="_blank">
+                    Visit Project →
+                </a>
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+<footer>
+    <div class="container">
+        Built and maintained by
+        <span class="footer-name">sorasukt</span>
+        <br><br>
+        © 2026 All Rights Reserved.
+    </div>
+</footer>
+
+</body>
+</html>
