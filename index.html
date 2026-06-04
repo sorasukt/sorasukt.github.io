@@ -334,7 +334,7 @@
     .cards {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 20px; /* เพิ่มระยะห่างระหว่างการ์ดเล็กน้อย */
+      gap: 20px;
     }
 
     .card {
@@ -351,12 +351,11 @@
       border-color: var(--red);
     }
 
-    /* สไตล์สำหรับรูปภาพ Preview 16:9 */
     .card-img-wrap {
       width: 100%;
-      aspect-ratio: 16 / 9; /* บังคับสัดส่วนภาพเป็น 16:9 เสมอ */
-      border-radius: 4px; /* ลบมุมรูปภาพให้มนนิดๆ */
-      overflow: hidden; /* ป้องกันภาพล้นขอบตอนทำเอฟเฟกต์ซูม */
+      aspect-ratio: 16 / 9;
+      border-radius: 4px;
+      overflow: hidden;
       margin-bottom: 20px;
       background: var(--bg2);
       border: 1px solid var(--border);
@@ -365,13 +364,13 @@
     .card-img-wrap img {
       width: 100%;
       height: 100%;
-      object-fit: cover; /* ตัดส่วนเกินออกอัตโนมัติ ไม่ให้ภาพบิดเบี้ยว */
+      object-fit: cover;
       display: block;
-      transition: transform 0.4s ease; /* เอฟเฟกต์ภาพขยับนุ่มนวล */
+      transition: transform 0.4s ease;
     }
 
     .card:hover .card-img-wrap img {
-      transform: scale(1.05); /* ซูมภาพ 5% ตอนเอาเมาส์ชี้ */
+      transform: scale(1.05);
     }
 
     .card h3 {
@@ -465,6 +464,49 @@
       margin-left: auto;
     }
 
+    /* ── AUTHOR BIO ── */
+    .bio-card {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      padding: 40px;
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      background: var(--bg);
+      margin-top: 40px;
+    }
+
+    .bio-img {
+      flex-shrink: 0;
+      width: 140px;
+      /* บังคับรูป 1:1 */
+      aspect-ratio: 1 / 1; 
+      border-radius: 50%; /* ทำให้รูปเป็นวงกลม */
+      border: 1px solid var(--border);
+      overflow: hidden;
+      background: var(--bg2);
+    }
+
+    .bio-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .bio-content h3 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+
+    .bio-content p {
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.8;
+    }
+
     /* ── FOOTER ── */
     footer {
       border-top: 1px solid var(--border);
@@ -491,6 +533,13 @@
       .two-col { grid-template-columns: 1fr; gap: 36px; }
       .btn-row { flex-direction: column; align-items: flex-start; }
       .btn { width: 100%; justify-content: center; }
+      
+      .bio-card {
+        flex-direction: column;
+        text-align: center;
+        padding: 32px 20px;
+        gap: 24px;
+      }
     }
   </style>
 </head>
@@ -665,7 +714,6 @@
       <div class="cards">
         
         <div class="card">
-          <!-- รูปภาพ Preview 1 -->
           <div class="card-img-wrap">
             <img src="/img/1.png" alt="English Education System" loading="lazy">
           </div>
@@ -685,7 +733,6 @@
         </div>
         
         <div class="card">
-          <!-- รูปภาพ Preview 2 -->
           <div class="card-img-wrap">
             <img src="/img/2.png" alt="LITALK Education Student Portal" loading="lazy">
           </div>
@@ -753,6 +800,24 @@
           </a>
         </div>
       </div>
+      
+      <!-- AUTHOR BIO -->
+      <div class="bio-card">
+        <div class="bio-img">
+          <img src="/img/sorasukt.png" alt="Sorasuk Thongkum" loading="lazy">
+        </div>
+        <div class="bio-content">
+          <h3>
+            <span data-en>Sorasuk Thongkum</span>
+            <span data-th>สรศักดิ์ ทองคำ</span>
+          </h3>
+          <p>
+            <span data-en>I am currently an English Education student at the Faculty of Education, deeply interested in educational research and EdTech. Passionate about communication, I also co-host a podcast in collaboration with STNET Radio.</span>
+            <span data-th>ปัจจุบันผมเป็นนักศึกษาสาขาวิชาภาษาอังกฤษ คณะครุศาสตร์ ผมมีความสนใจด้านการวิจัยทางการศึกษาและเทคโนโลยีการศึกษา นอกจากนี้ผมยังหลงใหลในด้านการสื่อสาร และกำลังทำพอดแคสต์ร่วมกับ STNET Radio อีกด้วยครับ</span>
+          </p>
+        </div>
+      </div>
+
     </div>
   </section>
 
