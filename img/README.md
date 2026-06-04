@@ -6,6 +6,6 @@ I am an English Education student, educator, and developer passionate about crea
 
 ***
 
-Are you lost? Go to my [homepage](https://sorasukt.github.io")
+Are you lost? Go to my [homepage](https://sorasukt.github.io)
 
 © 2026 sorasukt. All Rights Reserved.
