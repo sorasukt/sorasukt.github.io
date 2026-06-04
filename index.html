@@ -34,11 +34,6 @@
       scroll-behavior: smooth;
     }
 
-    /* 
-      ตั้งลำดับฟอนต์: 
-      1. Montserrat (จะทำงานกับตัวเลขและภาษาอังกฤษ)
-      2. IBM Plex Sans Thai (จะทำงานกับตัวอักษรไทย เพราะ Montserrat ไม่มีอักขระไทย)
-    */
     body {
       font-family: 'Montserrat', 'IBM Plex Sans Thai', sans-serif;
       background: var(--bg);
@@ -51,7 +46,7 @@
     /* ── THAI TYPOGRAPHY ── */
     body.th-lang {
       line-height: 1.8;
-      letter-spacing: 0; /* รีเซ็ตช่องไฟให้ภาษาไทยเรียงตัวสวยงาม */
+      letter-spacing: 0;
     }
 
     /* ── LANGUAGE TOGGLE LOGIC ── */
@@ -116,7 +111,6 @@
       color: var(--red);
     }
 
-    /* Lang Toggle Button */
     .lang-toggle {
       display: flex;
       align-items: center;
@@ -204,7 +198,6 @@
       margin-bottom: 36px;
     }
 
-    /* Buttons */
     .btn-row {
       display: flex;
       gap: 12px;
@@ -230,14 +223,11 @@
 
     .btn-solid { background: var(--red); color: #fff; }
     .btn-solid:hover { opacity: 0.85; }
-    
     .btn-ghost { border-color: var(--border); color: var(--text); background: #fff; }
     .btn-ghost:hover { border-color: var(--text); }
-    
     .btn-donate { border-color: var(--red); color: var(--red); background: #fff; }
     .btn-donate:hover { background: var(--red); color: #fff; }
 
-    /* Social Pills */
     .social-row {
       display: flex;
       gap: 10px;
@@ -344,37 +334,44 @@
     .cards {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 16px;
+      gap: 20px; /* เพิ่มระยะห่างระหว่างการ์ดเล็กน้อย */
     }
 
     .card {
       border: 1px solid var(--border);
       border-radius: var(--r);
-      padding: 28px;
+      padding: 24px;
       transition: border-color 0.2s;
       display: flex;
       flex-direction: column;
+      background: var(--bg);
     }
 
     .card:hover {
       border-color: var(--red);
     }
 
-    .card-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 6px;
-      background: #fff0f0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 16px;
+    /* สไตล์สำหรับรูปภาพ Preview 16:9 */
+    .card-img-wrap {
+      width: 100%;
+      aspect-ratio: 16 / 9; /* บังคับสัดส่วนภาพเป็น 16:9 เสมอ */
+      border-radius: 4px; /* ลบมุมรูปภาพให้มนนิดๆ */
+      overflow: hidden; /* ป้องกันภาพล้นขอบตอนทำเอฟเฟกต์ซูม */
+      margin-bottom: 20px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
     }
 
-    .card-icon svg {
-      width: 18px;
-      height: 18px;
-      color: var(--red);
+    .card-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; /* ตัดส่วนเกินออกอัตโนมัติ ไม่ให้ภาพบิดเบี้ยว */
+      display: block;
+      transition: transform 0.4s ease; /* เอฟเฟกต์ภาพขยับนุ่มนวล */
+    }
+
+    .card:hover .card-img-wrap img {
+      transform: scale(1.05); /* ซูมภาพ 5% ตอนเอาเมาส์ชี้ */
     }
 
     .card h3 {
@@ -541,7 +538,6 @@
         <span data-th>นักศึกษาครูภาษาอังกฤษ · นักการศึกษา · นักพัฒนา</span>
       </div>
       
-      <!-- เพิ่มการแปลที่ Header หลัก -->
       <h1>
         <span data-en>Hi, I'm</span>
         <span data-th>สวัสดีครับ ผม</span><br>
@@ -669,8 +665,9 @@
       <div class="cards">
         
         <div class="card">
-          <div class="card-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"/></svg>
+          <!-- รูปภาพ Preview 1 -->
+          <div class="card-img-wrap">
+            <img src="/img/2.png" alt="English Education System" loading="lazy">
           </div>
           <h3>
             <span data-en>English Education System</span>
@@ -688,8 +685,9 @@
         </div>
         
         <div class="card">
-          <div class="card-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 0 0-.491 6.347A48.627 48.627 0 0 1 12 20.904a48.627 48.627 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.57 50.57 0 0 0-2.658-.813A59.905 59.905 0 0 1 12 3.493a59.902 59.902 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5"/></svg>
+          <!-- รูปภาพ Preview 2 -->
+          <div class="card-img-wrap">
+            <img src="/img/2.png" alt="LITALK Education Student Portal" loading="lazy">
           </div>
           <h3>
             <span data-en>LITALK Education Student Portal</span>
@@ -781,23 +779,17 @@
     }
 
     function setLang(lang) {
-      // สลับ Class ที่ Body
       document.body.classList.remove('en-lang', 'th-lang');
       document.body.classList.add(lang + '-lang');
-      
-      // กำหนด lang attribute ให้เบราว์เซอร์รู้เพื่อช่วยเรื่องการตัดคำ
       document.documentElement.lang = lang;
       
-      // เปลี่ยนสถานะปุ่ม
       document.querySelectorAll('.lang-btn').forEach(btn => {
         btn.classList.toggle('active', btn.textContent.toLowerCase() === lang);
       });
       
-      // บันทึกค่าลง Cookie
       setCookie('lang', lang, 365);
     }
 
-    // โหลดภาษาจาก Cookie หรือใช้ค่าเริ่มต้นเป็นภาษาอังกฤษ
     const saved = getCookie('lang') || 'en';
     setLang(saved);
   </script>
