@@ -541,7 +541,35 @@
         gap: 24px;
       }
     }
-  </style>
+  
+/* ==== V2 Motion ==== */
+:root{
+--duration-fast:250ms;
+--ease-smooth:cubic-bezier(0.22,1,0.36,1);
+--blur-small:2px;
+}
+body::before{
+content:"";
+position:fixed;inset:0;
+pointer-events:none;
+opacity:.03;
+background-image:radial-gradient(circle at 20% 20%,#000 1px,transparent 1px);
+background-size:24px 24px;
+}
+.card,.stat,.pill,.btn,.social-row-item{
+transition:all .3s var(--ease-smooth);
+}
+.card:hover{transform:translateY(-6px);}
+.stat:hover{transform:translateY(-4px);}
+.pill:hover,.btn:hover,.social-row-item:hover{transform:translateY(-2px);}
+.card-img-wrap img{transition:transform .45s var(--ease-smooth),filter .45s ease;}
+.card:hover .card-img-wrap img{transform:scale(1.05);filter:blur(.5px);}
+.reveal{opacity:0;transform:translateY(24px);filter:blur(2px);transition:all .7s var(--ease-smooth);}
+.reveal.show{opacity:1;transform:none;filter:none;}
+.nav-links a{position:relative}
+.nav-links a:after{content:"";position:absolute;left:0;bottom:-4px;width:0;height:2px;background:#ff0000;transition:width .3s ease}
+.nav-links a:hover:after{width:100%}
+</style>
 </head>
 <body class="en-lang">
 
@@ -878,5 +906,19 @@
     setLang(saved);
   </script>
 
+
+<script>
+document.querySelectorAll('.hero,.section,.bio-card,.card').forEach((e,i)=>{
+e.classList.add('reveal');
+e.style.transitionDelay=`${i*40}ms`;
+});
+const io=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting)x.target.classList.add('show')}),{threshold:.1});
+document.querySelectorAll('.reveal').forEach(e=>io.observe(e));
+document.querySelectorAll('img').forEach(img=>{
+img.style.opacity='0';
+img.onload=()=>{img.style.transition='opacity .5s ease';img.style.opacity='1';}
+if(img.complete){img.style.opacity='1';}
+});
+</script>
 </body>
 </html>
