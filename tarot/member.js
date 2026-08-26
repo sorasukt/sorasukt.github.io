@@ -22,6 +22,21 @@
     return window.SorasuktAuth.authorizedFetch(`${API}${path}`,options);
   }
 
+  async function runAuthAction(action,button,label){
+    const original=button.textContent;
+    button.disabled=true;
+    button.textContent=label;
+    setStatus("");
+    try{
+      await action();
+    }catch(error){
+      console.error("Auth action failed",error);
+      setStatus("ไม่สามารถเชื่อมต่อระบบเข้าสู่ระบบได้ กรุณาลองใหม่อีกครั้ง");
+      button.disabled=false;
+      button.textContent=original;
+    }
+  }
+
   async function loadProfileAndDaily(){
     setStatus("กำลังโหลดข้อมูลสมาชิก...");
     const response=await api("/api/member/profile");
@@ -78,9 +93,12 @@
   function setStatus(text){$("memberStatus").textContent=text||"";}
 
   window.addEventListener("DOMContentLoaded",()=>{
-    $("loginButton").addEventListener("click",()=>window.SorasuktAuth.login());
-    $("signupButton").addEventListener("click",()=>window.SorasuktAuth.signup());
-    $("logoutButton").addEventListener("click",()=>window.SorasuktAuth.logout());
+    const loginButton=$("loginButton");
+    const signupButton=$("signupButton");
+    const logoutButton=$("logoutButton");
+    loginButton.addEventListener("click",()=>runAuthAction(()=>window.SorasuktAuth.login(),loginButton,"กำลังเข้าสู่ระบบ…"));
+    signupButton.addEventListener("click",()=>runAuthAction(()=>window.SorasuktAuth.signup(),signupButton,"กำลังเปิดหน้าสมัคร…"));
+    logoutButton.addEventListener("click",()=>runAuthAction(()=>window.SorasuktAuth.logout(),logoutButton,"กำลังออกจากระบบ…"));
     $("profileForm").addEventListener("submit",saveProfile);
     $("editProfile").addEventListener("click",()=>{$("profileForm").hidden=false;});
     init().catch(error=>{console.error("Member initialization failed",error);setStatus("ไม่สามารถโหลดระบบสมาชิกได้");});
