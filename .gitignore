@@ -1,0 +1,8 @@
+# Cloudflare / local secrets
+cloudflare/tarot-api/.dev.vars*
+cloudflare/tarot-api/.env*
+cloudflare/tarot-api/.wrangler/
+cloudflare/tarot-api/node_modules/
+
+# OS / editor
+.DS_Store
