@@ -2,7 +2,26 @@
 
 API สำหรับ `/tarot` โดย Browser จะเรียก Worker ที่ `POST /api/tarot/reading` และ Worker เป็นผู้เรียก Google Gemini API ต่ออีกชั้นหนึ่ง
 
-## Setup
+## GitHub → Cloudflare deployment
+
+Repository มี workflow `.github/workflows/deploy-tarot-worker.yml` สำหรับ deploy Worker อัตโนมัติเมื่อมีการ push เข้า `main` และไฟล์ภายใต้ `cloudflare/tarot-api/**` เปลี่ยนแปลง
+
+เพิ่ม Repository Actions secrets ใน GitHub จำนวน 3 ค่า:
+
+- `CLOUDFLARE_API_TOKEN` — Cloudflare API Token ที่มีสิทธิ์ Workers Scripts: Edit และ Workers Routes: Edit เฉพาะ account/zone ที่ต้องใช้
+- `CLOUDFLARE_ACCOUNT_ID` — Cloudflare Account ID
+- `GEMINI_API_KEY` — Google Gemini API key
+
+Workflow จะนำ `GEMINI_API_KEY` จาก GitHub Actions secret ไปตั้งเป็น Cloudflare Worker Secret ก่อน deploy ดังนั้นค่า secret จะไม่ถูก commit ลง repository
+
+Cloudflare routes ถูกกำหนดใน `wrangler.jsonc` ให้ Worker รับเฉพาะ:
+
+- `sorasukt.com/api/tarot/*`
+- `www.sorasukt.com/api/tarot/*`
+
+ดังนั้น frontend สามารถเรียก same-origin endpoint `/api/tarot/reading` ได้โดยไม่ต้องเปิดเผย Worker URL
+
+## Manual setup
 
 ```bash
 cd cloudflare/tarot-api
@@ -30,12 +49,6 @@ npm run dev
 
 หากทดสอบ frontend กับ Worker local ให้เพิ่ม `http://localhost:...` ลง `ALLOWED_ORIGINS` เฉพาะ environment สำหรับ development
 
-## Production routing
-
-Frontend `/tarot/config.js` ตั้งค่าเริ่มต้นให้เรียก same-origin path `/api/tarot/reading` เพื่อให้สามารถใช้ Cloudflare Worker route/custom domain ดักเฉพาะ `/api/tarot/*` ได้
-
-อีกทางเลือกหนึ่งคือ deploy เป็น `workers.dev` หรือ custom API subdomain แล้วแก้ `window.TAROT_CONFIG.apiBaseUrl` ใน `tarot/config.js` เป็น URL ของ Worker
-
 ## Request
 
 ```json
@@ -62,4 +75,5 @@ Worker จะไม่เชื่อชื่อไพ่จาก client แ�
 - Gemini API key ไม่ถูกส่งกลับ client
 - Gemini errors ถูกแปลงเป็น public error code แบบทั่วไป
 - AI output ถูกส่งเป็น Structured JSON และ frontend render ผ่าน `textContent`
+- `.dev.vars*`, `.env*`, `.wrangler/` และ `node_modules/` ถูก ignore จาก Git
 - ควรเพิ่ม Cloudflare Rate Limiting rule สำหรับ path `/api/tarot/reading` ก่อนเปิด production traffic
