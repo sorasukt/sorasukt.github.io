@@ -16,14 +16,16 @@
         domain: config.domain,
         clientId: config.clientId,
         authorizationParams: {
-          redirect_uri: currentUri()
+          redirect_uri: currentUri(),
+          ...(config.audience ? { audience: config.audience } : {})
         }
       });
 
       const params = new URLSearchParams(window.location.search);
       if (params.has("code") && params.has("state")) {
-        await client.handleRedirectCallback();
-        window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
+        const result = await client.handleRedirectCallback();
+        const returnTo = result?.appState?.returnTo || window.location.pathname;
+        window.history.replaceState({}, document.title, returnTo + window.location.hash);
       }
 
       return client;
@@ -41,20 +43,41 @@
     return client.getUser();
   }
 
+  async function getAccessToken() {
+    await init();
+    const config = window.SORASUKT_AUTH_CONFIG;
+    return client.getTokenSilently({
+      authorizationParams: config?.audience ? { audience: config.audience } : {}
+    });
+  }
+
+  async function authorizedFetch(input, init = {}) {
+    const token = await getAccessToken();
+    const headers = new Headers(init.headers || {});
+    headers.set("Authorization", `Bearer ${token}`);
+    return fetch(input, { ...init, headers });
+  }
+
   async function login() {
     await init();
+    const config = window.SORASUKT_AUTH_CONFIG;
     return client.loginWithRedirect({
-      authorizationParams: { redirect_uri: currentUri() },
+      authorizationParams: {
+        redirect_uri: currentUri(),
+        ...(config?.audience ? { audience: config.audience } : {})
+      },
       appState: { returnTo: window.location.pathname }
     });
   }
 
   async function signup() {
     await init();
+    const config = window.SORASUKT_AUTH_CONFIG;
     return client.loginWithRedirect({
       authorizationParams: {
         redirect_uri: currentUri(),
-        screen_hint: "signup"
+        screen_hint: "signup",
+        ...(config?.audience ? { audience: config.audience } : {})
       },
       appState: { returnTo: window.location.pathname }
     });
@@ -67,5 +90,5 @@
     });
   }
 
-  window.SorasuktAuth = { init, isAuthenticated, getUser, login, signup, logout };
+  window.SorasuktAuth = { init, isAuthenticated, getUser, getAccessToken, authorizedFetch, login, signup, logout };
 })();
