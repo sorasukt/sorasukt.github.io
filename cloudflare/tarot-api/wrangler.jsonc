@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "sorasukt-api",
-  "main": "src/index.js",
+  "main": "src/entry.js",
   "compatibility_date": "2026-08-26",
   "workers_dev": false,
   "routes": [
@@ -12,7 +12,9 @@
   ],
   "vars": {
     "GEMINI_MODEL": "gemini-3.6-flash",
-    "ALLOWED_ORIGINS": "https://sorasukt.com,https://www.sorasukt.com"
+    "ALLOWED_ORIGINS": "https://sorasukt.com,https://www.sorasukt.com",
+    "AUTH0_DOMAIN": "auth.sorasukt.com",
+    "AUTH0_AUDIENCE": "https://api.sorasukt.com"
   },
   "secrets": {
     "required": ["GEMINI_API_KEY"]

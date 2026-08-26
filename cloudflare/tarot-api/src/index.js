@@ -10,6 +10,7 @@ const POSITIONS=[
   {key:"direction",labelTh:"แนวโน้ม",meaning:"ทิศทางที่อาจพัฒนาไปหากเงื่อนไขปัจจุบันยังดำเนินต่อไป"}
 ];
 const JSON_SCHEMA={type:"object",additionalProperties:false,required:["readingTitle","summary","cards","patterns","overallReading","guidance","reflectionQuestion"],properties:{readingTitle:{type:"string"},summary:{type:"string"},cards:{type:"array",minItems:5,maxItems:5,items:{type:"object",additionalProperties:false,required:["position","cardName","keywords","interpretation"],properties:{position:{type:"string",enum:POSITIONS.map(p=>p.key)},cardName:{type:"string"},keywords:{type:"array",minItems:2,maxItems:4,items:{type:"string"}},interpretation:{type:"string"}}}},patterns:{type:"array",maxItems:4,items:{type:"object",additionalProperties:false,required:["title","description"],properties:{title:{type:"string"},description:{type:"string"}}}},overallReading:{type:"string"},guidance:{type:"array",minItems:2,maxItems:4,items:{type:"string"}},reflectionQuestion:{type:"string"}}};
+let jwksCache={expiresAt:0,keys:[]};
 
 export default {async fetch(request,env){
   const origin=request.headers.get("Origin")||"";
@@ -18,12 +19,21 @@ export default {async fetch(request,env){
   const headers={"Content-Type":"application/json; charset=utf-8","Cache-Control":"no-store","Vary":"Origin",...(corsOrigin?{"Access-Control-Allow-Origin":corsOrigin}:{})};
   if(request.method==="OPTIONS"){
     if(!corsOrigin)return new Response(null,{status:403});
-    return new Response(null,{status:204,headers:{...headers,"Access-Control-Allow-Methods":"POST, OPTIONS","Access-Control-Allow-Headers":"Content-Type","Access-Control-Max-Age":"86400"}});
+    return new Response(null,{status:204,headers:{...headers,"Access-Control-Allow-Methods":"GET, POST, OPTIONS","Access-Control-Allow-Headers":"Authorization, Content-Type","Access-Control-Max-Age":"86400"}});
   }
   const url=new URL(request.url);
+  if(origin&&!corsOrigin)return json({success:false,error:{code:"ORIGIN_NOT_ALLOWED",message:"Origin not allowed"}},403,headers);
+
+  if(url.pathname==="/api/member/me"){
+    if(request.method!=="GET")return json({success:false,error:{code:"METHOD_NOT_ALLOWED",message:"Method not allowed"}},405,headers);
+    const auth=await authenticate(request,env);
+    if(!auth.ok)return json({success:false,error:{code:"UNAUTHORIZED",message:"Authentication required"}},401,headers);
+    const {sub,name,nickname,email,picture,scope,permissions}=auth.payload;
+    return json({success:true,user:{sub,name,nickname,email,picture,scope,permissions}},200,headers);
+  }
+
   if(url.pathname!=="/api/tarot/reading")return json({success:false,error:{code:"NOT_FOUND",message:"Not found"}},404,headers);
   if(request.method!=="POST")return json({success:false,error:{code:"METHOD_NOT_ALLOWED",message:"Method not allowed"}},405,headers);
-  if(origin&&!corsOrigin)return json({success:false,error:{code:"ORIGIN_NOT_ALLOWED",message:"Origin not allowed"}},403,headers);
   if(!env.GEMINI_API_KEY)return json({success:false,error:{code:"SERVER_CONFIG_ERROR",message:"AI service is not configured"}},500,headers);
   const length=Number(request.headers.get("Content-Length")||0); if(length>12000)return json({success:false,error:{code:"INVALID_REQUEST",message:"Request is too large"}},413,headers);
   let body;try{body=await request.json()}catch{return json({success:false,error:{code:"INVALID_REQUEST",message:"Invalid JSON request"}},400,headers)}
@@ -45,6 +55,50 @@ export default {async fetch(request,env){
     return json({success:true,reading},200,headers);
   }catch(error){clearTimeout(timeout);console.error("Tarot API error",error?.name||"error");return json({success:false,error:{code:error?.name==="AbortError"?"AI_TIMEOUT":"INTERNAL_ERROR",message:"ไม่สามารถสร้างคำอ่านไพ่ได้ในขณะนี้"}},error?.name==="AbortError"?504:500,headers)}
 }};
+
+async function authenticate(request,env){
+  const header=request.headers.get("Authorization")||"";
+  if(!header.startsWith("Bearer "))return {ok:false};
+  const token=header.slice(7).trim();
+  const parts=token.split(".");
+  if(parts.length!==3)return {ok:false};
+  try{
+    const jwtHeader=JSON.parse(decodeBase64Url(parts[0]));
+    const payload=JSON.parse(decodeBase64Url(parts[1]));
+    if(jwtHeader.alg!=="RS256"||!jwtHeader.kid)return {ok:false};
+    const domain=(env.AUTH0_DOMAIN||"auth.sorasukt.com").replace(/^https?:\/\//,"").replace(/\/$/,"");
+    const issuer=`https://${domain}/`;
+    const audience=env.AUTH0_AUDIENCE||"https://api.sorasukt.com";
+    const now=Math.floor(Date.now()/1000);
+    const audiences=Array.isArray(payload.aud)?payload.aud:[payload.aud];
+    if(payload.iss!==issuer||!audiences.includes(audience)||!payload.sub||payload.exp<=now||(payload.nbf&&payload.nbf>now+60))return {ok:false};
+    const keys=await getJwks(domain);
+    const jwk=keys.find(key=>key.kid===jwtHeader.kid&&key.kty==="RSA");
+    if(!jwk)return {ok:false};
+    const key=await crypto.subtle.importKey("jwk",jwk,{name:"RSASSA-PKCS1-v1_5",hash:"SHA-256"},false,["verify"]);
+    const data=new TextEncoder().encode(`${parts[0]}.${parts[1]}`);
+    const signature=base64UrlBytes(parts[2]);
+    const valid=await crypto.subtle.verify("RSASSA-PKCS1-v1_5",key,signature,data);
+    return valid?{ok:true,payload}:{ok:false};
+  }catch(error){console.error("JWT verification failed",error?.name||"error");return {ok:false};}
+}
+
+async function getJwks(domain){
+  if(Date.now()<jwksCache.expiresAt&&jwksCache.keys.length)return jwksCache.keys;
+  const response=await fetch(`https://${domain}/.well-known/jwks.json`,{headers:{"Accept":"application/json"}});
+  if(!response.ok)throw new Error("JWKS fetch failed");
+  const body=await response.json();
+  jwksCache={keys:Array.isArray(body.keys)?body.keys:[],expiresAt:Date.now()+10*60*1000};
+  return jwksCache.keys;
+}
+
+function decodeBase64Url(value){return new TextDecoder().decode(base64UrlBytes(value))}
+function base64UrlBytes(value){
+  const base64=value.replace(/-/g,"+").replace(/_/g,"/")+"=".repeat((4-value.length%4)%4);
+  const binary=atob(base64); const bytes=new Uint8Array(binary.length);
+  for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
+  return bytes;
+}
 function validate(body){
   if(!body||typeof body!=="object")return bad("INVALID_REQUEST","ข้อมูลคำขอไม่ถูกต้อง");
   const question=typeof body.question==="string"?body.question.trim():""; if(!question||question.length>500)return bad("INVALID_QUESTION","กรุณาระบุคำถามไม่เกิน 500 ตัวอักษร");

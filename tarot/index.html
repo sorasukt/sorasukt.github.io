@@ -11,13 +11,51 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="/auth/auth0.css">
 </head>
 <body>
   <main class="shell">
     <header class="topbar">
       <a href="/" class="brand" aria-label="กลับหน้าแรก"><em>/</em>sorasukt</a>
-      <span class="counter" id="counter">0 / 5 selected</span>
+      <div class="topbar-actions">
+        <span class="counter" id="counter">0 / 5 selected</span>
+        <button class="auth-button" id="signupButton" type="button">สร้างบัญชี</button>
+        <button class="auth-button" id="loginButton" type="button">เข้าสู่ระบบ</button>
+        <button class="auth-user" id="userButton" type="button" hidden aria-label="บัญชีผู้ใช้">
+          <img id="userAvatar" alt="" hidden>
+          <span id="userName">บัญชี</span>
+        </button>
+        <button class="auth-button" id="logoutButton" type="button" hidden>ออกจากระบบ</button>
+      </div>
     </header>
+
+    <section class="member-panel" id="memberPanel" hidden>
+      <div class="member-panel-head">
+        <div>
+          <p class="eyebrow">DAILY FOR YOU</p>
+          <h2>ไพ่และดวงประจำวัน</h2>
+        </div>
+        <button class="text-button" id="editProfile" type="button">แก้ไขข้อมูลเกิด</button>
+      </div>
+      <p class="member-note">ระบบใช้วันเดือนปีเกิด และเวลาเกิดถ้ามี เพื่อช่วยปรับบริบทการอ่านให้เหมาะกับคุณ ผลประจำวันจะถูกเก็บไว้และใช้ซ้ำจนกว่าจะเปลี่ยนวันตามเวลาไทย</p>
+      <form class="profile-form" id="profileForm" hidden>
+        <label>วันเดือนปีเกิด <input id="birthDate" type="date" required></label>
+        <label>เวลาเกิด <span>(ไม่บังคับ)</span><input id="birthTime" type="time"></label>
+        <button class="primary" id="saveProfile" type="submit">บันทึกและดูดวงวันนี้</button>
+      </form>
+      <div class="daily-content" id="dailyContent" hidden>
+        <div class="daily-meta"><span id="dailyDate"></span><span>ไพ่ประจำวัน: <strong id="dailyCard"></strong></span></div>
+        <h3 id="dailyTitle"></h3>
+        <p id="dailySummary"></p>
+        <div class="daily-grid">
+          <div><span>พลังงานวันนี้</span><p id="dailyEnergy"></p></div>
+          <div><span>สิ่งที่ควรโฟกัส</span><p id="dailyFocus"></p></div>
+          <div><span>สิ่งที่ควรระวัง</span><p id="dailyAvoid"></p></div>
+          <div><span>คำแนะนำ</span><p id="dailyAdvice"></p></div>
+        </div>
+      </div>
+      <p class="member-status" id="memberStatus" aria-live="polite"></p>
+    </section>
 
     <section class="hero" id="questionStep">
       <p class="eyebrow">TAROT READING</p>
@@ -30,43 +68,27 @@
     </section>
 
     <section class="deck-section" id="deckStep" hidden>
-      <div class="section-head">
-        <div>
-          <p class="eyebrow">CHOOSE FIVE</p>
-          <h2>เลือกไพ่ที่ดึงดูดคุณ</h2>
-        </div>
-        <button class="text-button" id="resetSelection">เริ่มเลือกใหม่</button>
-      </div>
+      <div class="section-head"><div><p class="eyebrow">CHOOSE FIVE</p><h2>เลือกไพ่ที่ดึงดูดคุณ</h2></div><button class="text-button" id="resetSelection">เริ่มเลือกใหม่</button></div>
       <p class="instruction">แตะไพ่เพื่อเลือก แตะอีกครั้งเพื่อยกเลิก ไพ่จะยังคว่ำหน้าจนกว่าคุณจะเลือกครบ 5 ใบ</p>
       <div class="deck" id="deck" aria-label="สำรับไพ่ Tarot 78 ใบ"></div>
       <div class="selected-strip" id="selectedStrip" aria-live="polite"></div>
     </section>
 
     <section class="reading-section" id="readingStep" hidden>
-      <div class="section-head">
-        <div>
-          <p class="eyebrow">YOUR READING</p>
-          <h2 id="readingTitle">การอ่านไพ่ของคุณ</h2>
-        </div>
-        <button class="text-button" id="newReading">ถามคำถามใหม่</button>
-      </div>
+      <div class="section-head"><div><p class="eyebrow">YOUR READING</p><h2 id="readingTitle">การอ่านไพ่ของคุณ</h2></div><button class="text-button" id="newReading">ถามคำถามใหม่</button></div>
       <p class="question-display" id="questionDisplay"></p>
       <div class="reading-grid" id="readingGrid"></div>
       <section class="reading-copy" id="readingCopy"></section>
     </section>
   </main>
 
-  <div class="sticky-action" id="stickyAction" hidden>
-    <button class="primary" id="revealButton">เปิดไพ่ทั้ง 5 ใบ</button>
-  </div>
+  <div class="sticky-action" id="stickyAction" hidden><button class="primary" id="revealButton">เปิดไพ่ทั้ง 5 ใบ</button></div>
+  <div class="loading" id="loading" hidden role="status" aria-live="polite"><div class="loading-inner"><span class="loader"></span><p id="loadingText">กำลังพิจารณาคำถามของคุณ</p></div></div>
 
-  <div class="loading" id="loading" hidden role="status" aria-live="polite">
-    <div class="loading-inner">
-      <span class="loader"></span>
-      <p id="loadingText">กำลังพิจารณาคำถามของคุณ</p>
-    </div>
-  </div>
-
+  <script src="https://cdn.auth0.com/js/auth0-spa-js/2.0/auth0-spa-js.production.js"></script>
+  <script src="/auth/auth0-config.js"></script>
+  <script src="/auth/auth0-client.js"></script>
+  <script src="./member.js" defer></script>
   <script src="./config.js"></script>
   <script src="./app.js" defer></script>
 </body>
