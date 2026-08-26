@@ -3,8 +3,8 @@
   let readyPromise = null;
 
   const config = () => window.SORASUKT_AUTH_CONFIG || {};
-  const redirectUri = () => config().redirectUri || `${window.location.origin}${window.location.pathname}`;
-  const logoutUri = () => config().logoutUri || redirectUri();
+  const redirectUri = () => config().redirectUri || "https://sorasukt.com/tarot/";
+  const logoutUri = () => config().logoutUri || "https://sorasukt.com/tarot/";
 
   const withTimeout = (promise, ms, message) => {
     let timer;
@@ -15,25 +15,33 @@
   };
 
   async function init() {
+    if (client) return client;
     if (readyPromise) return readyPromise;
 
     readyPromise = (async () => {
       const settings = config();
-      if (!settings.domain || !settings.clientId || !window.auth0?.Auth0Client) {
-        throw new Error("Auth0 SDK is unavailable or not configured");
+      if (!settings.domain || !settings.clientId) {
+        throw new Error("Auth0 configuration is missing");
+      }
+      if (!window.auth0 || typeof window.auth0.createAuth0Client !== "function") {
+        throw new Error("Auth0 SPA SDK failed to load");
       }
 
-      client = new window.auth0.Auth0Client({
-        domain: settings.domain,
-        clientId: settings.clientId,
-        useRefreshTokens: true,
-        useRefreshTokensFallback: true,
-        cacheLocation: "localstorage",
-        authorizationParams: {
-          redirect_uri: redirectUri(),
-          ...(settings.audience ? { audience: settings.audience } : {})
-        }
-      });
+      client = await withTimeout(
+        window.auth0.createAuth0Client({
+          domain: settings.domain,
+          clientId: settings.clientId,
+          useRefreshTokens: true,
+          useRefreshTokensFallback: true,
+          cacheLocation: "localstorage",
+          authorizationParams: {
+            redirect_uri: redirectUri(),
+            ...(settings.audience ? { audience: settings.audience } : {})
+          }
+        }),
+        15000,
+        "Auth0 client initialization timed out"
+      );
 
       const params = new URLSearchParams(window.location.search);
       if (params.has("code") && params.has("state")) {
@@ -55,24 +63,30 @@
       return client;
     })();
 
-    return readyPromise;
+    try {
+      return await readyPromise;
+    } catch (error) {
+      readyPromise = null;
+      client = null;
+      throw error;
+    }
   }
 
   async function isAuthenticated() {
-    await init();
-    return withTimeout(client.isAuthenticated(), 8000, "Auth0 session check timed out");
+    const auth = await init();
+    return withTimeout(auth.isAuthenticated(), 8000, "Auth0 session check timed out");
   }
 
   async function getUser() {
-    await init();
-    return client.getUser();
+    const auth = await init();
+    return auth.getUser();
   }
 
   async function getAccessToken() {
-    await init();
+    const auth = await init();
     const settings = config();
     return withTimeout(
-      client.getTokenSilently({
+      auth.getTokenSilently({
         authorizationParams: settings.audience ? { audience: settings.audience } : {}
       }),
       12000,
@@ -80,17 +94,17 @@
     );
   }
 
-  async function authorizedFetch(input, init = {}) {
+  async function authorizedFetch(input, initOptions = {}) {
     const token = await getAccessToken();
-    const headers = new Headers(init.headers || {});
+    const headers = new Headers(initOptions.headers || {});
     headers.set("Authorization", `Bearer ${token}`);
-    return fetch(input, { ...init, headers });
+    return fetch(input, { ...initOptions, headers });
   }
 
   async function login() {
-    await init();
+    const auth = await init();
     const settings = config();
-    return client.loginWithRedirect({
+    await auth.loginWithRedirect({
       authorizationParams: {
         redirect_uri: redirectUri(),
         prompt: "login",
@@ -101,9 +115,9 @@
   }
 
   async function signup() {
-    await init();
+    const auth = await init();
     const settings = config();
-    return client.loginWithRedirect({
+    await auth.loginWithRedirect({
       authorizationParams: {
         redirect_uri: redirectUri(),
         screen_hint: "signup",
@@ -115,10 +129,8 @@
   }
 
   async function logout() {
-    await init();
-    return client.logout({
-      logoutParams: { returnTo: logoutUri() }
-    });
+    const auth = await init();
+    await auth.logout({ logoutParams: { returnTo: logoutUri() } });
   }
 
   window.SorasuktAuth = {

@@ -5,8 +5,7 @@
   async function init(){
     await window.SorasuktAuth.init();
     const authenticated=await window.SorasuktAuth.isAuthenticated();
-    $("loginButton").hidden=authenticated;
-    $("signupButton").hidden=authenticated;
+    $("signInButton").hidden=authenticated;
     $("logoutButton").hidden=!authenticated;
     $("userButton").hidden=!authenticated;
     $("memberPanel").hidden=!authenticated;
@@ -22,6 +21,11 @@
     return window.SorasuktAuth.authorizedFetch(`${API}${path}`,options);
   }
 
+  function showAuthError(message){
+    console.error(message);
+    window.alert(message);
+  }
+
   async function runAuthAction(action,button,label){
     const original=button.textContent;
     button.disabled=true;
@@ -31,7 +35,9 @@
       await action();
     }catch(error){
       console.error("Auth action failed",error);
-      setStatus("ไม่สามารถเชื่อมต่อระบบเข้าสู่ระบบได้ กรุณาลองใหม่อีกครั้ง");
+      const message=`ไม่สามารถเปิด Auth0 Universal Login ได้\n\n${error?.message||"Unknown authentication error"}`;
+      setStatus(message);
+      showAuthError(message);
       button.disabled=false;
       button.textContent=original;
     }
@@ -93,14 +99,16 @@
   function setStatus(text){$("memberStatus").textContent=text||"";}
 
   window.addEventListener("DOMContentLoaded",()=>{
-    const loginButton=$("loginButton");
-    const signupButton=$("signupButton");
+    const signInButton=$("signInButton");
     const logoutButton=$("logoutButton");
-    loginButton.addEventListener("click",()=>runAuthAction(()=>window.SorasuktAuth.login(),loginButton,"กำลังเข้าสู่ระบบ…"));
-    signupButton.addEventListener("click",()=>runAuthAction(()=>window.SorasuktAuth.signup(),signupButton,"กำลังเปิดหน้าสมัคร…"));
+    signInButton.addEventListener("click",()=>runAuthAction(()=>window.SorasuktAuth.login(),signInButton,"กำลังเปิดหน้าลงชื่อใช้งาน…"));
     logoutButton.addEventListener("click",()=>runAuthAction(()=>window.SorasuktAuth.logout(),logoutButton,"กำลังออกจากระบบ…"));
     $("profileForm").addEventListener("submit",saveProfile);
     $("editProfile").addEventListener("click",()=>{$("profileForm").hidden=false;});
-    init().catch(error=>{console.error("Member initialization failed",error);setStatus("ไม่สามารถโหลดระบบสมาชิกได้");});
+    init().catch(error=>{
+      console.error("Member initialization failed",error);
+      const message=`ไม่สามารถโหลดระบบสมาชิกได้: ${error?.message||"Unknown error"}`;
+      setStatus(message);
+    });
   });
 })();
