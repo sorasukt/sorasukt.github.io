@@ -1,6 +1,15 @@
 # Tarot API (Cloudflare Worker + Gemini)
 
-API สำหรับ `/tarot` โดย Browser จะเรียก Worker ที่ `POST /api/tarot/reading` และ Worker เป็นผู้เรียก Google Gemini API ต่ออีกชั้นหนึ่ง
+API สำหรับ `/tarot` โดย Browser จะเรียก Worker ที่ `POST https://api.sorasukt.com/api/tarot/reading` และ Worker เป็นผู้เรียก Google Gemini API ต่ออีกชั้นหนึ่ง
+
+## Production Worker
+
+- Worker name: `sorasukt-API`
+- Custom Domain: `api.sorasukt.com`
+- Tarot endpoint: `https://api.sorasukt.com/api/tarot/reading`
+- `workers.dev` ถูกปิดสำหรับ production
+
+Custom Domain ถูกกำหนดใน `wrangler.jsonc` ด้วย `custom_domain: true` ดังนั้น Cloudflare จะผูก hostname `api.sorasukt.com` เข้ากับ Worker โดยตรงและจัดการ DNS/SSL สำหรับ hostname นี้ตามระบบ Custom Domains ของ Workers
 
 ## GitHub → Cloudflare deployment
 
@@ -8,18 +17,13 @@ Repository มี workflow `.github/workflows/deploy-tarot-worker.yml` สำห
 
 เพิ่ม Repository Actions secrets ใน GitHub จำนวน 3 ค่า:
 
-- `CLOUDFLARE_API_TOKEN` — Cloudflare API Token ที่มีสิทธิ์ Workers Scripts: Edit และ Workers Routes: Edit เฉพาะ account/zone ที่ต้องใช้
+- `CLOUDFLARE_API_TOKEN` — Cloudflare API Token สำหรับ deploy Worker และจัดการ Custom Domain/route
 - `CLOUDFLARE_ACCOUNT_ID` — Cloudflare Account ID
 - `GEMINI_API_KEY` — Google Gemini API key
 
 Workflow จะนำ `GEMINI_API_KEY` จาก GitHub Actions secret ไปตั้งเป็น Cloudflare Worker Secret ก่อน deploy ดังนั้นค่า secret จะไม่ถูก commit ลง repository
 
-Cloudflare routes ถูกกำหนดใน `wrangler.jsonc` ให้ Worker รับเฉพาะ:
-
-- `sorasukt.com/api/tarot/*`
-- `www.sorasukt.com/api/tarot/*`
-
-ดังนั้น frontend สามารถเรียก same-origin endpoint `/api/tarot/reading` ได้โดยไม่ต้องเปิดเผย Worker URL
+Frontend `/tarot/config.js` เรียก API ผ่าน `https://api.sorasukt.com` โดยตรง และ Worker จำกัด CORS ไว้ที่ `https://sorasukt.com` และ `https://www.sorasukt.com`
 
 ## Manual setup
 
@@ -47,7 +51,7 @@ GEMINI_API_KEY=your_local_key
 npm run dev
 ```
 
-หากทดสอบ frontend กับ Worker local ให้เพิ่ม `http://localhost:...` ลง `ALLOWED_ORIGINS` เฉพาะ environment สำหรับ development
+หากทดสอบ frontend กับ Worker local ให้เพิ่ม localhost origin ลง `ALLOWED_ORIGINS` เฉพาะ environment สำหรับ development
 
 ## Request
 
