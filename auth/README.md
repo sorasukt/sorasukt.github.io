@@ -6,11 +6,11 @@ Shared Auth0 SPA integration for sorasukt.com.
 
 - Custom Domain: `auth.sorasukt.com`
 - Client ID: `NbMkuqqsuljnBKcAKVDr8bICryQZR4MI`
+- API audience: `https://api.sorasukt.com`
 - SDK: Auth0 SPA JS 2.x
 - Authentication flow: Universal Login + Authorization Code Flow with PKCE
-- API audience: `https://api.sorasukt.com`
 
-The Client ID, Auth0 domain, and API audience are public SPA configuration and may be shipped to the browser. Never place an Auth0 Client Secret in this repository or in browser JavaScript.
+The Client ID, domain and API audience are public SPA configuration. Never place an Auth0 Client Secret in this repository or browser JavaScript.
 
 ## Auth0 Dashboard settings
 
@@ -37,11 +37,7 @@ https://sorasukt.com
 https://www.sorasukt.com
 ```
 
-For local development, add localhost URLs only to the Auth0 development configuration as needed.
-
-## Auth0 API
-
-Create an Auth0 API under **Applications → APIs** with:
+Create an Auth0 API:
 
 ```text
 Name: sorasukt API
@@ -49,39 +45,49 @@ Identifier: https://api.sorasukt.com
 Signing Algorithm: RS256
 ```
 
-The Identifier is the audience requested by the SPA and validated by the Cloudflare Worker. Do not change it independently on one side.
+## Member profile and daily reading
 
-## Shared files
+Authenticated members can save:
 
-- `/auth/auth0-config.js` — public Auth0 domain, client ID, and API audience
-- `/auth/auth0-client.js` — shared login/logout/session/access-token helper
-- `/auth/auth0.css` — shared authentication controls
+- birth date (required for daily guidance)
+- birth time (optional)
+- timezone fixed to `Asia/Bangkok` for the current experience
 
-The shared client exposes:
+The Cloudflare Worker stores this data in D1. The daily reading is keyed by Auth0 `sub` and the current calendar date in `Asia/Bangkok`.
 
-- `SorasuktAuth.login()`
-- `SorasuktAuth.logout()`
-- `SorasuktAuth.getUser()`
-- `SorasuktAuth.getAccessToken()`
-- `SorasuktAuth.authorizedFetch()`
+On the first authenticated request of a new Thai calendar day, the Worker:
 
-Future member pages should reuse this layer instead of creating another Auth0 client instance.
+1. checks D1 for an existing completed daily reading;
+2. claims a unique pending row to prevent duplicate generation;
+3. derives one deterministic daily Tarot card for that account/date;
+4. sends birth date, optional birth time, daily card and Thai date to Gemini;
+5. stores the structured result in D1;
+6. serves that cached result for the remainder of the Thai day.
 
-## Cloudflare API authorization
+The next Thai calendar day naturally produces a new cache key, so no destructive midnight cleanup job is required.
 
-The Worker validates Auth0 access tokens server-side before member data is returned. Validation includes:
+## Cloudflare storage
 
-- RS256 signature against `https://auth.sorasukt.com/.well-known/jwks.json`
-- issuer `https://auth.sorasukt.com/`
-- audience `https://api.sorasukt.com`
-- expiry/not-before timestamps
-- authenticated subject (`sub`)
+GitHub Actions provisions these resources when deploying the Worker:
 
-Protected test endpoint:
+- D1 database: `sorasukt-members`
+- R2 bucket: `sorasukt-ai-archive`
 
-```http
-GET https://api.sorasukt.com/api/member/me
-Authorization: Bearer <access_token>
+D1 holds queryable profile and daily-reading records. R2 is reserved for future AI chat archives, attachments and larger log/export objects; member APIs must validate Auth0 JWTs before accessing user-specific storage.
+
+## Protected endpoints
+
+```text
+GET /api/member/me
+GET /api/member/profile
+PUT /api/member/profile
+GET /api/member/daily
 ```
 
-The public Tarot reading endpoint remains public for now. D1/R2 member endpoints should call the same JWT validation layer before reading or writing user-specific data.
+All member endpoints require:
+
+```http
+Authorization: Bearer <Auth0 access token>
+```
+
+JWT verification checks RS256 signature using Auth0 JWKS plus issuer, audience, expiry/not-before and subject.
