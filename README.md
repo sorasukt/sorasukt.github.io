@@ -1,40 +1,50 @@
-# Hi, I’m sorasukt
+# Hi, I’m sorasukt 👋
 
-**Welcome to my GitHub Pages portfolio.**
+Welcome to the repository for my personal portfolio website, **sorasukt.com**.
 
-I am an English Education student, educator, and developer passionate about creating educational technology that makes learning more accessible, engaging, and effective.
+I’m an English Education student, educator, and developer interested in combining **education, technology, and digital innovation** to create learning experiences that are accessible, engaging, and meaningful.
 
-***
+## 🌐 Website
 
-## Featured Projects
+**Portfolio:** https://sorasukt.com
 
-### English Education System
+## 🚀 Featured Projects
 
-A digital platform designed to support English language learning, classroom activities, and educational management.
+### LITALK Education
 
-🔗 https://sorasukt.github.io/enged
+An education platform focused on modern digital learning experiences, educational resources, and technology-supported learning.
 
-***
+**Website:** https://litalkeducation.com
 
-### LITALK Education Student Portal
+### ENGED
 
-A modern student portal that connects learners with educational resources, progress tracking, and communication tools.
+A digital solution for English education designed to support language learning, classroom activities, and educational experiences.
 
-🔗 https://sorasukt.github.io/LITALK
+**Website:** https://solution.litalkeducation.com
 
-***
+### เล่าเรื่องเก่ง Podcast
 
-### About Me
+A podcast project sharing stories and experiences before they disappear, produced in collaboration with STNET Radio.
 
-**My interests include:**
+## 👨‍💻 About Me
 
-* English Language Education
-* Educational Technology
-* Web Development
-* Learning Innovation
-* Digital Learning Solutions
+My interests include:
 
+- English Language Education
+- Educational Technology (EdTech)
+- Web Development
+- Learning Innovation
+- Digital Learning Solutions
+- AI-assisted Education
 
-*Built and maintained by sorasukt.*
+## 🛠️ About This Repository
+
+This repository hosts the source code for my personal website using **GitHub Pages** and the custom domain **sorasukt.com**.
+
+The site is designed as a lightweight portfolio for presenting my work, projects, interests, and ways to get in touch.
+
+---
+
+Built and maintained by **sorasukt**.
 
 © 2026 sorasukt. All Rights Reserved.
