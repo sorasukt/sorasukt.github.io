@@ -22,6 +22,11 @@
     return window.SorasuktAuth.authorizedFetch(`${API}${path}`,options);
   }
 
+  function showAuthError(message){
+    console.error(message);
+    window.alert(message);
+  }
+
   async function runAuthAction(action,button,label){
     const original=button.textContent;
     button.disabled=true;
@@ -31,7 +36,9 @@
       await action();
     }catch(error){
       console.error("Auth action failed",error);
-      setStatus("ไม่สามารถเชื่อมต่อระบบเข้าสู่ระบบได้ กรุณาลองใหม่อีกครั้ง");
+      const message=`ไม่สามารถเปิด Auth0 Universal Login ได้\n\n${error?.message||"Unknown authentication error"}`;
+      setStatus(message);
+      showAuthError(message);
       button.disabled=false;
       button.textContent=original;
     }
@@ -101,6 +108,10 @@
     logoutButton.addEventListener("click",()=>runAuthAction(()=>window.SorasuktAuth.logout(),logoutButton,"กำลังออกจากระบบ…"));
     $("profileForm").addEventListener("submit",saveProfile);
     $("editProfile").addEventListener("click",()=>{$("profileForm").hidden=false;});
-    init().catch(error=>{console.error("Member initialization failed",error);setStatus("ไม่สามารถโหลดระบบสมาชิกได้");});
+    init().catch(error=>{
+      console.error("Member initialization failed",error);
+      const message=`ไม่สามารถโหลดระบบสมาชิกได้: ${error?.message||"Unknown error"}`;
+      setStatus(message);
+    });
   });
 })();
