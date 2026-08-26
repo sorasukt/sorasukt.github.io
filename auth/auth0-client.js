@@ -1,31 +1,29 @@
 (() => {
   let client = null;
 
-  const config = () => window.SORASUKT_AUTH_CONFIG || {};
-  const redirectUri = () => config().redirectUri || "https://sorasukt.com/tarot/";
-  const logoutUri = () => config().logoutUri || "https://sorasukt.com/tarot/";
+  const settings = () => window.SORASUKT_AUTH_CONFIG || {};
+  const redirectUri = () => `${window.location.origin}/tarot/`;
 
   function getClient() {
     if (client) return client;
-    const settings = config();
-    if (!settings.domain || !settings.clientId) {
+    const config = settings();
+    if (!config.domain || !config.clientId) {
       throw new Error("Auth0 configuration is missing");
     }
     if (!window.auth0 || typeof window.auth0.Auth0Client !== "function") {
       throw new Error("Auth0 SPA SDK failed to load");
     }
 
-    // Use the direct constructor so clicking Sign In does not wait for
-    // createAuth0Client() to perform a silent session check first.
     client = new window.auth0.Auth0Client({
-      domain: settings.domain,
-      clientId: settings.clientId,
+      domain: config.domain,
+      clientId: config.clientId,
       cacheLocation: "localstorage",
       useRefreshTokens: true,
       useRefreshTokensFallback: true,
       authorizationParams: {
         redirect_uri: redirectUri(),
-        ...(settings.audience ? { audience: settings.audience } : {})
+        audience: config.audience,
+        scope: config.scope || "openid profile email offline_access"
       }
     });
     return client;
@@ -51,10 +49,7 @@
   }
 
   async function getAccessToken() {
-    const settings = config();
-    return getClient().getTokenSilently({
-      authorizationParams: settings.audience ? { audience: settings.audience } : {}
-    });
+    return getClient().getTokenSilently();
   }
 
   async function authorizedFetch(input, initOptions = {}) {
@@ -65,20 +60,14 @@
   }
 
   async function login() {
-    const settings = config();
-    // Universal Login redirect starts immediately from the click gesture.
     return getClient().loginWithRedirect({
-      authorizationParams: {
-        redirect_uri: redirectUri(),
-        ...(settings.audience ? { audience: settings.audience } : {})
-      },
-      appState: { returnTo: "/tarot/" }
+      appState: { returnTo: window.location.pathname + window.location.search }
     });
   }
 
   async function logout() {
     return getClient().logout({
-      logoutParams: { returnTo: logoutUri() }
+      logoutParams: { returnTo: redirectUri() }
     });
   }
 
