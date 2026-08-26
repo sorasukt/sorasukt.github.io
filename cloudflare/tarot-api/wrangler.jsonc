@@ -12,7 +12,9 @@
   ],
   "vars": {
     "GEMINI_MODEL": "gemini-3.6-flash",
-    "ALLOWED_ORIGINS": "https://sorasukt.com,https://www.sorasukt.com"
+    "ALLOWED_ORIGINS": "https://sorasukt.com,https://www.sorasukt.com",
+    "AUTH0_DOMAIN": "auth.sorasukt.com",
+    "AUTH0_AUDIENCE": "https://api.sorasukt.com"
   },
   "secrets": {
     "required": ["GEMINI_API_KEY"]
