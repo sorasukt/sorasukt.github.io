@@ -3,6 +3,17 @@
   "name": "sorasukt-tarot-api",
   "main": "src/index.js",
   "compatibility_date": "2026-08-27",
+  "workers_dev": true,
+  "routes": [
+    {
+      "pattern": "sorasukt.com/api/tarot/*",
+      "zone_name": "sorasukt.com"
+    },
+    {
+      "pattern": "www.sorasukt.com/api/tarot/*",
+      "zone_name": "sorasukt.com"
+    }
+  ],
   "vars": {
     "GEMINI_MODEL": "gemini-3.6-flash",
     "ALLOWED_ORIGINS": "https://sorasukt.com,https://www.sorasukt.com"
