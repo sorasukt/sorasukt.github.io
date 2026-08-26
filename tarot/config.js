@@ -1,5 +1,4 @@
 window.TAROT_CONFIG = {
-  // Replace after deploying the Cloudflare Worker, e.g. https://tarot-api.<subdomain>.workers.dev
-  apiBaseUrl: "",
+  apiBaseUrl: "https://api.sorasukt.com",
   endpoint: "/api/tarot/reading"
 };
