@@ -16,7 +16,15 @@
   <main class="shell">
     <header class="topbar">
       <a href="/" class="brand" aria-label="กลับหน้าแรก"><em>/</em>sorasukt</a>
-      <span class="counter" id="counter">0 / 5 selected</span>
+      <div class="topbar-actions">
+        <span class="counter" id="counter">0 / 5 selected</span>
+        <button class="auth-button" id="loginButton" type="button">เข้าสู่ระบบ</button>
+        <button class="auth-user" id="userButton" type="button" hidden aria-label="บัญชีผู้ใช้">
+          <img id="userAvatar" alt="" hidden>
+          <span id="userName">บัญชี</span>
+        </button>
+        <button class="auth-button" id="logoutButton" type="button" hidden>ออกจากระบบ</button>
+      </div>
     </header>
 
     <section class="hero" id="questionStep">
@@ -67,6 +75,41 @@
     </div>
   </div>
 
+  <script src="https://cdn.auth0.com/js/auth0-spa-js/2.0/auth0-spa-js.production.js"></script>
+  <script src="/auth/auth0-config.js"></script>
+  <script src="/auth/auth0-client.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", async () => {
+      const loginButton = document.getElementById("loginButton");
+      const logoutButton = document.getElementById("logoutButton");
+      const userButton = document.getElementById("userButton");
+      const userAvatar = document.getElementById("userAvatar");
+      const userName = document.getElementById("userName");
+
+      loginButton.addEventListener("click", () => window.SorasuktAuth.login());
+      logoutButton.addEventListener("click", () => window.SorasuktAuth.logout());
+
+      try {
+        await window.SorasuktAuth.init();
+        const authenticated = await window.SorasuktAuth.isAuthenticated();
+        loginButton.hidden = authenticated;
+        logoutButton.hidden = !authenticated;
+        userButton.hidden = !authenticated;
+
+        if (authenticated) {
+          const user = await window.SorasuktAuth.getUser();
+          userName.textContent = user?.name || user?.nickname || user?.email || "บัญชี";
+          if (user?.picture) {
+            userAvatar.src = user.picture;
+            userAvatar.alt = userName.textContent;
+            userAvatar.hidden = false;
+          }
+        }
+      } catch (error) {
+        console.error("Auth initialization failed", error);
+      }
+    });
+  </script>
   <script src="./config.js"></script>
   <script src="./app.js" defer></script>
 </body>
