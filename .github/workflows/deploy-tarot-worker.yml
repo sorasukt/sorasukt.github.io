@@ -19,7 +19,7 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: cloudflare/tarot-api
@@ -36,6 +36,42 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Provision D1 database
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          DB_ID=$(npx wrangler d1 list --json | jq -r '.[] | select(.name=="sorasukt-members") | .uuid' | head -n1)
+          if [ -z "$DB_ID" ] || [ "$DB_ID" = "null" ]; then
+            npx wrangler d1 create sorasukt-members
+            DB_ID=$(npx wrangler d1 list --json | jq -r '.[] | select(.name=="sorasukt-members") | .uuid' | head -n1)
+          fi
+          test -n "$DB_ID"
+          echo "D1_DATABASE_ID=$DB_ID" >> "$GITHUB_ENV"
+
+      - name: Provision R2 archive bucket
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npx wrangler r2 bucket create sorasukt-ai-archive || true
+
+      - name: Generate production Wrangler config
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const config=JSON.parse(fs.readFileSync('wrangler.jsonc','utf8'));
+          config.d1_databases=[{binding:'DB',database_name:'sorasukt-members',database_id:process.env.D1_DATABASE_ID,migrations_dir:'migrations'}];
+          config.r2_buckets=[{binding:'ARCHIVE',bucket_name:'sorasukt-ai-archive'}];
+          fs.writeFileSync('wrangler.production.json',JSON.stringify(config,null,2));
+          NODE
+
+      - name: Apply D1 migrations
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx wrangler d1 migrations apply sorasukt-members --remote
+
       - name: Sync Gemini secret to Cloudflare
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -47,12 +83,10 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: npx wrangler deploy --dry-run
+        run: npx wrangler deploy --config wrangler.production.json --dry-run
 
       - name: Deploy Worker to Cloudflare
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: cloudflare/tarot-api
-          command: deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx wrangler deploy --config wrangler.production.json
