@@ -2,140 +2,140 @@
   const AUTH0_DOMAIN = "auth.sorasukt.com";
   const AUTH0_CLIENT_ID = "NbMkuqqsuljnBKcAKVDr8bICryQZR4MI";
   const AUTH0_AUDIENCE = "https://api.sorasukt.com";
-  const AUTH0_SCOPE = "openid profile email";
   const API = "https://api.sorasukt.com";
   const REDIRECT_URI = `${window.location.origin}/tarot/`;
   const $ = id => document.getElementById(id);
-  let authClient = null;
 
-  function getAuthClient(){
-    if(authClient)return authClient;
-    if(!window.auth0 || typeof window.auth0.Auth0Client !== "function"){
+  let auth0Client;
+
+  async function configureAuth0() {
+    if (!window.auth0 || typeof window.auth0.createAuth0Client !== "function") {
       throw new Error("Auth0 SPA SDK failed to load");
     }
-    authClient = new window.auth0.Auth0Client({
+
+    auth0Client = await window.auth0.createAuth0Client({
       domain: AUTH0_DOMAIN,
       clientId: AUTH0_CLIENT_ID,
-      cacheLocation: "localstorage",
       authorizationParams: {
         redirect_uri: REDIRECT_URI,
         audience: AUTH0_AUDIENCE,
-        scope: AUTH0_SCOPE
+        scope: "openid profile email"
       }
     });
-    return authClient;
   }
 
-  async function initAuth(){
-    const auth = getAuthClient();
+  async function handleAuth0Callback() {
     const params = new URLSearchParams(window.location.search);
-    if(params.has("code") && params.has("state")){
-      await auth.handleRedirectCallback();
-      window.history.replaceState({}, document.title, "/tarot/");
-    }
-    return auth;
+    if (!params.has("code") || !params.has("state")) return;
+
+    await auth0Client.handleRedirectCallback();
+    window.history.replaceState({}, document.title, "/tarot/");
   }
 
-  async function login(){
-    return getAuthClient().loginWithRedirect({
-      authorizationParams: { redirect_uri: REDIRECT_URI },
-      appState: { returnTo: "/tarot/" }
+  async function login() {
+    await auth0Client.loginWithRedirect({
+      authorizationParams: {
+        redirect_uri: REDIRECT_URI
+      }
     });
   }
 
-  async function logout(){
-    return getAuthClient().logout({
-      logoutParams: { returnTo: REDIRECT_URI }
+  async function logout() {
+    auth0Client.logout({
+      logoutParams: {
+        returnTo: REDIRECT_URI
+      }
     });
   }
 
-  async function authorizedFetch(input, options={}){
-    const token = await getAuthClient().getTokenSilently();
+  async function authorizedFetch(path, options = {}) {
+    const token = await auth0Client.getTokenSilently();
     const headers = new Headers(options.headers || {});
     headers.set("Authorization", `Bearer ${token}`);
-    return fetch(input, {...options, headers});
+
+    return fetch(`${API}${path}`, {
+      ...options,
+      headers
+    });
   }
 
-  async function init(){
-    const auth = await initAuth();
-    const authenticated = await auth.isAuthenticated();
+  async function updateAuthUI() {
+    const authenticated = await auth0Client.isAuthenticated();
+
     $("signInButton").hidden = authenticated;
     $("logoutButton").hidden = !authenticated;
     $("userButton").hidden = !authenticated;
     $("memberPanel").hidden = !authenticated;
-    if(!authenticated)return;
 
-    const user = await auth.getUser();
+    if (!authenticated) return false;
+
+    const user = await auth0Client.getUser();
     $("userName").textContent = user?.name || user?.nickname || user?.email || "บัญชี";
-    if(user?.picture){
+
+    if (user?.picture) {
       $("userAvatar").src = user.picture;
       $("userAvatar").alt = $("userName").textContent;
       $("userAvatar").hidden = false;
     }
-    await loadProfileAndDaily();
+
+    return true;
   }
 
-  async function api(path, options={}){
-    return authorizedFetch(`${API}${path}`, options);
-  }
+  async function init() {
+    await configureAuth0();
+    await handleAuth0Callback();
 
-  function showAuthError(message){
-    console.error(message);
-    window.alert(message);
-  }
-
-  async function runAuthAction(action, button, label){
-    const original = button.textContent;
-    button.disabled = true;
-    button.textContent = label;
-    setStatus("");
-    try{
-      await action();
-    }catch(error){
-      console.error("Auth action failed", error);
-      const message = `ไม่สามารถเปิดระบบลงชื่อเข้าใช้ได้\n\n${error?.message || "Unknown authentication error"}`;
-      setStatus(message);
-      showAuthError(message);
-      button.disabled = false;
-      button.textContent = original;
+    const authenticated = await updateAuthUI();
+    if (authenticated) {
+      await loadProfileAndDaily();
     }
   }
 
-  async function loadProfileAndDaily(){
+  async function loadProfileAndDaily() {
     setStatus("กำลังโหลดข้อมูลสมาชิก...");
-    const response = await api("/api/member/profile");
+    const response = await authorizedFetch("/api/member/profile");
     const data = await response.json();
-    if(!response.ok)throw new Error(data?.error?.message || "โหลดโปรไฟล์ไม่สำเร็จ");
-    if(!data.profile){
+
+    if (!response.ok) {
+      throw new Error(data?.error?.message || "โหลดโปรไฟล์ไม่สำเร็จ");
+    }
+
+    if (!data.profile) {
       $("profileForm").hidden = false;
       $("dailyContent").hidden = true;
       setStatus("ระบุวันเดือนปีเกิดเพื่อเปิดใช้งานดวงประจำวัน");
       return;
     }
+
     $("birthDate").value = data.profile.birth_date || "";
     $("birthTime").value = data.profile.birth_time || "";
     $("profileForm").hidden = true;
     await loadDaily();
   }
 
-  async function loadDaily(){
+  async function loadDaily() {
     $("dailyContent").hidden = true;
     setStatus("กำลังเปิดดวงประจำวันของคุณ...");
-    let response = await api("/api/member/daily");
-    if(response.status === 202){
-      await new Promise(r => setTimeout(r, 1800));
-      response = await api("/api/member/daily");
+
+    let response = await authorizedFetch("/api/member/daily");
+    if (response.status === 202) {
+      await new Promise(resolve => setTimeout(resolve, 1800));
+      response = await authorizedFetch("/api/member/daily");
     }
+
     const data = await response.json();
-    if(response.status === 409 && data?.error?.code === "PROFILE_REQUIRED"){
+
+    if (response.status === 409 && data?.error?.code === "PROFILE_REQUIRED") {
       $("profileForm").hidden = false;
       setStatus(data.error.message);
       return;
     }
-    if(!response.ok){
+
+    if (!response.ok) {
       setStatus(data?.error?.message || "ไม่สามารถโหลดดวงประจำวันได้");
       return;
     }
+
     $("dailyDate").textContent = data.date;
     $("dailyCard").textContent = data.card?.name || "";
     $("dailyTitle").textContent = data.horoscope?.title || "ดวงประจำวัน";
@@ -145,50 +145,84 @@
     $("dailyAvoid").textContent = data.horoscope?.avoid || "";
     $("dailyAdvice").textContent = data.horoscope?.advice || "";
     $("dailyContent").hidden = false;
-    setStatus(data.cached ? "ดวงวันนี้ถูกบันทึกไว้แล้ว จะรีเซ็ตเมื่อเข้าสู่วันใหม่ตามเวลาไทย" : "สร้างดวงวันนี้เรียบร้อยแล้ว");
+
+    setStatus(
+      data.cached
+        ? "ดวงวันนี้ถูกบันทึกไว้แล้ว จะรีเซ็ตเมื่อเข้าสู่วันใหม่ตามเวลาไทย"
+        : "สร้างดวงวันนี้เรียบร้อยแล้ว"
+    );
   }
 
-  async function saveProfile(event){
+  async function saveProfile(event) {
     event.preventDefault();
+
     const birthDate = $("birthDate").value;
     const birthTime = $("birthTime").value;
-    if(!birthDate){
+
+    if (!birthDate) {
       setStatus("กรุณาระบุวันเดือนปีเกิด");
       return;
     }
+
     $("saveProfile").disabled = true;
-    try{
-      const response = await api("/api/member/profile", {
+
+    try {
+      const response = await authorizedFetch("/api/member/profile", {
         method: "PUT",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({birthDate, birthTime})
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ birthDate, birthTime })
       });
+
       const data = await response.json();
-      if(!response.ok)throw new Error(data?.error?.message || "บันทึกข้อมูลไม่สำเร็จ");
+      if (!response.ok) {
+        throw new Error(data?.error?.message || "บันทึกข้อมูลไม่สำเร็จ");
+      }
+
       $("profileForm").hidden = true;
       await loadDaily();
-    }catch(error){
+    } catch (error) {
       setStatus(error.message);
-    }finally{
+    } finally {
       $("saveProfile").disabled = false;
     }
   }
 
-  function setStatus(text){
+  function setStatus(text) {
     $("memberStatus").textContent = text || "";
   }
 
+  function showAuthError(error) {
+    console.error("Auth0 error", error);
+    const message = `ไม่สามารถลงชื่อเข้าใช้ได้: ${error?.message || "Unknown authentication error"}`;
+    setStatus(message);
+    window.alert(message);
+  }
+
   window.addEventListener("DOMContentLoaded", () => {
-    const signInButton = $("signInButton");
-    const logoutButton = $("logoutButton");
-    signInButton.addEventListener("click", () => runAuthAction(login, signInButton, "กำลังเปิดหน้าลงชื่อเข้าใช้…"));
-    logoutButton.addEventListener("click", () => runAuthAction(logout, logoutButton, "กำลังออกจากระบบ…"));
+    $("signInButton").addEventListener("click", async () => {
+      try {
+        await login();
+      } catch (error) {
+        showAuthError(error);
+      }
+    });
+
+    $("logoutButton").addEventListener("click", async () => {
+      try {
+        await logout();
+      } catch (error) {
+        showAuthError(error);
+      }
+    });
+
     $("profileForm").addEventListener("submit", saveProfile);
-    $("editProfile").addEventListener("click", () => { $("profileForm").hidden = false; });
+    $("editProfile").addEventListener("click", () => {
+      $("profileForm").hidden = false;
+    });
+
     init().catch(error => {
       console.error("Member initialization failed", error);
-      const message = `ไม่สามารถโหลดระบบสมาชิกได้: ${error?.message || "Unknown error"}`;
-      setStatus(message);
+      setStatus(`ไม่สามารถโหลดระบบสมาชิกได้: ${error?.message || "Unknown error"}`);
     });
   });
 })();
