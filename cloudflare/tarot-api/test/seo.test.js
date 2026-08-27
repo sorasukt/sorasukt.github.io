@@ -11,6 +11,8 @@ const pages=[
   ["../../../tarot/colors/index.html","https://sorasukt.com/tarot/colors/"],
   ["../../../tarot/numbers/index.html","https://sorasukt.com/tarot/numbers/"],
   ["../../../tarot/naming/index.html","https://sorasukt.com/tarot/naming/"],
+  ["../../../tarot/membership/index.html","https://sorasukt.com/tarot/membership/"],
+  ["../../../tarot/support/index.html","https://sorasukt.com/tarot/support/"],
   ["../../../tarot/about/index.html","https://sorasukt.com/tarot/about/"],
   ["../../../privacy/index.html","https://sorasukt.com/privacy/"],
   ["../../../privacy/google/index.html","https://sorasukt.com/privacy/google/"],
@@ -30,6 +32,8 @@ test("every public page has complete discoverability metadata",async()=>{
 });
 
 test("private account page is excluded from search",async()=>{
-  const html=await readFile(new URL("../../../tarot/me/index.html",import.meta.url),"utf8");
-  assert.match(html,/<meta name="robots" content="noindex,nofollow">/);
+  for(const file of ["../../../tarot/me/index.html","../../../tarot/billing/success/index.html"]){
+    const html=await readFile(new URL(file,import.meta.url),"utf8");
+    assert.match(html,/<meta name="robots" content="noindex,nofollow">/,file);
+  }
 });

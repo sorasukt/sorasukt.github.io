@@ -49,6 +49,8 @@ jobs:
         env:
           AUTH0_CLIENT_SECRET: ci-auth0-placeholder
           GEMINI_API_KEY: ci-gemini-placeholder
+          STRIPE_SECRET_KEY: sk_test_ci_placeholder
+          STRIPE_WEBHOOK_SECRET: whsec_ci_placeholder
         run: npx wrangler deploy --dry-run
 
   deploy:
@@ -97,12 +99,22 @@ jobs:
           fi
 
       - name: Generate production Wrangler config
+        env:
+          STRIPE_PRICE_SUB_WEEKLY: ${{ vars.STRIPE_PRICE_SUB_WEEKLY }}
+          STRIPE_PRICE_SUB_MONTHLY: ${{ vars.STRIPE_PRICE_SUB_MONTHLY }}
+          STRIPE_PRICE_SUB_YEARLY: ${{ vars.STRIPE_PRICE_SUB_YEARLY }}
+          STRIPE_PRICE_ONETIME_WEEKLY: ${{ vars.STRIPE_PRICE_ONETIME_WEEKLY }}
+          STRIPE_PRICE_ONETIME_MONTHLY: ${{ vars.STRIPE_PRICE_ONETIME_MONTHLY }}
+          STRIPE_PRICE_ONETIME_YEARLY: ${{ vars.STRIPE_PRICE_ONETIME_YEARLY }}
         run: |
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
           const config=JSON.parse(fs.readFileSync('wrangler.json','utf8'));
           config.d1_databases=[{binding:'DB',database_name:'sorasukt-members',database_id:process.env.D1_DATABASE_ID,migrations_dir:'migrations'}];
           config.r2_buckets=[{binding:'ARCHIVE',bucket_name:'sorasukt-ai-archive'}];
+          for(const name of ['STRIPE_PRICE_SUB_WEEKLY','STRIPE_PRICE_SUB_MONTHLY','STRIPE_PRICE_SUB_YEARLY','STRIPE_PRICE_ONETIME_WEEKLY','STRIPE_PRICE_ONETIME_MONTHLY','STRIPE_PRICE_ONETIME_YEARLY']){
+            config.vars[name]=process.env[name]||'';
+          }
           fs.writeFileSync('wrangler.production.json',JSON.stringify(config,null,2));
           NODE
 

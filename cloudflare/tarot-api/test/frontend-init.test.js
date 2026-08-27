@@ -128,3 +128,22 @@ test("lucky-color pages expose an accessible member result and selected-date too
   assert.match(script,/TarotPortal\.setLoading/);
   assert.ok(script.includes("^#[0-9A-Fa-f]{6}$"));
 });
+
+test("billing pages use Stripe-hosted payment, shipping, receipts, and Customer Portal",async()=>{
+  const [membership,support,success,membershipScript,supportScript,successScript]=await Promise.all([
+    readFile(new URL("tarot/membership/index.html",repositoryRoot),"utf8"),
+    readFile(new URL("tarot/support/index.html",repositoryRoot),"utf8"),
+    readFile(new URL("tarot/billing/success/index.html",repositoryRoot),"utf8"),
+    readFile(new URL("tarot/membership/membership.js",repositoryRoot),"utf8"),
+    readFile(new URL("tarot/support/support.js",repositoryRoot),"utf8"),
+    readFile(new URL("tarot/billing/success/success.js",repositoryRoot),"utf8")
+  ]);
+  assert.match(membership,/Subscription · ต่ออายุอัตโนมัติ/);
+  assert.match(membership,/Pay as you go · ชำระครั้งเดียว/);
+  assert.match(support,/PromptPay/);assert.match(support,/ที่อยู่จัดส่ง/);
+  assert.match(success,/aria-live="polite"/);
+  assert.match(membershipScript,/\/api\/billing\/portal/);
+  assert.match(supportScript,/checkout\/support/);
+  assert.match(successScript,/ดูใบเสร็จ/);
+  assert.match(successScript,/จัดการสมาชิก/);
+});

@@ -1,6 +1,6 @@
 # Tarot API (Cloudflare Worker + Gemini)
 
-API สำหรับ `/tarot` โดย Cloudflare Worker ที่ `https://api.sorasukt.com` ทำหน้าที่ทั้ง member API, Auth0 server-side callback, Open-Meteo public geocoding proxy และ AI API proxy
+API สำหรับ `/tarot` โดย Cloudflare Worker ที่ `https://api.sorasukt.com` ทำหน้าที่ทั้ง member API, Auth0 server-side callback, Stripe billing/webhook, Open-Meteo public geocoding proxy และ AI API proxy
 
 ## Auth0 — Regular Web Application
 
@@ -23,9 +23,11 @@ Flow:
 cd cloudflare/tarot-api
 npx wrangler secret put AUTH0_CLIENT_SECRET
 npx wrangler secret put GEMINI_API_KEY
+npx wrangler secret put STRIPE_SECRET_KEY
+npx wrangler secret put STRIPE_WEBHOOK_SECRET
 ```
 
-สอง secret นี้ถูกประกาศเป็น required ใน `wrangler.json` ดังนั้น deployment จะหยุดก่อนเผยแพร่หาก Worker ยังขาดค่าใดค่าหนึ่ง
+Secret ทั้งสี่ถูกประกาศเป็น required ใน `wrangler.json` และต้องตั้งบน Worker โดยไม่ใส่ค่าไว้ใน repository หรือ JavaScript ฝั่งผู้ใช้
 
 การค้นหาสถานที่ใช้ Open-Meteo Geocoding API ผ่าน Worker โดยไม่ต้องตั้ง API key ข้อมูลที่ได้ประกอบด้วยรหัสสถานที่ ชื่อ พิกัด และ IANA timezone การใช้งาน free endpoint ต้องเป็นไปตามเงื่อนไข non-commercial, quota และ CC BY 4.0 ของ Open-Meteo หากบริการเปลี่ยนเป็นเชิงพาณิชย์ให้ตั้ง `GEOCODING_API_BASE` ไปยัง endpoint ตามแผนที่รองรับ
 
@@ -34,6 +36,8 @@ npx wrangler secret put GEMINI_API_KEY
 ```env
 AUTH0_CLIENT_SECRET=your_auth0_client_secret
 GEMINI_API_KEY=your_gemini_key
+STRIPE_SECRET_KEY=sk_test_or_live_key
+STRIPE_WEBHOOK_SECRET=whsec_endpoint_secret
 ```
 
 ## Member & Places routes
@@ -50,6 +54,54 @@ GET /api/member/daily
 GET /api/member/astrology
 GET /api/member/places/autocomplete?q=...
 ```
+
+## Stripe billing
+
+สร้าง Product/Price สำหรับ `Tarot for your daily` ใน Stripe Dashboard แล้วตั้ง GitHub Actions variables ต่อไปนี้เป็น Price IDs (`price_...`):
+
+```text
+STRIPE_PRICE_SUB_WEEKLY
+STRIPE_PRICE_SUB_MONTHLY
+STRIPE_PRICE_SUB_YEARLY
+STRIPE_PRICE_ONETIME_WEEKLY
+STRIPE_PRICE_ONETIME_MONTHLY
+STRIPE_PRICE_ONETIME_YEARLY
+```
+
+ราคาที่กำหนดใน Stripe ต้องเป็นสกุลเงินบาทตามตารางนี้:
+
+| รูปแบบ | รายสัปดาห์ | รายเดือน | รายปี |
+| --- | ---: | ---: | ---: |
+| Subscription | ฿59 | ฿199 | ฿1,690 |
+| Pay as you go | ฿79 | ฿259 | ฿1,790 |
+
+Price กลุ่ม `SUB` ต้องเป็น recurring prices รอบละ 1 สัปดาห์/เดือน/ปี และกลุ่ม `ONETIME` ต้องเป็น one-time prices Worker ตรวจ Price ID, จำนวนเงิน, สกุลเงิน ประเภท Price และรอบต่ออายุกับ Stripe ก่อนสร้าง Checkout หากตั้งค่าผิด แผนนั้นจะไม่เปิดรับชำระเงิน
+
+Subscription ใช้การชำระด้วยบัตรเท่านั้น ส่วน PromptPay เปิดให้เลือกเฉพาะ Pay as you go และรายการสนับสนุนแบบชำระครั้งเดียว
+
+ตั้ง Stripe webhook endpoint เป็น:
+
+```text
+https://api.sorasukt.com/api/stripe/webhook
+```
+
+เลือก event อย่างน้อย `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `checkout.session.expired`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.paid`, `invoice.payment_failed`, `charge.succeeded` และ `charge.updated` จากนั้นนำ endpoint signing secret ไปตั้งเป็น `STRIPE_WEBHOOK_SECRET`
+
+เปิด PromptPay และ Card ใน Stripe payment-method settings, เปิด Customer Portal สำหรับการแก้ไขวิธีชำระ/ยกเลิก Subscription และเปิด automatic email receipts ตามความต้องการทางธุรกิจ ระบบสนับสนุนใช้ THB และขอ billing/shipping address ในประเทศไทยผ่าน Stripe Checkout
+
+Billing routes:
+
+```text
+GET  /api/billing/plans
+GET  /api/billing/status
+GET  /api/billing/session?session_id=...
+POST /api/billing/checkout/membership
+POST /api/billing/checkout/support
+POST /api/billing/portal
+POST /api/stripe/webhook
+```
+
+สิทธิ์สมาชิกเปลี่ยนจาก webhook ที่ตรวจ HMAC-SHA256 ของ `Stripe-Signature` แล้วเท่านั้น หน้า success ใช้สำหรับแสดงผลและใบเสร็จ ไม่ใช่หลักฐานเปิดสิทธิ์ D1 ไม่เก็บเลขบัตร, CVC หรือที่อยู่จัดส่งฉบับเต็ม
 
 เมื่อผู้ใช้เลือกสถานที่เกิด Worker จะ resolve Open-Meteo location ID เป็นชื่อสถานที่ พิกัด latitude/longitude และ timezone แล้วเก็บลง D1 โดยไม่เชื่อถือพิกัดที่ส่งมาจาก browser
 
@@ -78,4 +130,4 @@ Session cookie เป็น `HttpOnly`, `Secure`, `SameSite=Lax` และ signe
 - ID token ตรวจ RS256 signature ผ่าน Auth0 JWKS
 - session cookie อ่านจาก JavaScript ไม่ได้
 - CORS จำกัด `https://sorasukt.com` และ `https://www.sorasukt.com`
-- Auth0 และ Gemini secrets ไม่ถูกส่งกลับ client ส่วน public geocoding เรียกผ่าน Worker และไม่ต้องใช้ secret
+- Auth0, Gemini และ Stripe secrets ไม่ถูกส่งกลับ client ส่วน public geocoding เรียกผ่าน Worker และไม่ต้องใช้ secret

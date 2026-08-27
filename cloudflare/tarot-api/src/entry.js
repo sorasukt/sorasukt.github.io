@@ -4,6 +4,7 @@ import {handleAuthRoute,getSession} from "./auth-web.js";
 import {handleFortune} from "./fortune.js";
 import {enforceAiRateLimit} from "./rate-limit.js";
 import {handleUsage,hasCurrentPolicy,loadPolicyAcceptance,purgeExpiredUserData} from "./usage.js";
+import {handleBilling,handleStripeWebhook,loadMembership} from "./stripe.js";
 
 const MAJOR=["The Fool","The Magician","The High Priestess","The Empress","The Emperor","The Hierophant","The Lovers","The Chariot","Strength","The Hermit","Wheel of Fortune","Justice","The Hanged Man","Death","Temperance","The Devil","The Tower","The Star","The Moon","The Sun","Judgement","The World"];
 const RANKS=["Ace","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten","Page","Knight","Queen","King"];
@@ -13,6 +14,8 @@ const DECK=[...MAJOR.map((name,id)=>({id,name,arcana:"major",suit:null})),...SUI
 export default {
   async fetch(request,env,ctx){
     const url=new URL(request.url);
+
+    if(url.pathname==="/api/stripe/webhook")return handleStripeWebhook(request,env);
 
     if(url.pathname.startsWith("/auth/")){
       try{
@@ -33,6 +36,18 @@ export default {
       let session=null;
       try{session=await getSession(request,env)}catch(error){console.error(JSON.stringify({message:"Optional usage session failed",error:error?.message||"error"}))}
       return handleUsage(request,env,headers,session);
+    }
+
+    if(url.pathname.startsWith("/api/billing/")){
+      const origin=request.headers.get("Origin")||"";
+      const corsOrigin=allowedOrigin(origin,env);
+      if(request.method==="OPTIONS")return preflight(corsOrigin);
+      const headers=baseHeaders(request,env);
+      if(origin&&!corsOrigin)return json({success:false,error:{code:"ORIGIN_NOT_ALLOWED",message:"Origin not allowed"}},403,headers);
+      if((url.pathname==="/api/billing/checkout/membership"||url.pathname==="/api/billing/checkout/support")&&!hasCurrentPolicy(request))return policyRequired(headers);
+      let session=null;
+      try{session=await getSession(request,env)}catch(error){console.error(JSON.stringify({message:"Optional billing session failed",error:error?.message||"error"}))}
+      return handleBilling(request,env,headers,session);
     }
 
     if(url.pathname==="/api/tarot/reading"&&request.method==="POST"){
@@ -115,9 +130,9 @@ export default {
 async function loadProfile(env,sub){return env.DB.prepare("SELECT birth_date,birth_time,birth_place,birth_place_id,birth_lat,birth_lng,birth_timezone,timezone,created_at,updated_at FROM member_profiles WHERE user_sub=?").bind(sub).first()}
 async function getMemberContext(env,session){
   const {sub,name,nickname,email,picture}=session;
-  const [profile,acceptance]=env.DB?await Promise.all([loadProfile(env,sub),loadPolicyAcceptance(env,sub)]):[null,null];
+  const [profile,acceptance,membership]=env.DB?await Promise.all([loadProfile(env,sub),loadPolicyAcceptance(env,sub),loadMembership(env,sub)]):[null,null,null];
   const completion={hasBirthDate:Boolean(profile?.birth_date),hasBirthTime:Boolean(profile?.birth_time),hasBirthPlace:Boolean(profile?.birth_place&&profile?.birth_place_id),readyForDaily:Boolean(profile?.birth_date),readyForDeepAstrology:Boolean(profile?.birth_date&&profile?.birth_time&&profile?.birth_place_id)};
-  return {user:{sub,name,nickname,email,picture},profile:profile||null,completion,policy:{accepted:Boolean(acceptance),version:acceptance?.policy_version||null,acceptedAt:acceptance?.accepted_at||null}};
+  return {user:{sub,name,nickname,email,picture},profile:profile||null,completion,membership,policy:{accepted:Boolean(acceptance),version:acceptance?.policy_version||null,acceptedAt:acceptance?.accepted_at||null}};
 }
 function preflight(corsOrigin){
   if(!corsOrigin)return new Response(null,{status:403,headers:{"Cache-Control":"no-store","Vary":"Origin"}});

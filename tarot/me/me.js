@@ -11,6 +11,9 @@
       if(!signedIn){
         $('#accountName').textContent='ยังไม่ได้ลงชื่อใช้งาน';
         $('#accountEmail').textContent='ลงชื่อใช้งานเพื่อดูและจัดการข้อมูลสมาชิกของคุณ';
+        $('#accountMembershipTitle').textContent='ลงชื่อใช้งานเพื่อดูสถานะสมาชิก';
+        $('#accountMembershipDetail').textContent='สถานะ Tarot for your daily จะแสดงในบัญชีของคุณ';
+        $('#accountPortalButton').hidden=true;
         $('#profileForm').hidden=true;
         status.textContent='ข้อมูลส่วนบุคคลจะแสดงหลังจากลงชื่อใช้งาน';
         return;
@@ -18,6 +21,7 @@
 
       renderAccount(member.user||{},member.completion||{});
       renderProfile(member.profile||null);
+      renderMembership(member.membership||null);
       $('#profileForm').hidden=false;
       $('#memberBadge').hidden=false;
       status.textContent=member.profile?'ข้อมูลของคุณพร้อมใช้งาน':'เพิ่มวันเดือนปีเกิดเพื่อเริ่มใช้ประสบการณ์สำหรับสมาชิก';
@@ -46,6 +50,19 @@
     selectedPlaceId=profile?.birth_place_id||'';
     $('#birthPlaceId').value=selectedPlaceId;
     $('#profileSavedAt').textContent=profile?.updated_at?`อัปเดตล่าสุด ${formatDateTime(profile.updated_at)}`:'';
+  }
+
+  function renderMembership(membership){
+    const title=$('#accountMembershipTitle'),detail=$('#accountMembershipDetail'),portal=$('#accountPortalButton');
+    if(!membership){title.textContent='ยังไม่มีสมาชิกพิเศษ';detail.textContent='เลือก Subscription หรือชำระครั้งเดียวได้จากหน้าแผนสมาชิก';portal.hidden=true;return;}
+    title.textContent=membership.active?'Tarot for your daily กำลังใช้งาน':`สถานะสมาชิก: ${membership.status||'ยังไม่ใช้งาน'}`;
+    detail.textContent=membership.currentPeriodEnd?`ใช้สิทธิ์ได้ถึง ${new Intl.DateTimeFormat('th-TH',{dateStyle:'long',timeZone:'Asia/Bangkok'}).format(new Date(membership.currentPeriodEnd))}`:'จัดการรายละเอียดผ่าน Customer Portal';
+    portal.hidden=false;
+  }
+
+  async function openPortal(){
+    const button=$('#accountPortalButton');window.TarotPortal.setButtonBusy(button,true,'กำลังเปิด…');
+    try{const response=await window.TarotPortal.api('/api/billing/portal',{method:'POST',timeout:15000}),data=await response.json();if(!response.ok)throw window.TarotPortal.apiError(data,'เปิด Customer Portal ไม่สำเร็จ');if(!/^https:\/\/billing\.stripe\.com\//.test(data.url||''))throw new Error('ลิงก์ Customer Portal ไม่ถูกต้อง');location.assign(data.url)}catch(error){$('#profileStatus').textContent=error?.message||'เปิด Customer Portal ไม่สำเร็จ';window.TarotPortal.setButtonBusy(button,false)}
   }
 
   async function searchPlaces(){
@@ -100,6 +117,7 @@
 
   addEventListener('DOMContentLoaded',()=>{
     $('#profileForm').addEventListener('submit',save);
+    $('#accountPortalButton').addEventListener('click',openPortal);
     $('#birthPlace').addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(searchPlaces,350);});
     document.addEventListener('click',e=>{if(!e.target.closest('.place-field'))hideSuggestions();});
     load();
