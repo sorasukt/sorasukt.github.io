@@ -35,7 +35,7 @@
     const data=await r.json();
     delete status.dataset.loading;
     if(r.status===409&&data?.error?.code==="PROFILE_REQUIRED"){ if(authenticated)openBirthModal(); return; }
-    if(!r.ok){ status.textContent=data?.error?.message||"ไม่สามารถโหลดดวงวันนี้ได้"; return; }
+    if(!r.ok){ window.TarotPortal.renderError(status,window.TarotPortal.apiError(data,"ไม่สามารถโหลดดวงวันนี้ได้")); return; }
     $("dailyDate").textContent=data.date||"";
     $("dailyCard").textContent=data.card?.name||"";
     $("dailyTitle").textContent=data.horoscope?.title||"ดวงของคุณวันนี้";
@@ -44,6 +44,11 @@
     $("dailyFocus").textContent=data.horoscope?.focus||"";
     $("dailyAvoid").textContent=data.horoscope?.avoid||"";
     $("dailyAdvice").textContent=data.horoscope?.advice||"";
+    const colorHex=/^#[0-9A-Fa-f]{6}$/.test(data.horoscope?.luckyColorHex||"")?data.horoscope.luckyColorHex:"#d8d2c4";
+    $("dailyLuckyColor").textContent=data.horoscope?.luckyColor||"สีสำหรับวันนี้";
+    $("dailyLuckySwatch").style.backgroundColor=colorHex;
+    $("dailyLuckyMeaning").textContent=data.horoscope?.luckyColorMeaning||"";
+    $("dailyLuckyUse").textContent=data.horoscope?.luckyColorUse||"";
     $("dailyContent").hidden=false; status.textContent="";
   }
 

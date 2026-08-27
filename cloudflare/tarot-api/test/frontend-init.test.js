@@ -114,3 +114,17 @@ test("Tarot reading shuffles before enabling card selection", async () => {
   assert.match(styles,/@keyframes shuffle-card/);
   assert.match(styles,/@media \(prefers-reduced-motion: reduce\)/);
 });
+
+test("lucky-color pages expose an accessible member result and selected-date tool",async()=>{
+  const [home,page,script]=await Promise.all([
+    readFile(new URL("tarot/index.html",repositoryRoot),"utf8"),
+    readFile(new URL("tarot/colors/index.html",repositoryRoot),"utf8"),
+    readFile(new URL("tarot/colors/colors.js",repositoryRoot),"utf8")
+  ]);
+  assert.match(home,/สำหรับคุณเท่านั้น/);
+  assert.match(home,/id="dailyLuckyColor"/);
+  assert.match(page,/id="colorDate"[^>]+required/);
+  assert.match(page,/id="colorResult"[^>]+aria-live="polite"/);
+  assert.match(script,/TarotPortal\.setLoading/);
+  assert.ok(script.includes("^#[0-9A-Fa-f]{6}$"));
+});

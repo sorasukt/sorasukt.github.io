@@ -59,6 +59,8 @@ GET /api/member/places/autocomplete?q=...
 
 ก่อนใช้งานครั้งแรก หน้าเว็บขอให้ผู้ใช้ยอมรับ Terms และ Privacy Policy เวอร์ชันปัจจุบัน สมาชิกบันทึกหลักฐานการยอมรับใน D1 ผ่าน `POST /api/member/consent` ส่วน `POST /api/usage` เก็บเฉพาะเหตุการณ์ใช้งานที่ผ่าน allowlist โดยไม่เก็บคำถามหรือข้อมูลที่กรอกซ้ำ ข้อมูลการใช้งาน ผลประจำวันที่หมดอายุ และ cache จะถูกลบทุกวันตาม cron และเก็บไม่เกิน 60 วัน
 
+เมื่อ Gemini ตอบ `429` Worker จะสลับโมเดลโดยอัตโนมัติตามลำดับ `GEMINI_MODEL` → `gemini-2.5-flash` → `gemini-2.5-flash-lite` → `gemini-3.5-flash` → `gemini-3.1-flash-lite` → `gemini-3.5-flash-lite` โดยตัดชื่อที่ซ้ำออก ข้อผิดพลาดชนิดอื่นจะไม่สลับโมเดลเพื่อป้องกันการส่งคำขอซ้ำโดยไม่จำเป็น หากทุกโมเดลเต็ม API จะตอบ `503` พร้อมรหัส `AI_CAPACITY_EXHAUSTED` และลิงก์สนับสนุนจาก `SUPPORT_URL`
+
 Session cookie เป็น `HttpOnly`, `Secure`, `SameSite=Lax` และ signed ฝั่ง Worker
 
 ## Abuse protection and validation

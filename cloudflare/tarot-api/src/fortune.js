@@ -1,9 +1,11 @@
 import {readJsonBody,RequestBodyError} from "./request.js";
-import {validIsoDate,validTime} from "./validation.js";
+import {validCalendarDate,validIsoDate,validTime} from "./validation.js";
 import {getMemberAiResult,saveMemberAiResult} from "./ai-cache.js";
+import {capacityError,generateGeminiJson,GeminiCapacityError,geminiCacheVersion} from "./gemini.js";
 
 const RESULT_SCHEMA={type:"object",additionalProperties:false,required:["title","summary","insights","reflection"],properties:{title:{type:"string"},summary:{type:"string"},insights:{type:"array",minItems:2,maxItems:4,items:{type:"string"}},reflection:{type:"string"}}};
 const NAMING_SCHEMA={type:"object",additionalProperties:false,required:["title","names","note"],properties:{title:{type:"string"},names:{type:"array",minItems:3,maxItems:6,items:{type:"object",additionalProperties:false,required:["name","meaning","tone"],properties:{name:{type:"string"},meaning:{type:"string"},tone:{type:"string"}}}},note:{type:"string"}}};
+const COLOR_SCHEMA={type:"object",additionalProperties:false,required:["title","colorName","hex","meaning","suggestions","reflection"],properties:{title:{type:"string"},colorName:{type:"string"},hex:{type:"string",pattern:"^#[0-9A-Fa-f]{6}$"},meaning:{type:"string"},suggestions:{type:"array",minItems:2,maxItems:4,items:{type:"string"}},reflection:{type:"string"}}};
 
 export async function handleFortune(request,env,headers,session=null,profile=null){
   const url=new URL(request.url);
@@ -22,10 +24,12 @@ export async function handleFortune(request,env,headers,session=null,profile=nul
     if(kind==='numbers')return numbers(body,env,headers,session,profile);
     if(kind==='naming')return naming(body,env,headers,session,profile);
     if(kind==='astrology')return astrology(body,env,headers,session,profile);
+    if(kind==='colors')return colors(body,env,headers,session,profile);
     return json({success:false,error:{code:"NOT_FOUND",message:"Not found"}},404,headers);
   }catch(error){
     const timeout=error?.name==='AbortError';
-    console.error('Fortune API failed',kind,error?.name||error?.message||'error');
+    console.error(JSON.stringify({message:'Fortune API failed',kind,error:error?.name||error?.message||'error'}));
+    if(error instanceof GeminiCapacityError)return json({success:false,error:capacityError(env)},503,headers);
     return json({success:false,error:{code:timeout?'AI_TIMEOUT':'AI_GENERATION_FAILED',message:timeout?'กำลังใช้เวลานานกว่าปกติ เราจะลองให้อีกครั้งอัตโนมัติ':'ไม่สามารถสร้างผลลัพธ์ได้ในขณะนี้'}},timeout?504:502,headers);
   }
 }
@@ -73,6 +77,15 @@ async function naming(body,env,headers,session,profile){
   return json({success:true,cached:generated.cached,result:generated.result},200,headers);
 }
 
+async function colors(body,env,headers,session,profile){
+  const date=validCalendarDate(typeof body.date==='string'?body.date.trim():'');
+  if(!date)return json({success:false,error:{code:'INVALID_DATE',message:'กรุณาระบุวันที่ให้ถูกต้อง'}},400,headers);
+  const context=memberContext(session,profile);
+  const prompt=`Create one auspicious-color-inspired reflection in natural Thai for the selected calendar date ${date}. ${context} Choose a familiar Thai color name and a valid six-digit hexadecimal color. Explain the symbolic theme and give practical, low-stakes ways to use or notice the color. Never claim the color guarantees luck, money, health, relationships, safety, or an outcome.`;
+  const generated=await generateCached(env,session,"fortune:colors:v1",{date,profile:profileInput(profile)},"You provide concise color symbolism for entertainment and self-reflection. Be warm and practical, never deterministic or supernaturally certain.",prompt,COLOR_SCHEMA);
+  return json({success:true,cached:generated.cached,date,result:generated.result},200,headers);
+}
+
 function memberContext(session,profile){
   if(!session)return 'The user is not signed in; use only the submitted input.';
   const bits=[];
@@ -86,24 +99,10 @@ function profileInput(profile){
   return {birthDate:profile.birth_date||"",birthTime:profile.birth_time||"",birthPlace:profile.birth_place||"",birthPlaceId:profile.birth_place_id||"",birthTimezone:profile.birth_timezone||profile.timezone||""};
 }
 async function generateCached(env,session,feature,input,system,prompt,schema){
-  const cached=await getMemberAiResult(env,session?.sub||"",feature,{model:env.GEMINI_MODEL||"gemini-3.6-flash",...input});
+  const cached=await getMemberAiResult(env,session?.sub||"",feature,{modelChain:geminiCacheVersion(env),...input});
   if(cached.cached)return {cached:true,result:cached.value};
-  const result=await generate(env,system,prompt,schema);
+  const {result}=await generateGeminiJson(env,{system,prompt,schema});
   await saveMemberAiResult(env,session?.sub||"",feature,cached.key,result);
   return {cached:false,result};
-}
-async function generate(env,system,prompt,schema){
-  const model=env.GEMINI_MODEL||'gemini-3.6-flash';
-  const endpoint=`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(env.GEMINI_API_KEY)}`;
-  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),40000);
-  try{
-    const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({systemInstruction:{parts:[{text:system}]},contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{responseMimeType:'application/json',responseJsonSchema:schema,maxOutputTokens:2048}}),signal:controller.signal});
-    if(!response.ok){console.error('Gemini fortune request failed',response.status);throw new Error('Gemini request failed');}
-    const raw=await response.json();
-    const text=raw?.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('')||'';
-    const result=JSON.parse(text);
-    if(!result||typeof result!=='object')throw new Error('Invalid Gemini result');
-    return result;
-  }finally{clearTimeout(timeout)}
 }
 function json(data,status,headers){return new Response(JSON.stringify(data),{status,headers})}

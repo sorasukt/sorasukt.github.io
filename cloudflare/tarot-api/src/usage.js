@@ -3,7 +3,7 @@ import {readJsonBody,RequestBodyError} from "./request.js";
 export const POLICY_VERSION="2026-08-27";
 
 const EVENTS=new Set(["page_view","policy_accepted","action_started","action_completed","action_failed"]);
-const FEATURES=new Set(["portal","daily","tarot","astrology","zodiac","numbers","naming","profile","place_search"]);
+const FEATURES=new Set(["portal","daily","tarot","astrology","zodiac","colors","numbers","naming","profile","place_search"]);
 const STATUSES=new Set(["started","completed","failed","cached"]);
 
 export function hasCurrentPolicy(request){return request.headers.get("X-Tarot-Policy-Version")===POLICY_VERSION}
