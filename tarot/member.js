@@ -99,9 +99,7 @@
   function setStatus(text){$("memberStatus").textContent=text||"";}
 
   window.addEventListener("DOMContentLoaded",()=>{
-    const signInButton=$("signInButton");
     const logoutButton=$("logoutButton");
-    signInButton.addEventListener("click",()=>runAuthAction(()=>window.SorasuktAuth.login(),signInButton,"กำลังเปิดหน้าลงชื่อใช้งาน…"));
     logoutButton.addEventListener("click",()=>runAuthAction(()=>window.SorasuktAuth.logout(),logoutButton,"กำลังออกจากระบบ…"));
     $("profileForm").addEventListener("submit",saveProfile);
     $("editProfile").addEventListener("click",()=>{$("profileForm").hidden=false;});
