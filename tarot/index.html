@@ -11,7 +11,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./style.css">
-  <link rel="stylesheet" href="/auth/auth0.css">
 </head>
 <body>
   <main class="shell">
@@ -19,7 +18,7 @@
       <a href="/" class="brand" aria-label="กลับหน้าแรก"><em>/</em>sorasukt</a>
       <div class="topbar-actions">
         <span class="counter" id="counter">0 / 5 selected</span>
-        <a class="auth-button" id="signInButton" href="/auth/sign-in/" style="text-decoration:none">ลงชื่อใช้งาน</a>
+        <button class="auth-button" id="signInButton" type="button">ลงชื่อใช้งาน</button>
         <button class="auth-user" id="userButton" type="button" hidden aria-label="บัญชีผู้ใช้">
           <img id="userAvatar" alt="" hidden>
           <span id="userName">บัญชี</span>
@@ -59,5 +58,8 @@
 
   <div class="sticky-action" id="stickyAction" hidden><button class="primary" id="revealButton">เปิดไพ่ทั้ง 5 ใบ</button></div>
   <div class="loading" id="loading" hidden role="status" aria-live="polite"><div class="loading-inner"><span class="loader"></span><p id="loadingText">กำลังพิจารณาคำถามของคุณ</p></div></div>
-  <script src="https://cdn.auth0.com/js/auth0-spa-js/2.4/auth0-spa-js.production.js"></script><script src="/auth/auth0-config.js"></script><script src="/auth/auth0-client.js"></script><script src="./member.js" defer></script><script src="./config.js"></script><script src="./app.js" defer></script>
+  <script src="https://cdn.auth0.com/js/auth0-spa-js/2.4/auth0-spa-js.production.js"></script>
+  <script src="./member.js" defer></script>
+  <script src="./config.js"></script>
+  <script src="./app.js" defer></script>
 </body></html>
