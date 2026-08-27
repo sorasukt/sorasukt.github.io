@@ -4,6 +4,13 @@
   const settings = () => window.SORASUKT_AUTH_CONFIG || {};
   const redirectUri = () => `${window.location.origin}/tarot/`;
 
+  function safeReturnTo(value) {
+    if (typeof value !== "string" || !value.startsWith("/") || value.startsWith("//")) {
+      return "/tarot/";
+    }
+    return value;
+  }
+
   function getClient() {
     if (client) return client;
     const config = settings();
@@ -34,7 +41,7 @@
     const params = new URLSearchParams(window.location.search);
     if (params.has("code") && params.has("state")) {
       const result = await auth.handleRedirectCallback();
-      const returnTo = result?.appState?.returnTo || "/tarot/";
+      const returnTo = safeReturnTo(result?.appState?.returnTo);
       window.history.replaceState({}, document.title, returnTo);
     }
     return auth;
@@ -59,9 +66,12 @@
     return fetch(input, { ...initOptions, headers });
   }
 
-  async function login() {
+  async function login(returnTo = "/tarot/") {
     return getClient().loginWithRedirect({
-      appState: { returnTo: window.location.pathname + window.location.search }
+      appState: { returnTo: safeReturnTo(returnTo) },
+      authorizationParams: {
+        redirect_uri: redirectUri()
+      }
     });
   }
 
