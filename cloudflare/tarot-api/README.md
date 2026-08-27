@@ -29,6 +29,8 @@ npx wrangler secret put GEMINI_API_KEY
 
 `GOOGLE_MAPS_API_KEY` เป็น optional ชั่วคราวและไม่บล็อก deployment หากยังไม่มีคีย์ การบันทึกวันเกิดและเวลาเกิดยังใช้งานได้ตามปกติ แต่ระบบค้นหา/ยืนยันสถานที่เกิดจะยังไม่พร้อมใช้งาน หากต้องการเปิดภายหลังให้รัน:
 
+ระหว่างนี้ให้เว้นช่องสถานที่เกิดในหน้า `ฉัน` ไว้ก่อน
+
 ```bash
 npx wrangler secret put GOOGLE_MAPS_API_KEY
 ```
