@@ -28,7 +28,7 @@
     const started=Date.now();void track("action_started",feature,"started");
     for(let attempt=0;attempt<2;attempt+=1){
       try{
-        const response=await api(path,{...options,headers,timeout:55000});
+        const response=await api(path,{...options,headers,timeout:65000});
         if(response.status===504&&attempt===0){await new Promise(resolve=>setTimeout(resolve,700));continue;}
         const data=await response.clone().json().catch(()=>null);
         void track(response.ok?"action_completed":"action_failed",feature,response.ok?(data?.cached?"cached":"completed"):"failed",Date.now()-started,{cached:Boolean(data?.cached),errorCode:data?.error?.code});
