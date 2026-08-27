@@ -4,22 +4,22 @@
     try{
       const me=await window.TarotPortal.api('/api/member/me');
       if(!me.ok){ $('#profileStatus').textContent='กรุณาลงชื่อใช้งานก่อนจัดการข้อมูลของคุณ'; $('#profileForm').hidden=true; return; }
-      const meData=await me.json();
-      const user=meData.user||{};
+      const meData=await me.json(); const user=meData.user||{};
       $('#accountSummary').hidden=false;
       $('#accountSummary').innerHTML=`<strong>${escapeHtml(user.name||user.nickname||'บัญชีของคุณ')}</strong>${user.email?`<br><span>${escapeHtml(user.email)}</span>`:''}`;
-      const r=await window.TarotPortal.api('/api/member/profile');
-      const data=await r.json();
+      const r=await window.TarotPortal.api('/api/member/profile'); const data=await r.json();
       if(!r.ok)throw new Error(data?.error?.message||'โหลดข้อมูลไม่สำเร็จ');
       $('#birthDate').value=data.profile?.birth_date||'';
       $('#birthTime').value=data.profile?.birth_time||'';
+      $('#birthPlace').value=data.profile?.birth_place||'';
       $('#profileStatus').textContent=data.profile?'ข้อมูลของคุณพร้อมใช้งาน':'เพิ่มวันเดือนปีเกิดเพื่อเปิดใช้ดวงประจำวัน';
     }catch(e){ $('#profileStatus').textContent=e?.message||'โหลดข้อมูลไม่สำเร็จ'; }
   }
   async function save(e){
     e.preventDefault(); const btn=$('#saveProfile'); btn.disabled=true; $('#profileStatus').textContent='กำลังบันทึก…';
     try{
-      const r=await window.TarotPortal.api('/api/member/profile',{method:'POST',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:JSON.stringify({birthDate:$('#birthDate').value,birthTime:$('#birthTime').value})});
+      const payload={birthDate:$('#birthDate').value,birthTime:$('#birthTime').value,birthPlace:$('#birthPlace').value};
+      const r=await window.TarotPortal.api('/api/member/profile',{method:'POST',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:JSON.stringify(payload)});
       const data=await r.json(); if(!r.ok)throw new Error(data?.error?.message||'บันทึกข้อมูลไม่สำเร็จ');
       $('#profileStatus').textContent='บันทึกข้อมูลแล้ว';
     }catch(e){ $('#profileStatus').textContent=e?.message||'บันทึกข้อมูลไม่สำเร็จ'; }finally{btn.disabled=false;}
