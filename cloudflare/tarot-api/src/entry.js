@@ -23,13 +23,23 @@ export default {
 
     if(!url.pathname.startsWith("/api/member/"))return tarotWorker.fetch(request,env,ctx);
 
-    const headers=baseHeaders(request,env);
     const origin=request.headers.get("Origin")||"";
-    const corsOrigin=headers.get("Access-Control-Allow-Origin")||"";
+    const corsOrigin=allowedOrigin(origin,env);
+
     if(request.method==="OPTIONS"){
-      if(!corsOrigin)return new Response(null,{status:403});
-      return new Response(null,{status:204,headers:{...Object.fromEntries(headers),"Access-Control-Allow-Methods":"GET, PUT, OPTIONS","Access-Control-Allow-Headers":"Content-Type","Access-Control-Allow-Credentials":"true","Access-Control-Max-Age":"86400"}});
+      if(!corsOrigin)return new Response(null,{status:403,headers:{"Cache-Control":"no-store","Vary":"Origin"}});
+      const preflightHeaders=new Headers();
+      preflightHeaders.set("Access-Control-Allow-Origin",corsOrigin);
+      preflightHeaders.set("Access-Control-Allow-Credentials","true");
+      preflightHeaders.set("Access-Control-Allow-Methods","GET, PUT, OPTIONS");
+      preflightHeaders.set("Access-Control-Allow-Headers","Content-Type");
+      preflightHeaders.set("Access-Control-Max-Age","86400");
+      preflightHeaders.set("Cache-Control","no-store");
+      preflightHeaders.set("Vary","Origin, Access-Control-Request-Method, Access-Control-Request-Headers");
+      return new Response(null,{status:204,headers:preflightHeaders});
     }
+
+    const headers=baseHeaders(request,env);
     if(origin&&!corsOrigin)return json({success:false,error:{code:"ORIGIN_NOT_ALLOWED",message:"Origin not allowed"}},403,headers);
 
     const session=await getSession(request,env);
@@ -42,21 +52,33 @@ export default {
       return json({success:true,user:{sub,name,nickname,email,picture}},200,headers);
     }
 
-    const response=await handleMember(request,env,headers,auth,DECK);
-    return response||json({success:false,error:{code:"NOT_FOUND",message:"Not found"}},404,headers);
+    try{
+      const response=await handleMember(request,env,headers,auth,DECK);
+      return response||json({success:false,error:{code:"NOT_FOUND",message:"Not found"}},404,headers);
+    }catch(error){
+      console.error("Member API failed",error?.message||error?.name||"error");
+      return json({success:false,error:{code:"MEMBER_API_ERROR",message:"ไม่สามารถบันทึกหรือโหลดข้อมูลสมาชิกได้ในขณะนี้"}},500,headers);
+    }
   }
 };
 
+function allowedOrigin(origin,env){
+  const allowed=(env.ALLOWED_ORIGINS||"https://sorasukt.com,https://www.sorasukt.com").split(",").map(x=>x.trim()).filter(Boolean);
+  return allowed.includes(origin)?origin:"";
+}
+
 function baseHeaders(request,env){
   const origin=request.headers.get("Origin")||"";
-  const allowed=(env.ALLOWED_ORIGINS||"https://sorasukt.com,https://www.sorasukt.com").split(",").map(x=>x.trim()).filter(Boolean);
-  const corsOrigin=allowed.includes(origin)?origin:"";
-  return new Headers({
-    "Content-Type":"application/json; charset=utf-8",
-    "Cache-Control":"no-store",
-    "Vary":"Origin",
-    ...(corsOrigin?{"Access-Control-Allow-Origin":corsOrigin,"Access-Control-Allow-Credentials":"true"}:{})
-  });
+  const corsOrigin=allowedOrigin(origin,env);
+  const headers=new Headers();
+  headers.set("Content-Type","application/json; charset=utf-8");
+  headers.set("Cache-Control","no-store");
+  headers.set("Vary","Origin");
+  if(corsOrigin){
+    headers.set("Access-Control-Allow-Origin",corsOrigin);
+    headers.set("Access-Control-Allow-Credentials","true");
+  }
+  return headers;
 }
 
 function json(data,status,headers){return new Response(JSON.stringify(data),{status,headers})}
