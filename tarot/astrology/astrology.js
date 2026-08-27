@@ -1,5 +1,5 @@
 (() => {
-  const $=id=>document.getElementById(id);
+  const $=selector=>document.querySelector(selector);
 
   async function hydrateFromMember(){
     try{const member=await window.TarotPortal.getMember();if(member?.profile?.birth_date&&!$('#astroBirthDate').value)$('#astroBirthDate').value=member.profile.birth_date;if(member?.profile?.birth_time&&!$('#astroBirthTime').value)$('#astroBirthTime').value=member.profile.birth_time;}catch{}
