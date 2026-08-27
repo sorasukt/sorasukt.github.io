@@ -59,9 +59,9 @@ async function createReading(){
     const endpoint=window.TAROT_CONFIG?.endpoint||"/api/tarot/reading";
     const res=await window.TarotPortal.ai("tarot",endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({question:state.question,language:"th",cards:state.selected.map(c=>({cardId:c.id,orientation:"upright"}))})});
     const data=await res.json().catch(()=>null);
-    if(!res.ok||!data?.success)throw new Error(data?.error?.message||"ไม่สามารถสร้างคำอ่านไพ่ได้");
+    if(!res.ok||!data?.success)throw window.TarotPortal.apiError(data,"ไม่สามารถสร้างคำอ่านไพ่ได้");
     renderReading(data.reading);
-  }catch(err){els.error.textContent=err?.message||"ยังเตรียมคำอ่านไม่ได้ กรุณาลองอีกครั้ง";els.error.hidden=false;els.error.focus();els.sticky.hidden=false;}
+  }catch(err){window.TarotPortal.renderError(els.error,err);els.error.focus();els.sticky.hidden=false;}
   finally{clearInterval(timer);showLoading(false)}
 }
 function renderReading(reading){

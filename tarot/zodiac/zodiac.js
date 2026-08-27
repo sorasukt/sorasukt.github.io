@@ -11,9 +11,9 @@
     window.TarotPortal.setLoading(result,'กำลังเตรียมคำอ่านราศีของคุณ');
     try{
       const r=await window.TarotPortal.ai('zodiac','/api/fortune/zodiac',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({birthDate})});
-      const d=await r.json();if(!r.ok)throw new Error(d?.error?.message||'ไม่สามารถวิเคราะห์ราศีได้');
+      const d=await r.json();if(!r.ok)throw window.TarotPortal.apiError(d,'ไม่สามารถวิเคราะห์ราศีได้');
       render(d.result||{});
-    }catch(err){result.innerHTML=`<h2>ยังวิเคราะห์ไม่ได้</h2><p>${esc(err?.message||'กรุณาลองใหม่อีกครั้ง')}</p>`;}
+    }catch(err){window.TarotPortal.renderError(result,err,{title:'ยังวิเคราะห์ไม่ได้'});}
     finally{window.TarotPortal.finishLoading(result);window.TarotPortal.setButtonBusy(button,false);result.focus({preventScroll:true});}
   });
   function render(x){result.innerHTML=`<h2>${esc(x.title||'คำอ่านราศีของคุณ')}</h2><p>${esc(x.summary||'')}</p>${(x.insights||[]).map(v=>`<p>• ${esc(v)}</p>`).join('')}<h3>คำถามสำหรับคิดต่อ</h3><p>${esc(x.reflection||'')}</p><p class="profile-note">ใช้ผลลัพธ์นี้เป็นมุมมองประกอบการทบทวนตัวเอง ไม่ใช่ข้อสรุปตายตัวเกี่ยวกับบุคลิกหรืออนาคต</p>`;}

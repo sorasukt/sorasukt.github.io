@@ -35,7 +35,7 @@
     const data=await r.json();
     delete status.dataset.loading;
     if(r.status===409&&data?.error?.code==="PROFILE_REQUIRED"){ if(authenticated)openBirthModal(); return; }
-    if(!r.ok){ status.textContent=data?.error?.message||"ไม่สามารถโหลดดวงวันนี้ได้"; return; }
+    if(!r.ok){ window.TarotPortal.renderError(status,window.TarotPortal.apiError(data,"ไม่สามารถโหลดดวงวันนี้ได้")); return; }
     $("dailyDate").textContent=data.date||"";
     $("dailyCard").textContent=data.card?.name||"";
     $("dailyTitle").textContent=data.horoscope?.title||"ดวงของคุณวันนี้";

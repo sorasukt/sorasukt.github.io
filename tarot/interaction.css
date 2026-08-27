@@ -7,6 +7,7 @@ button[aria-busy="true"]::before{content:"";display:inline-block;width:.9em;heig
 .result-spinner{display:block;flex:0 0 auto;width:28px;height:28px;border:3px solid #d7d7d7;border-top-color:#111;border-radius:50%;animation:tarot-spin .8s linear infinite}
 [data-loading="true"]::before{content:"";display:inline-block;width:1em;height:1em;margin-right:.6em;border:2px solid #aaa;border-top-color:#111;border-radius:50%;vertical-align:-.15em;animation:tarot-spin .8s linear infinite}
 .reading-error{margin:20px 0;padding:14px 16px;border:1px solid #e5a29e;border-radius:12px;background:#fff5f4;color:#7b1e18}
+.support-button{display:inline-flex;align-items:center;justify-content:center;margin-top:14px;padding:10px 16px;border:1px solid #111;border-radius:999px;background:#111;color:#fff!important;font-weight:600;text-decoration:none}.support-button:hover{background:#333}
 .policy-backdrop[hidden]{display:none!important}
 .policy-backdrop{position:fixed;inset:0;z-index:2000;display:grid;place-items:center;padding:20px;background:rgba(0,0,0,.48);overflow:auto}
 .policy-dialog{width:min(560px,100%);background:#fff;border-radius:28px;padding:30px;box-shadow:0 30px 90px rgba(0,0,0,.24)}

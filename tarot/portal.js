@@ -56,6 +56,23 @@
     else{button.disabled=false;button.setAttribute("aria-busy","false");button.textContent=button.dataset.idleLabel||button.textContent;delete button.dataset.idleLabel;}
   }
 
+  function apiError(data,fallback){
+    const error=new Error(data?.error?.message||fallback||"ไม่สามารถดำเนินการได้ในขณะนี้");
+    error.code=data?.error?.code||"REQUEST_FAILED";
+    const supportUrl=data?.error?.supportUrl;
+    if(typeof supportUrl==="string"&&/^https:\/\/([a-z0-9-]+\.)*stripe\.com\//i.test(supportUrl))error.supportUrl=supportUrl;
+    error.supportLabel=data?.error?.supportLabel||"สนับสนุนการพัฒนาระบบ";
+    return error;
+  }
+
+  function renderError(container,error,{title=""}={}){
+    if(!container)return;
+    container.replaceChildren();container.hidden=false;container.setAttribute("role","alert");container.setAttribute("aria-busy","false");
+    if(title&&container.tagName!=="P"){const heading=document.createElement("h2");heading.textContent=title;container.append(heading);}
+    const message=document.createElement(container.tagName==="P"?"span":"p");message.textContent=error?.message||"กรุณาลองใหม่อีกครั้ง";container.append(message);
+    if(error?.supportUrl){const separator=document.createElement("br");const link=document.createElement("a");link.className="support-button";link.href=error.supportUrl;link.target="_blank";link.rel="noopener noreferrer";link.textContent=error.supportLabel||"สนับสนุนเรา";container.append(separator,link);}
+  }
+
   async function getMember({refresh=false}={}){
     if(memberCache&&!refresh)return memberCache;
     if(memberRequest&&!refresh)return memberRequest;
@@ -173,7 +190,7 @@
     footer.innerHTML=`<div class="footer-brand"><a href="/tarot/" class="footer-logo"><em>/</em>sorasukt Tarot</a><p>พื้นที่สำหรับการสะท้อนมุมมองผ่านไพ่ โหราศาสตร์ และเครื่องมือเชิงสัญลักษณ์ ผลลัพธ์มีไว้เพื่อความบันเทิงและการไตร่ตรอง ไม่ใช่คำแนะนำจากผู้เชี่ยวชาญ</p></div><div class="footer-links"><div><strong>บริการ</strong><a href="/tarot/">วันนี้</a><a href="/tarot/reading/">เปิดไพ่</a><a href="/tarot/astrology/">ดวงดาว</a></div><div><strong>ข้อมูล</strong><a href="/tarot/about/">เกี่ยวกับบริการ</a><a href="/privacy/">นโยบายความเป็นส่วนตัว</a><a href="/terms/">ข้อกำหนดการใช้งาน</a></div></div><div class="footer-bottom"><span>© ${new Date().getFullYear()} sorasukt</span><span>โปรดใช้วิจารณญาณในการตีความผลลัพธ์</span></div>`;
   }
 
-  window.TarotPortal={api,ai,getMember,clearMemberCache,setLoading,finishLoading,setButtonBusy,track,policyAccepted};
+  window.TarotPortal={api,ai,apiError,renderError,getMember,clearMemberCache,setLoading,finishLoading,setButtonBusy,track,policyAccepted};
   ensureEnhancementStyles();
   addEventListener("DOMContentLoaded",()=>{initNavigation();initFooter();initAccount();initConsent();});
 })();

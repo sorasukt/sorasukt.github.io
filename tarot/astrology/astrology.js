@@ -14,11 +14,11 @@
     window.TarotPortal.setLoading(box,'กำลังเตรียมภาพรวมของคุณ กรุณารอสักครู่');
     try{
       const r=await window.TarotPortal.ai('astrology','/api/fortune/astrology',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({birthDate,birthTime})});
-      const d=await r.json();if(!r.ok)throw new Error(d?.error?.message||'ไม่สามารถวิเคราะห์ได้');
+      const d=await r.json();if(!r.ok)throw window.TarotPortal.apiError(d,'ไม่สามารถวิเคราะห์ได้');
       const x=d.result||{};
       box.innerHTML=`<h2>${escapeHtml(x.title||'ภาพรวมของคุณ')}</h2><p>${escapeHtml(x.summary||'')}</p>${(x.insights||[]).map(v=>`<p>• ${escapeHtml(v)}</p>`).join('')}<h3>คำถามสำหรับคิดต่อ</h3><p>${escapeHtml(x.reflection||'')}</p><button id="astroDeep" type="button">ดูเชิงลึกสำหรับสมาชิก</button><p class="profile-note">ใช้ภาพรวมนี้เพื่อสำรวจมุมมองและทบทวนตัวเอง ไม่ใช่การยืนยันเหตุการณ์ในอนาคต</p>`;
       $('#astroDeep').onclick=loadDeep;
-    }catch(err){box.innerHTML=`<h2>ยังวิเคราะห์ไม่ได้</h2><p>${escapeHtml(err?.message||'กรุณาลองอีกครั้ง')}</p>`;}
+    }catch(err){window.TarotPortal.renderError(box,err,{title:'ยังวิเคราะห์ไม่ได้'});}
     finally{window.TarotPortal.finishLoading(box);window.TarotPortal.setButtonBusy(button,false);box.focus({preventScroll:true});}
   });
 
@@ -32,10 +32,10 @@
       const r=await window.TarotPortal.ai('astrology','/api/member/astrology');
       const data=await r.json();
       if(r.status===409&&data?.error?.code==='PROFILE_REQUIRED'){box.innerHTML=`<h2>ต้องมีข้อมูลเกิดก่อน</h2><p>${escapeHtml(data.error.message)}</p><p><a class="deep-button" href="../me/">ไปที่หน้า ฉัน</a></p>`;return;}
-      if(!r.ok)throw new Error(data?.error?.message||'ไม่สามารถอ่านเชิงลึกได้');
+      if(!r.ok)throw window.TarotPortal.apiError(data,'ไม่สามารถอ่านเชิงลึกได้');
       const x=data.reading||{};
       box.innerHTML=`<h2>${escapeHtml(x.title||'การอ่านเชิงลึก')}</h2><p>${escapeHtml(x.overview||'')}</p><h3>จุดแข็ง</h3><p>${(x.strengths||[]).map(v=>'• '+escapeHtml(v)).join('<br>')}</p><h3>พื้นที่สำหรับเติบโต</h3><p>${(x.growth||[]).map(v=>'• '+escapeHtml(v)).join('<br>')}</p><h3>ความสัมพันธ์</h3><p>${escapeHtml(x.relationships||'')}</p><h3>คำถามสำหรับคิดต่อ</h3><p>${escapeHtml(x.reflection||'')}</p><p class="profile-note">การอ่านนี้เป็นมุมมองเชิงสัญลักษณ์เพื่อการทบทวนตัวเอง</p>`;
-    }catch(e){box.innerHTML=`<h2>ยังอ่านเชิงลึกไม่ได้</h2><p>${escapeHtml(e?.message||'กรุณาลองอีกครั้ง')}</p>`;}
+    }catch(e){window.TarotPortal.renderError(box,e,{title:'ยังอ่านเชิงลึกไม่ได้'});}
     finally{window.TarotPortal.finishLoading(box);box.focus({preventScroll:true});}
   }
   function escapeHtml(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
