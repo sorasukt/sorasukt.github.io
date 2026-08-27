@@ -1,6 +1,6 @@
 (() => {
   const API = "https://api.sorasukt.com";
-  const POLICY_VERSION = "2026-08-27";
+  const POLICY_VERSION = "2026-08-28-payments1";
   const POLICY_KEY = "sorasukt_tarot_policy_version";
   const ANONYMOUS_KEY = "sorasukt_tarot_anonymous_id";
   const $ = id => document.getElementById(id);
@@ -60,7 +60,7 @@
     const error=new Error(data?.error?.message||fallback||"ไม่สามารถดำเนินการได้ในขณะนี้");
     error.code=data?.error?.code||"REQUEST_FAILED";
     const supportUrl=data?.error?.supportUrl;
-    if(typeof supportUrl==="string"&&/^https:\/\/([a-z0-9-]+\.)*stripe\.com\//i.test(supportUrl))error.supportUrl=supportUrl;
+    if(typeof supportUrl==="string"&&(/^https:\/\/([a-z0-9-]+\.)*stripe\.com\//i.test(supportUrl)||supportUrl==="https://sorasukt.com/tarot/support/"))error.supportUrl=supportUrl;
     error.supportLabel=data?.error?.supportLabel||"สนับสนุนการพัฒนาระบบ";
     return error;
   }
@@ -187,10 +187,10 @@
   function initFooter(){
     let footer=document.querySelector('footer.footer');
     if(!footer){footer=document.createElement('footer');footer.className='footer portal-footer';document.body.append(footer);}else footer.classList.add('portal-footer');
-    footer.innerHTML=`<div class="footer-brand"><a href="/tarot/" class="footer-logo"><em>/</em>sorasukt Tarot</a><p>พื้นที่สำหรับการสะท้อนมุมมองผ่านไพ่ โหราศาสตร์ และเครื่องมือเชิงสัญลักษณ์ ผลลัพธ์มีไว้เพื่อความบันเทิงและการไตร่ตรอง ไม่ใช่คำแนะนำจากผู้เชี่ยวชาญ</p></div><div class="footer-links"><div><strong>บริการ</strong><a href="/tarot/">วันนี้</a><a href="/tarot/reading/">เปิดไพ่</a><a href="/tarot/astrology/">ดวงดาว</a></div><div><strong>ข้อมูล</strong><a href="/tarot/about/">เกี่ยวกับบริการ</a><a href="/privacy/">นโยบายความเป็นส่วนตัว</a><a href="/terms/">ข้อกำหนดการใช้งาน</a></div></div><div class="footer-bottom"><span>© ${new Date().getFullYear()} sorasukt</span><span>โปรดใช้วิจารณญาณในการตีความผลลัพธ์</span></div>`;
+    footer.innerHTML=`<div class="footer-brand"><a href="/tarot/" class="footer-logo"><em>/</em>sorasukt Tarot</a><p>พื้นที่สำหรับการสะท้อนมุมมองผ่านไพ่ โหราศาสตร์ และเครื่องมือเชิงสัญลักษณ์ ผลลัพธ์มีไว้เพื่อความบันเทิงและการไตร่ตรอง ไม่ใช่คำแนะนำจากผู้เชี่ยวชาญ</p></div><div class="footer-links"><div><strong>บริการ</strong><a href="/tarot/">วันนี้</a><a href="/tarot/reading/">เปิดไพ่</a><a href="/tarot/astrology/">ดวงดาว</a><a href="/tarot/membership/">สมาชิกพิเศษ</a></div><div><strong>ข้อมูล</strong><a href="/tarot/support/">สนับสนุนเรา</a><a href="/tarot/about/">เกี่ยวกับบริการ</a><a href="/privacy/">นโยบายความเป็นส่วนตัว</a><a href="/terms/">ข้อกำหนดการใช้งาน</a></div></div><div class="footer-bottom"><span>© ${new Date().getFullYear()} sorasukt</span><span>โปรดใช้วิจารณญาณในการตีความผลลัพธ์</span></div>`;
   }
 
-  window.TarotPortal={api,ai,apiError,renderError,getMember,clearMemberCache,setLoading,finishLoading,setButtonBusy,track,policyAccepted};
+  window.TarotPortal={api,ai,apiError,renderError,getMember,clearMemberCache,setLoading,finishLoading,setButtonBusy,track,policyAccepted,policyVersion:POLICY_VERSION};
   ensureEnhancementStyles();
   addEventListener("DOMContentLoaded",()=>{initNavigation();initFooter();initAccount();initConsent();});
 })();

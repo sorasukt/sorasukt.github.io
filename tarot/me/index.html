@@ -14,6 +14,7 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../portal.css">
 <link rel="stylesheet" href="../interaction.css">
+<link rel="stylesheet" href="../billing.css">
 </head>
 <body>
 <div class="portal">
@@ -28,6 +29,7 @@
 <a href="../colors/">สีมงคล</a>
 <a href="../numbers/">ตัวเลข</a>
 <a href="../naming/">ตั้งชื่อ</a>
+<a href="../membership/">สมาชิกพิเศษ</a>
 </nav>
 <div class="portal-account">
 <button id="portalSignIn" type="button">ลงชื่อใช้งาน</button>
@@ -91,6 +93,17 @@
 </form>
 <div class="profile-status" id="profileStatus" role="status" aria-live="polite">กำลังโหลดข้อมูล…</div>
 </section>
+<section class="tool-card billing-status" id="accountMembership">
+<div>
+<p class="eyebrow">TAROT FOR YOUR DAILY</p>
+<h2 id="accountMembershipTitle">กำลังตรวจสอบสมาชิกพิเศษ…</h2>
+<p id="accountMembershipDetail"></p>
+</div>
+<div>
+<a class="deep-button" href="../membership/">ดูแผนสมาชิก</a>
+<button class="billing-action" id="accountPortalButton" type="button" hidden>Customer Portal</button>
+</div>
+</section>
 <section class="data-usage-card">
 <p class="eyebrow">YOUR DATA</p>
 <h2>ข้อมูลนี้ถูกใช้ที่ไหน</h2>
@@ -113,7 +126,7 @@
 <footer class="footer">
 </footer>
 </div>
-<script src="../portal.js?v=20260828-fallback2">
+<script src="../portal.js?v=20260828-payments1">
 </script>
 <script src="./me.js?v=20260827-ux1">
 </script>

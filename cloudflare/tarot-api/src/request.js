@@ -8,6 +8,15 @@ export class RequestBodyError extends Error {
 }
 
 export async function readJsonBody(request, maxBytes = 12_000) {
+  const text=await readTextBody(request,maxBytes);
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw invalidJson();
+  }
+}
+
+export async function readTextBody(request, maxBytes = 12_000) {
   const declaredLength = Number(request.headers.get("Content-Length") || 0);
   if (Number.isFinite(declaredLength) && declaredLength > maxBytes) {
     throw tooLarge();
@@ -42,11 +51,7 @@ export async function readJsonBody(request, maxBytes = 12_000) {
     offset += chunk.byteLength;
   }
 
-  try {
-    return JSON.parse(new TextDecoder().decode(bytes));
-  } catch {
-    throw invalidJson();
-  }
+  return new TextDecoder().decode(bytes);
 }
 
 function tooLarge() {
