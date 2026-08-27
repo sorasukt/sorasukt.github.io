@@ -31,7 +31,7 @@ export default {
       const preflightHeaders=new Headers();
       preflightHeaders.set("Access-Control-Allow-Origin",corsOrigin);
       preflightHeaders.set("Access-Control-Allow-Credentials","true");
-      preflightHeaders.set("Access-Control-Allow-Methods","GET, PUT, OPTIONS");
+      preflightHeaders.set("Access-Control-Allow-Methods","GET, POST, PUT, OPTIONS");
       preflightHeaders.set("Access-Control-Allow-Headers","Content-Type");
       preflightHeaders.set("Access-Control-Max-Age","86400");
       preflightHeaders.set("Cache-Control","no-store");
