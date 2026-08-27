@@ -28,11 +28,14 @@ export default {
       const corsOrigin=allowedOrigin(origin,env);
       const headers=baseHeaders(request,env);
       if(origin&&!corsOrigin)return json({success:false,error:{code:"ORIGIN_NOT_ALLOWED",message:"Origin not allowed"}},403,headers);
-      let session=null;
-      try{session=await getSession(request,env)}catch(error){console.error(JSON.stringify({message:"Optional Tarot member context failed",error:error?.message||"error"}))}
+      let session=null,profile=null;
+      try{
+        session=await getSession(request,env);
+        if(session&&env.DB)profile=await loadProfile(env,session.sub);
+      }catch(error){console.error(JSON.stringify({message:"Optional Tarot member context failed",error:error?.message||"error"}))}
       const limit=await enforceAiRateLimit(request,env,session?.sub||"");
       if(!limit.allowed)return limited(limit,headers);
-      return tarotWorker.fetch(request,env,ctx);
+      return tarotWorker.fetch(request,env,ctx,{session,profile});
     }
 
     if(url.pathname.startsWith('/api/fortune/')){

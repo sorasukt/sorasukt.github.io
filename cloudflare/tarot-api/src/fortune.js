@@ -1,5 +1,6 @@
 import {readJsonBody,RequestBodyError} from "./request.js";
 import {validIsoDate,validTime} from "./validation.js";
+import {getMemberAiResult,saveMemberAiResult} from "./ai-cache.js";
 
 const RESULT_SCHEMA={type:"object",additionalProperties:false,required:["title","summary","insights","reflection"],properties:{title:{type:"string"},summary:{type:"string"},insights:{type:"array",minItems:2,maxItems:4,items:{type:"string"}},reflection:{type:"string"}}};
 const NAMING_SCHEMA={type:"object",additionalProperties:false,required:["title","names","note"],properties:{title:{type:"string"},names:{type:"array",minItems:3,maxItems:6,items:{type:"object",additionalProperties:false,required:["name","meaning","tone"],properties:{name:{type:"string"},meaning:{type:"string"},tone:{type:"string"}}}},note:{type:"string"}}};
@@ -34,8 +35,8 @@ async function zodiac(body,env,headers,session,profile){
   if(!birthDate)return json({success:false,error:{code:'INVALID_BIRTH_DATE',message:'กรุณาระบุวันเดือนปีเกิด'}},400,headers);
   const context=memberContext(session,profile);
   const prompt=`Create a concise zodiac-inspired reflective reading in natural Thai for birth date ${birthDate}. ${context} Explain the sun-sign theme without presenting personality as fixed or fate as certain. Give practical reflective insights for everyday life.`;
-  const result=await generate(env,"You provide grounded zodiac-inspired reflection for entertainment and self-reflection. Never claim certainty or supernatural fact.",prompt,RESULT_SCHEMA);
-  return json({success:true,result},200,headers);
+  const generated=await generateCached(env,session,"fortune:zodiac:v1",{birthDate,profile:profileInput(profile)},"You provide grounded zodiac-inspired reflection for entertainment and self-reflection. Never claim certainty or supernatural fact.",prompt,RESULT_SCHEMA);
+  return json({success:true,cached:generated.cached,result:generated.result},200,headers);
 }
 
 async function astrology(body,env,headers,session,profile){
@@ -45,8 +46,8 @@ async function astrology(body,env,headers,session,profile){
   const birthTime=suppliedTime||profile?.birth_time||'';
   const context=memberContext(session,profile);
   const prompt=`Create a grounded astrology-inspired overview in natural Thai using birth date ${birthDate}${birthTime?`, birth time ${birthTime}`:''}. ${context} Do not invent exact planets, houses, ascendant, aspects, or astronomical positions because no ephemeris calculation is provided. Focus on reflective themes, strengths, tensions, and one useful reflection question.`;
-  const result=await generate(env,"You provide astrology-inspired reflection, never fabricated astronomical calculations and never deterministic predictions.",prompt,RESULT_SCHEMA);
-  return json({success:true,result},200,headers);
+  const generated=await generateCached(env,session,"fortune:astrology:v1",{birthDate,birthTime,profile:profileInput(profile)},"You provide astrology-inspired reflection, never fabricated astronomical calculations and never deterministic predictions.",prompt,RESULT_SCHEMA);
+  return json({success:true,cached:generated.cached,result:generated.result},200,headers);
 }
 
 async function numbers(body,env,headers,session,profile){
@@ -58,8 +59,8 @@ async function numbers(body,env,headers,session,profile){
   if(!digits)return json({success:false,error:{code:'INVALID_VALUE',message:'ไม่พบตัวเลขสำหรับการวิเคราะห์'}},400,headers);
   const context=memberContext(session,profile);
   const prompt=`Create a concise numerology-style reflective interpretation in natural Thai. Type: ${type}. User value: ${value}. Digits: ${digits}. ${context} Discuss symbolic themes only. Do not imply guaranteed luck, financial outcomes, safety, legal effects, or objective predictive power.`;
-  const result=await generate(env,"You provide numerology-inspired symbolic reflection for entertainment. Be specific but never deterministic.",prompt,RESULT_SCHEMA);
-  return json({success:true,result},200,headers);
+  const generated=await generateCached(env,session,"fortune:numbers:v1",{type,value,digits,profile:profileInput(profile)},"You provide numerology-inspired symbolic reflection for entertainment. Be specific but never deterministic.",prompt,RESULT_SCHEMA);
+  return json({success:true,cached:generated.cached,result:generated.result},200,headers);
 }
 
 async function naming(body,env,headers,session,profile){
@@ -68,8 +69,8 @@ async function naming(body,env,headers,session,profile){
   const purpose=typeof body.purpose==='string'?body.purpose.trim().slice(0,80):'';
   const context=memberContext(session,profile);
   const prompt=`Suggest 5 original name ideas in natural Thai or internationally readable style. Desired tone: ${tone}. Seed or preferred sound: ${seed||'none'}. Purpose/context: ${purpose||'general personal naming'}. ${context} Explain each name briefly. Avoid claims that a name guarantees luck, wealth, health, relationships, or destiny. Do not imitate trademarks or famous people.`;
-  const result=await generate(env,"You are a thoughtful naming assistant using symbolic and linguistic inspiration. Names are suggestions, not deterministic fortune claims.",prompt,NAMING_SCHEMA);
-  return json({success:true,result},200,headers);
+  const generated=await generateCached(env,session,"fortune:naming:v1",{tone,seed,purpose,profile:profileInput(profile)},"You are a thoughtful naming assistant using symbolic and linguistic inspiration. Names are suggestions, not deterministic fortune claims.",prompt,NAMING_SCHEMA);
+  return json({success:true,cached:generated.cached,result:generated.result},200,headers);
 }
 
 function memberContext(session,profile){
@@ -79,6 +80,17 @@ function memberContext(session,profile){
   if(profile?.birth_time)bits.push(`saved birth time ${profile.birth_time}`);
   if(profile?.birth_place)bits.push(`saved birth place ${profile.birth_place}`);
   return bits.length?`The signed-in member also has ${bits.join(', ')}; use this only as secondary context when relevant.`:'The user is signed in but has no additional saved birth profile context.';
+}
+function profileInput(profile){
+  if(!profile)return null;
+  return {birthDate:profile.birth_date||"",birthTime:profile.birth_time||"",birthPlace:profile.birth_place||"",birthPlaceId:profile.birth_place_id||"",birthTimezone:profile.birth_timezone||profile.timezone||""};
+}
+async function generateCached(env,session,feature,input,system,prompt,schema){
+  const cached=await getMemberAiResult(env,session?.sub||"",feature,{model:env.GEMINI_MODEL||"gemini-3.6-flash",...input});
+  if(cached.cached)return {cached:true,result:cached.value};
+  const result=await generate(env,system,prompt,schema);
+  await saveMemberAiResult(env,session?.sub||"",feature,cached.key,result);
+  return {cached:false,result};
 }
 async function generate(env,system,prompt,schema){
   const model=env.GEMINI_MODEL||'gemini-3.6-flash';

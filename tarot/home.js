@@ -6,14 +6,17 @@
     const status=$("memberStatus"), shell=$("dailyMember"), guest=$("dailyGuest");
     closeBirthModal();
     try{
-      const me=await window.TarotPortal.api("/api/member/me");
-      authenticated=me.ok;
+      const member=await window.TarotPortal.getMember();
+      authenticated=Boolean(member?.success);
       if(!authenticated){ shell.hidden=true; guest.hidden=false; closeBirthModal(); return; }
       shell.hidden=false; guest.hidden=true;
-
-      const profileResponse=await window.TarotPortal.api("/api/member/profile");
-      const profileData=await profileResponse.json();
-      if(profileResponse.ok&&!profileData.profile){ openBirthModal(); status.textContent="เพิ่มวันเดือนปีเกิดเพื่อเริ่มดวงประจำวันของคุณ"; return; }
+      const profile=member.profile;
+      if(profile?.birth_date){
+        $("quickBirthDate").value=profile.birth_date;
+        $("modalBirthDate").value=profile.birth_date;
+        $("modalBirthTime").value=profile.birth_time||"";
+      }
+      if(!profile){ openBirthModal(); status.textContent="เพิ่มวันเดือนปีเกิดเพื่อเริ่มดวงประจำวันของคุณ"; return; }
 
       closeBirthModal();
       await loadDaily();
@@ -62,6 +65,8 @@
     try{
       const r=await window.TarotPortal.api("/api/member/profile",{method:"POST",headers:{"Content-Type":"text/plain;charset=UTF-8"},body:JSON.stringify({birthDate,birthTime})});
       const data=await r.json(); if(!r.ok)throw new Error(data?.error?.message||"บันทึกข้อมูลไม่สำเร็จ");
+      window.TarotPortal.clearMemberCache();
+      $("quickBirthDate").value=birthDate;
       closeBirthModal(); $("memberStatus").textContent=""; await loadDaily();
     }catch(e){status.textContent=e?.message||"บันทึกข้อมูลไม่สำเร็จ";}finally{button.disabled=false;}
   }

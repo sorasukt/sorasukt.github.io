@@ -1,6 +1,7 @@
-import {autocompletePlaces,resolvePlace} from "./google-places.js";
+import {autocompletePlaces,resolvePlace} from "./geocoding.js";
 import {readJsonBody,RequestBodyError} from "./request.js";
 import {validIsoDate,validTime} from "./validation.js";
+import {getMemberAiResult,saveMemberAiResult} from "./ai-cache.js";
 
 const DAILY_SCHEMA={type:"object",additionalProperties:false,required:["title","summary","energy","focus","avoid","advice"],properties:{title:{type:"string"},summary:{type:"string"},energy:{type:"string"},focus:{type:"string"},avoid:{type:"string"},advice:{type:"string"}}};
 const ASTRO_SCHEMA={type:"object",additionalProperties:false,required:["title","overview","strengths","growth","relationships","reflection"],properties:{title:{type:"string"},overview:{type:"string"},strengths:{type:"array",minItems:2,maxItems:4,items:{type:"string"}},growth:{type:"array",minItems:2,maxItems:4,items:{type:"string"}},relationships:{type:"string"},reflection:{type:"string"}}};
@@ -43,11 +44,13 @@ async function saveProfile(request,env,headers,sub){
 }
 
 async function getAstrology(env,headers,sub){
-  if(!env.GEMINI_API_KEY)return json({success:false,error:{code:"SERVER_CONFIG_ERROR",message:"AI service is not configured"}},500,headers);
   const p=await env.DB.prepare("SELECT birth_date,birth_time,birth_place,birth_lat,birth_lng,birth_timezone FROM member_profiles WHERE user_sub=?").bind(sub).first();
   if(!p)return json({success:false,error:{code:"PROFILE_REQUIRED",message:"กรุณาเพิ่มวันเดือนปีเกิดในหน้า ฉัน ก่อนดูแบบเชิงลึก"}},409,headers);
+  const cached=await getMemberAiResult(env,sub,"member:astrology:v1",{model:env.GEMINI_MODEL||"gemini-3.6-flash",birthDate:p.birth_date,birthTime:p.birth_time||"",birthPlace:p.birth_place||"",birthLat:p.birth_lat??null,birthLng:p.birth_lng??null,birthTimezone:p.birth_timezone||""});
+  if(cached.cached)return json({success:true,cached:true,reading:cached.value},200,headers);
+  if(!env.GEMINI_API_KEY)return json({success:false,error:{code:"SERVER_CONFIG_ERROR",message:"AI service is not configured"}},500,headers);
   const prompt=`Create a deeper reflective astrology-style profile in natural Thai using: birth date ${p.birth_date}, birth time ${p.birth_time||"not provided"}, birth place ${p.birth_place||"not provided"}, coordinates ${p.birth_lat??"not provided"}, ${p.birth_lng??"not provided"}, timezone ${p.birth_timezone||"not provided"}. Do not invent exact planetary placements, houses, ascendant, or astronomical calculations. Focus on themes, strengths, growth areas, relationships, and one reflection question.`;
-  try{return json({success:true,reading:await generateStructured(env,"You provide grounded astrology-inspired reflective guidance. Never claim astronomical positions that were not calculated. Never present fate as certain.",prompt,ASTRO_SCHEMA)},200,headers)}catch(error){const t=error?.name==="AbortError";return json({success:false,error:{code:t?"AI_TIMEOUT":"AI_GENERATION_FAILED",message:"ไม่สามารถสร้างการอ่านเชิงลึกได้ในขณะนี้"}},t?504:502,headers)}
+  try{const reading=await generateStructured(env,"You provide grounded astrology-inspired reflective guidance. Never claim astronomical positions that were not calculated. Never present fate as certain.",prompt,ASTRO_SCHEMA);await saveMemberAiResult(env,sub,"member:astrology:v1",cached.key,reading);return json({success:true,cached:false,reading},200,headers)}catch(error){const t=error?.name==="AbortError";return json({success:false,error:{code:t?"AI_TIMEOUT":"AI_GENERATION_FAILED",message:"ไม่สามารถสร้างการอ่านเชิงลึกได้ในขณะนี้"}},t?504:502,headers)}
 }
 
 async function getDaily(env,headers,sub,deck){

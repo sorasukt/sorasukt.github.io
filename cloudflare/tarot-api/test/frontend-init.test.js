@@ -10,7 +10,10 @@ function fakeElement() {
     hidden: false,
     value: "",
     textContent: "",
+    innerHTML: "",
+    classList: { add() {}, remove() {} },
     addEventListener() {},
+    focus() {},
     querySelector() { return fakeElement(); }
   };
 }
@@ -23,6 +26,12 @@ function browserContext(member = null) {
       if (!elements.has(selector)) elements.set(selector, fakeElement());
       return elements.get(selector);
     },
+    getElementById(id) {
+      const selector = `#${id}`;
+      if (!elements.has(selector)) elements.set(selector, fakeElement());
+      return elements.get(selector);
+    },
+    body: { classList: { add() {}, remove() {} } },
     addEventListener() {}
   };
   const context = {
@@ -32,7 +41,8 @@ function browserContext(member = null) {
     Date,
     document,
     Intl,
-    location: { assign() {}, href: "https://sorasukt.com/tarot/me/" },
+    location: { assign() {}, href: "https://sorasukt.com/tarot/me/", origin: "https://sorasukt.com" },
+    requestAnimationFrame(handler) { handler(); },
     setTimeout,
     window: {
       TarotPortal: {
@@ -71,4 +81,21 @@ test("Astrology script binds its form without a selector error", async () => {
   const fixture = browserContext(null);
   await assert.doesNotReject(loadScript("tarot/astrology/astrology.js", fixture.context));
   assert.equal(fixture.ready.length, 1);
+});
+
+test("Zodiac form hydrates a signed-in member birth date", async () => {
+  const fixture = browserContext({success:true,profile:{birth_date:"1991-08-12"}});
+  await loadScript("tarot/zodiac/zodiac.js", fixture.context);
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(fixture.elements.get("#zodiacBirthDate").value,"1991-08-12");
+});
+
+test("Home uses member context to hydrate saved birth data", async () => {
+  const fixture = browserContext({success:true,profile:{birth_date:"1991-08-12",birth_time:"07:45"}});
+  await loadScript("tarot/home.js", fixture.context);
+  assert.equal(fixture.ready.length,1);
+  fixture.ready[0]();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(fixture.elements.get("#quickBirthDate").value,"1991-08-12");
+  assert.equal(fixture.elements.get("#modalBirthTime").value,"07:45");
 });
