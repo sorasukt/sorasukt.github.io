@@ -1,5 +1,5 @@
 const DEFAULT_MODEL="gemini-3.6-flash";
-const RATE_LIMIT_FALLBACKS=["gemini-2.5-flash","gemini-2.5-flash-lite","gemini-3.5-flash"];
+const RATE_LIMIT_FALLBACKS=["gemini-2.5-flash","gemini-2.5-flash-lite","gemini-3.5-flash","gemini-3.1-flash-lite","gemini-3.5-flash-lite"];
 
 export class GeminiCapacityError extends Error{
   constructor(){super("All Gemini model quotas are exhausted");this.name="GeminiCapacityError";this.code="AI_CAPACITY_EXHAUSTED"}

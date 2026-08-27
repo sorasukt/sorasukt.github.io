@@ -20,13 +20,13 @@ test("429 falls back through the requested Gemini model order",async()=>{
   }finally{globalThis.fetch=originalFetch}
 });
 
-test("Gemini 3.5 Flash is the final fallback and exhaustion is explicit",async()=>{
+test("Gemini 3.5 Flash Lite is the final fallback and exhaustion is explicit",async()=>{
   const originalFetch=globalThis.fetch;
   const models=[];
   globalThis.fetch=async url=>{models.push(new URL(url).pathname.match(/models\/([^:]+)/)?.[1]);return new Response(null,{status:429})};
   try{
     await assert.rejects(generateGeminiJson({GEMINI_API_KEY:"test",GEMINI_MODEL:"gemini-3.6-flash"},options),GeminiCapacityError);
-    assert.deepEqual(models,["gemini-3.6-flash","gemini-2.5-flash","gemini-2.5-flash-lite","gemini-3.5-flash"]);
+    assert.deepEqual(models,["gemini-3.6-flash","gemini-2.5-flash","gemini-2.5-flash-lite","gemini-3.5-flash","gemini-3.1-flash-lite","gemini-3.5-flash-lite"]);
   }finally{globalThis.fetch=originalFetch}
 });
 
@@ -39,7 +39,7 @@ test("non-429 upstream errors do not consume fallback capacity",async()=>{
 });
 
 test("duplicate configured models are removed and capacity response includes Stripe support",()=>{
-  assert.deepEqual(geminiModelChain({GEMINI_MODEL:"gemini-2.5-flash"}),["gemini-2.5-flash","gemini-2.5-flash-lite","gemini-3.5-flash"]);
+  assert.deepEqual(geminiModelChain({GEMINI_MODEL:"gemini-2.5-flash"}),["gemini-2.5-flash","gemini-2.5-flash-lite","gemini-3.5-flash","gemini-3.1-flash-lite","gemini-3.5-flash-lite"]);
   const error=capacityError({SUPPORT_URL:"https://buy.stripe.com/example"});
   assert.equal(error.code,"AI_CAPACITY_EXHAUSTED");
   assert.equal(error.supportUrl,"https://buy.stripe.com/example");

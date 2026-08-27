@@ -1,10 +1,11 @@
 import {readJsonBody,RequestBodyError} from "./request.js";
-import {validIsoDate,validTime} from "./validation.js";
+import {validCalendarDate,validIsoDate,validTime} from "./validation.js";
 import {getMemberAiResult,saveMemberAiResult} from "./ai-cache.js";
 import {capacityError,generateGeminiJson,GeminiCapacityError,geminiCacheVersion} from "./gemini.js";
 
 const RESULT_SCHEMA={type:"object",additionalProperties:false,required:["title","summary","insights","reflection"],properties:{title:{type:"string"},summary:{type:"string"},insights:{type:"array",minItems:2,maxItems:4,items:{type:"string"}},reflection:{type:"string"}}};
 const NAMING_SCHEMA={type:"object",additionalProperties:false,required:["title","names","note"],properties:{title:{type:"string"},names:{type:"array",minItems:3,maxItems:6,items:{type:"object",additionalProperties:false,required:["name","meaning","tone"],properties:{name:{type:"string"},meaning:{type:"string"},tone:{type:"string"}}}},note:{type:"string"}}};
+const COLOR_SCHEMA={type:"object",additionalProperties:false,required:["title","colorName","hex","meaning","suggestions","reflection"],properties:{title:{type:"string"},colorName:{type:"string"},hex:{type:"string",pattern:"^#[0-9A-Fa-f]{6}$"},meaning:{type:"string"},suggestions:{type:"array",minItems:2,maxItems:4,items:{type:"string"}},reflection:{type:"string"}}};
 
 export async function handleFortune(request,env,headers,session=null,profile=null){
   const url=new URL(request.url);
@@ -23,6 +24,7 @@ export async function handleFortune(request,env,headers,session=null,profile=nul
     if(kind==='numbers')return numbers(body,env,headers,session,profile);
     if(kind==='naming')return naming(body,env,headers,session,profile);
     if(kind==='astrology')return astrology(body,env,headers,session,profile);
+    if(kind==='colors')return colors(body,env,headers,session,profile);
     return json({success:false,error:{code:"NOT_FOUND",message:"Not found"}},404,headers);
   }catch(error){
     const timeout=error?.name==='AbortError';
@@ -73,6 +75,15 @@ async function naming(body,env,headers,session,profile){
   const prompt=`Suggest 5 original name ideas in natural Thai or internationally readable style. Desired tone: ${tone}. Seed or preferred sound: ${seed||'none'}. Purpose/context: ${purpose||'general personal naming'}. ${context} Explain each name briefly. Avoid claims that a name guarantees luck, wealth, health, relationships, or destiny. Do not imitate trademarks or famous people.`;
   const generated=await generateCached(env,session,"fortune:naming:v1",{tone,seed,purpose,profile:profileInput(profile)},"You are a thoughtful naming assistant using symbolic and linguistic inspiration. Names are suggestions, not deterministic fortune claims.",prompt,NAMING_SCHEMA);
   return json({success:true,cached:generated.cached,result:generated.result},200,headers);
+}
+
+async function colors(body,env,headers,session,profile){
+  const date=validCalendarDate(typeof body.date==='string'?body.date.trim():'');
+  if(!date)return json({success:false,error:{code:'INVALID_DATE',message:'กรุณาระบุวันที่ให้ถูกต้อง'}},400,headers);
+  const context=memberContext(session,profile);
+  const prompt=`Create one auspicious-color-inspired reflection in natural Thai for the selected calendar date ${date}. ${context} Choose a familiar Thai color name and a valid six-digit hexadecimal color. Explain the symbolic theme and give practical, low-stakes ways to use or notice the color. Never claim the color guarantees luck, money, health, relationships, safety, or an outcome.`;
+  const generated=await generateCached(env,session,"fortune:colors:v1",{date,profile:profileInput(profile)},"You provide concise color symbolism for entertainment and self-reflection. Be warm and practical, never deterministic or supernaturally certain.",prompt,COLOR_SCHEMA);
+  return json({success:true,cached:generated.cached,date,result:generated.result},200,headers);
 }
 
 function memberContext(session,profile){

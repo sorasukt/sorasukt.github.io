@@ -44,6 +44,11 @@
     $("dailyFocus").textContent=data.horoscope?.focus||"";
     $("dailyAvoid").textContent=data.horoscope?.avoid||"";
     $("dailyAdvice").textContent=data.horoscope?.advice||"";
+    const colorHex=/^#[0-9A-Fa-f]{6}$/.test(data.horoscope?.luckyColorHex||"")?data.horoscope.luckyColorHex:"#d8d2c4";
+    $("dailyLuckyColor").textContent=data.horoscope?.luckyColor||"สีสำหรับวันนี้";
+    $("dailyLuckySwatch").style.backgroundColor=colorHex;
+    $("dailyLuckyMeaning").textContent=data.horoscope?.luckyColorMeaning||"";
+    $("dailyLuckyUse").textContent=data.horoscope?.luckyColorUse||"";
     $("dailyContent").hidden=false; status.textContent="";
   }
 

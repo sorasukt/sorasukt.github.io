@@ -8,6 +8,7 @@ const pages=[
   ["../../../tarot/reading/index.html","https://sorasukt.com/tarot/reading/"],
   ["../../../tarot/astrology/index.html","https://sorasukt.com/tarot/astrology/"],
   ["../../../tarot/zodiac/index.html","https://sorasukt.com/tarot/zodiac/"],
+  ["../../../tarot/colors/index.html","https://sorasukt.com/tarot/colors/"],
   ["../../../tarot/numbers/index.html","https://sorasukt.com/tarot/numbers/"],
   ["../../../tarot/naming/index.html","https://sorasukt.com/tarot/naming/"],
   ["../../../tarot/about/index.html","https://sorasukt.com/tarot/about/"],
@@ -32,4 +33,3 @@ test("private account page is excluded from search",async()=>{
   const html=await readFile(new URL("../../../tarot/me/index.html",import.meta.url),"utf8");
   assert.match(html,/<meta name="robots" content="noindex,nofollow">/);
 });
-
