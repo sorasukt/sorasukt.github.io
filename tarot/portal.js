@@ -3,6 +3,28 @@
   const $ = id => document.getElementById(id);
   const returnTo = window.location.href;
   async function api(path, options={}) { return fetch(`${API}${path}`, {...options, credentials:"include"}); }
+
+  function initNavigation(){
+    const header=document.querySelector('.portal-header');
+    const nav=header?.querySelector('.portal-nav');
+    if(!header||!nav||header.querySelector('.portal-menu-toggle'))return;
+    if(!nav.id)nav.id='portalNavigation';
+    const button=document.createElement('button');
+    button.type='button';
+    button.className='portal-menu-toggle';
+    button.setAttribute('aria-label','เปิดเมนู');
+    button.setAttribute('aria-controls',nav.id);
+    button.setAttribute('aria-expanded','false');
+    button.innerHTML='<span></span><span></span><span></span>';
+    const account=header.querySelector('.portal-account');
+    header.insertBefore(button,account||nav);
+    const close=()=>{header.classList.remove('menu-open');button.setAttribute('aria-expanded','false');button.setAttribute('aria-label','เปิดเมนู');document.body.classList.remove('portal-menu-lock');};
+    button.addEventListener('click',()=>{const open=!header.classList.contains('menu-open');header.classList.toggle('menu-open',open);button.setAttribute('aria-expanded',String(open));button.setAttribute('aria-label',open?'ปิดเมนู':'เปิดเมนู');document.body.classList.toggle('portal-menu-lock',open&&matchMedia('(max-width: 820px)').matches);});
+    nav.addEventListener('click',e=>{if(e.target.closest('a'))close();});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape')close();});
+    addEventListener('resize',()=>{if(innerWidth>820)close();});
+  }
+
   async function initAccount(){
     const signIn=$("portalSignIn"), me=$("portalMe"), logout=$("portalLogout");
     if(!signIn&&!me&&!logout)return;
@@ -15,5 +37,5 @@
     }catch{ if(signIn)signIn.hidden=false; }
   }
   window.TarotPortal={api};
-  addEventListener("DOMContentLoaded",initAccount);
+  addEventListener("DOMContentLoaded",()=>{initNavigation();initAccount();});
 })();
