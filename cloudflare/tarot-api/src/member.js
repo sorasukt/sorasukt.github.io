@@ -43,7 +43,12 @@ async function getDaily(env,headers,sub,deck){
   const day=bangkokDate();
   const cached=await env.DB.prepare("SELECT status,card_id,card_name,horoscope_json FROM daily_readings WHERE user_sub=? AND reading_date=?").bind(sub,day).first();
   if(cached?.status==="ready"&&cached.horoscope_json){
-    return json({success:true,cached:true,date:day,card:{id:cached.card_id,name:cached.card_name},horoscope:JSON.parse(cached.horoscope_json)},200,headers);
+    try{
+      return json({success:true,cached:true,date:day,card:{id:cached.card_id,name:cached.card_name},horoscope:JSON.parse(cached.horoscope_json)},200,headers);
+    }catch{
+      console.error("Cached daily reading contains invalid JSON");
+      await env.DB.prepare("DELETE FROM daily_readings WHERE user_sub=? AND reading_date=?").bind(sub,day).run();
+    }
   }
   if(cached?.status==="pending")return json({success:false,pending:true,error:{code:"DAILY_PENDING",message:"กำลังจัดทำดวงประจำวันของคุณ"}},202,headers);
 
@@ -59,7 +64,8 @@ async function getDaily(env,headers,sub,deck){
   }catch(error){
     console.error("Daily reading generation failed",error?.name||"error");
     await env.DB.prepare("DELETE FROM daily_readings WHERE user_sub=? AND reading_date=? AND status='pending'").bind(sub,day).run();
-    return json({success:false,error:{code:"AI_GENERATION_FAILED",message:"ไม่สามารถสร้างดวงประจำวันได้ในขณะนี้"}},502,headers);
+    const timedOut=error?.name==="AbortError";
+    return json({success:false,error:{code:timedOut?"AI_TIMEOUT":"AI_GENERATION_FAILED",message:"ไม่สามารถสร้างดวงประจำวันได้ในขณะนี้"}},timedOut?504:502,headers);
   }
 }
 
@@ -68,10 +74,18 @@ async function generateDaily(env,{day,birthDate,birthTime,card}){
   const endpoint=`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(env.GEMINI_API_KEY)}`;
   const system="You create concise, grounded daily reflective horoscope guidance in natural Thai. Treat astrology and Tarot as reflective frameworks, not factual prediction. Never claim certainty. Avoid fear, medical/legal/financial directives, or deterministic statements.";
   const prompt=`Create today's personalized daily reflection for date ${day} in Thailand. Birth date: ${birthDate}. Birth time: ${birthTime||"not provided"}. Daily Tarot card: ${card.name}. Use the birth details only to personalize tone/themes; do not invent precise astronomical placements that were not calculated. Keep it useful and specific.`;
-  const response=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({systemInstruction:{parts:[{text:system}]},contents:[{role:"user",parts:[{text:prompt}]}],generationConfig:{responseMimeType:"application/json",responseJsonSchema:DAILY_SCHEMA}})});
-  if(!response.ok)throw new Error("Gemini daily request failed");
-  const raw=await response.json(); const text=raw?.candidates?.[0]?.content?.parts?.map(p=>p.text||"").join("")||"";
-  return JSON.parse(text);
+  const controller=new AbortController();
+  const timeout=setTimeout(()=>controller.abort(),25000);
+  try{
+    const response=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({systemInstruction:{parts:[{text:system}]},contents:[{role:"user",parts:[{text:prompt}]}],generationConfig:{responseMimeType:"application/json",responseJsonSchema:DAILY_SCHEMA}}),signal:controller.signal});
+    if(!response.ok)throw new Error("Gemini daily request failed");
+    const raw=await response.json(); const text=raw?.candidates?.[0]?.content?.parts?.map(p=>p.text||"").join("")||"";
+    const horoscope=JSON.parse(text);
+    if(!horoscope||typeof horoscope!=="object")throw new Error("Gemini daily response is invalid");
+    return horoscope;
+  }finally{
+    clearTimeout(timeout);
+  }
 }
 
 function bangkokDate(){
