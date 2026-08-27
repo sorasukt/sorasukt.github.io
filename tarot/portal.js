@@ -7,8 +7,13 @@
   function initNavigation(){
     const header=document.querySelector('.portal-header');
     const nav=header?.querySelector('.portal-nav');
+    const account=header?.querySelector('.portal-account');
     if(!header||!nav||header.querySelector('.portal-menu-toggle'))return;
     if(!nav.id)nav.id='portalNavigation';
+
+    const accountPlaceholder=document.createComment('portal-account-placeholder');
+    if(account)account.parentNode.insertBefore(accountPlaceholder,account);
+
     const button=document.createElement('button');
     button.type='button';
     button.className='portal-menu-toggle';
@@ -16,13 +21,37 @@
     button.setAttribute('aria-controls',nav.id);
     button.setAttribute('aria-expanded','false');
     button.innerHTML='<span></span><span></span><span></span>';
-    const account=header.querySelector('.portal-account');
     header.insertBefore(button,account||nav);
-    const close=()=>{header.classList.remove('menu-open');button.setAttribute('aria-expanded','false');button.setAttribute('aria-label','เปิดเมนู');document.body.classList.remove('portal-menu-lock');};
-    button.addEventListener('click',()=>{const open=!header.classList.contains('menu-open');header.classList.toggle('menu-open',open);button.setAttribute('aria-expanded',String(open));button.setAttribute('aria-label',open?'ปิดเมนู':'เปิดเมนู');document.body.classList.toggle('portal-menu-lock',open&&matchMedia('(max-width: 820px)').matches);});
-    nav.addEventListener('click',e=>{if(e.target.closest('a'))close();});
+
+    const syncAccountPlacement=()=>{
+      if(!account)return;
+      if(matchMedia('(max-width: 820px)').matches){
+        if(account.parentNode!==nav){account.classList.add('portal-account-mobile');nav.append(account);}
+      }else{
+        account.classList.remove('portal-account-mobile');
+        if(account.parentNode===nav)accountPlaceholder.parentNode.insertBefore(account,accountPlaceholder.nextSibling);
+      }
+    };
+
+    const close=()=>{
+      header.classList.remove('menu-open');
+      button.setAttribute('aria-expanded','false');
+      button.setAttribute('aria-label','เปิดเมนู');
+      document.body.classList.remove('portal-menu-lock');
+    };
+
+    button.addEventListener('click',()=>{
+      syncAccountPlacement();
+      const open=!header.classList.contains('menu-open');
+      header.classList.toggle('menu-open',open);
+      button.setAttribute('aria-expanded',String(open));
+      button.setAttribute('aria-label',open?'ปิดเมนู':'เปิดเมนู');
+      document.body.classList.toggle('portal-menu-lock',open&&matchMedia('(max-width: 820px)').matches);
+    });
+    nav.addEventListener('click',e=>{if(e.target.closest('a,button'))close();});
     document.addEventListener('keydown',e=>{if(e.key==='Escape')close();});
-    addEventListener('resize',()=>{if(innerWidth>820)close();});
+    addEventListener('resize',()=>{syncAccountPlacement();if(innerWidth>820)close();});
+    syncAccountPlacement();
   }
 
   async function initAccount(){
