@@ -48,11 +48,7 @@
     "operatingSystem": "Any",
     "inLanguage": "th",
     "isAccessibleForFree": true,
-    "publisher": {
-      "@type": "Organization",
-      "name": "sorasukt",
-      "url": "https://sorasukt.com/"
-    },
+    "publisher": {"@type": "Organization", "name": "sorasukt", "url": "https://sorasukt.com/"},
     "image": "https://sorasukt.com/tarot/assets/og/tarot-cover.jpg"
   }
   </script>
@@ -64,19 +60,13 @@
       <div class="topbar-actions">
         <span class="counter" id="counter">0 / 5 selected</span>
         <button class="auth-button" id="signInButton" type="button">ลงชื่อใช้งาน</button>
-        <button class="auth-user" id="userButton" type="button" hidden aria-label="บัญชีผู้ใช้">
-          <img id="userAvatar" alt="" hidden>
-          <span id="userName">บัญชี</span>
-        </button>
+        <button class="auth-user" id="userButton" type="button" hidden aria-label="บัญชีผู้ใช้"><img id="userAvatar" alt="" hidden><span id="userName">บัญชี</span></button>
         <button class="auth-button" id="logoutButton" type="button" hidden>ออกจากระบบ</button>
       </div>
     </header>
 
     <section class="member-panel" id="memberPanel" hidden>
-      <div class="member-panel-head">
-        <div><p class="eyebrow">DAILY FOR YOU</p><h2>ไพ่และดวงประจำวัน</h2></div>
-        <button class="text-button" id="editProfile" type="button">แก้ไขข้อมูลเกิด</button>
-      </div>
+      <div class="member-panel-head"><div><p class="eyebrow">DAILY FOR YOU</p><h2>ไพ่และดวงประจำวัน</h2></div><button class="text-button" id="editProfile" type="button">แก้ไขข้อมูลเกิด</button></div>
       <p class="member-note">ระบบใช้วันเดือนปีเกิด และเวลาเกิดถ้ามี เพื่อช่วยปรับบริบทการอ่านให้เหมาะกับคุณ ผลประจำวันจะถูกเก็บไว้และใช้ซ้ำจนกว่าจะเปลี่ยนวันตามเวลาไทย</p>
       <form class="profile-form" id="profileForm" hidden>
         <label>วันเดือนปีเกิด <input id="birthDate" type="date" required></label>
@@ -95,15 +85,11 @@
     <section class="deck-section" id="deckStep" hidden><div class="section-head"><div><p class="eyebrow">CHOOSE FIVE</p><h2>เลือกไพ่ที่ดึงดูดคุณ</h2></div><button class="text-button" id="resetSelection">เริ่มเลือกใหม่</button></div><p class="instruction">แตะไพ่เพื่อเลือก แตะอีกครั้งเพื่อยกเลิก ไพ่จะยังคว่ำหน้าจนกว่าคุณจะเลือกครบ 5 ใบ</p><div class="deck" id="deck" aria-label="สำรับไพ่ Tarot 78 ใบ"></div><div class="selected-strip" id="selectedStrip" aria-live="polite"></div></section>
     <section class="reading-section" id="readingStep" hidden><div class="section-head"><div><p class="eyebrow">YOUR READING</p><h2 id="readingTitle">การอ่านไพ่ของคุณ</h2></div><button class="text-button" id="newReading">ถามคำถามใหม่</button></div><p class="question-display" id="questionDisplay"></p><div class="reading-grid" id="readingGrid"></div><section class="reading-copy" id="readingCopy"></section></section>
 
-    <footer class="tarot-legal" aria-label="ข้อมูลทางกฎหมาย">
-      <p>Tarot และคำตอบจาก AI มีไว้เพื่อความบันเทิงและการสะท้อนมุมมอง ไม่ใช่คำแนะนำจากผู้เชี่ยวชาญ</p>
-      <nav><a href="/privacy/">Privacy Policy</a><a href="/terms/">Terms of Service</a></nav>
-    </footer>
+    <footer class="tarot-legal" aria-label="ข้อมูลทางกฎหมาย"><p>Tarot และคำตอบจาก AI มีไว้เพื่อความบันเทิงและการสะท้อนมุมมอง ไม่ใช่คำแนะนำจากผู้เชี่ยวชาญ</p><nav><a href="/privacy/">Privacy Policy</a><a href="/terms/">Terms of Service</a></nav></footer>
   </main>
 
   <div class="sticky-action" id="stickyAction" hidden><button class="primary" id="revealButton">เปิดไพ่ทั้ง 5 ใบ</button></div>
   <div class="loading" id="loading" hidden role="status" aria-live="polite"><div class="loading-inner"><span class="loader"></span><p id="loadingText">กำลังพิจารณาคำถามของคุณ</p></div></div>
-  <script src="https://cdn.auth0.com/js/auth0-spa-js/2.4/auth0-spa-js.production.js"></script>
   <script src="./member.js" defer></script>
   <script src="./config.js"></script>
   <script src="./app.js" defer></script>
