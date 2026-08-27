@@ -2,18 +2,18 @@
   const $=id=>document.getElementById(id);
 
   async function hydrateFromMember(){
-    try{const member=await window.TarotPortal.getMember();if(member?.profile?.birth_date&&!$('#astroBirthDate').value)$('#astroBirthDate').value=member.profile.birth_date;}catch{}
+    try{const member=await window.TarotPortal.getMember();if(member?.profile?.birth_date&&!$('#astroBirthDate').value)$('#astroBirthDate').value=member.profile.birth_date;if(member?.profile?.birth_time&&!$('#astroBirthTime').value)$('#astroBirthTime').value=member.profile.birth_time;}catch{}
   }
 
   $('#astroForm').addEventListener('submit',async e=>{
     e.preventDefault();
-    const birthDate=$('#astroBirthDate').value;
+    const birthDate=$('#astroBirthDate').value,birthTime=$('#astroBirthTime').value;
     const form=$('#astroForm'),button=form.querySelector('button[type="submit"]'),box=$('#astroResult');
     if(!birthDate)return;
     button.disabled=true;const original=button.textContent;button.textContent='กำลังวิเคราะห์…';
     box.hidden=false;box.innerHTML='<h2>กำลังเตรียมภาพรวม…</h2><p>กำลังใช้ AI เพื่อสร้างการอ่านเชิงโหราศาสตร์แบบสะท้อนมุมมอง</p>';
     try{
-      const r=await window.TarotPortal.api('/api/fortune/astrology',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({birthDate})});
+      const r=await window.TarotPortal.api('/api/fortune/astrology',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({birthDate,birthTime})});
       const d=await r.json();if(!r.ok)throw new Error(d?.error?.message||'ไม่สามารถวิเคราะห์ได้');
       const x=d.result||{};
       box.innerHTML=`<h2>${escapeHtml(x.title||'ภาพรวมของคุณ')}</h2><p>${escapeHtml(x.summary||'')}</p>${(x.insights||[]).map(v=>`<p>• ${escapeHtml(v)}</p>`).join('')}<h3>คำถามสำหรับคิดต่อ</h3><p>${escapeHtml(x.reflection||'')}</p><button id="astroDeep" type="button">ดูเชิงลึกสำหรับสมาชิก</button><p class="profile-note">ภาพรวมนี้ไม่อ้างตำแหน่งดาว เรือนชะตา หรือ Ascendant ที่ไม่ได้คำนวณทางดาราศาสตร์</p>`;
