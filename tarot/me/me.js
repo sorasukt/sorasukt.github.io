@@ -70,14 +70,15 @@
       box.append(b);
     });
     box.hidden=false;
+    $('#birthPlace').setAttribute('aria-expanded','true');
   }
-  function hideSuggestions(){$('#placeSuggestions').hidden=true;}
+  function hideSuggestions(){$('#placeSuggestions').hidden=true;$('#birthPlace').setAttribute('aria-expanded','false');}
 
   async function save(e){
     e.preventDefault();
     if(!signedIn)return;
     const btn=$('#saveProfile'),status=$('#profileStatus');
-    btn.disabled=true;btn.textContent='กำลังบันทึก…';status.textContent='กำลังตรวจสอบและบันทึกข้อมูล';
+    window.TarotPortal.setButtonBusy(btn,true,'กำลังบันทึก…');status.textContent='กำลังบันทึกข้อมูลของคุณ';status.dataset.loading='true';
     try{
       const birthPlace=$('#birthPlace').value.trim();
       if(birthPlace&&!selectedPlaceId)throw new Error('กรุณาเลือกสถานที่เกิดจากรายการแนะนำ หรือเว้นช่องนี้ไว้');
@@ -91,7 +92,7 @@
       else renderProfile(d.profile||null);
       status.textContent='บันทึกข้อมูลเรียบร้อยแล้ว ข้อมูลชุดนี้พร้อมใช้งานในหน้าอื่น';
     }catch(e){status.textContent=e?.message||'บันทึกข้อมูลไม่สำเร็จ';}
-    finally{btn.disabled=false;btn.textContent='บันทึกข้อมูล';}
+    finally{window.TarotPortal.setButtonBusy(btn,false);delete status.dataset.loading;}
   }
 
   function formatDateTime(value){try{return new Intl.DateTimeFormat('th-TH',{dateStyle:'medium',timeStyle:'short',timeZone:'Asia/Bangkok'}).format(new Date(value.endsWith('Z')?value:`${value}Z`));}catch{return value;}}

@@ -1,6 +1,8 @@
-import {autocompletePlaces,resolvePlace} from "./google-places.js";
+import {autocompletePlaces,resolvePlace} from "./geocoding.js";
 import {readJsonBody,RequestBodyError} from "./request.js";
 import {validIsoDate,validTime} from "./validation.js";
+import {getMemberAiResult,saveMemberAiResult} from "./ai-cache.js";
+import {savePolicyAcceptance} from "./usage.js";
 
 const DAILY_SCHEMA={type:"object",additionalProperties:false,required:["title","summary","energy","focus","avoid","advice"],properties:{title:{type:"string"},summary:{type:"string"},energy:{type:"string"},focus:{type:"string"},avoid:{type:"string"},advice:{type:"string"}}};
 const ASTRO_SCHEMA={type:"object",additionalProperties:false,required:["title","overview","strengths","growth","relationships","reflection"],properties:{title:{type:"string"},overview:{type:"string"},strengths:{type:"array",minItems:2,maxItems:4,items:{type:"string"}},growth:{type:"array",minItems:2,maxItems:4,items:{type:"string"}},relationships:{type:"string"},reflection:{type:"string"}}};
@@ -16,6 +18,10 @@ export async function handleMember(request,env,headers,auth,deck){
     if(request.method==="GET")return getProfile(env,headers,auth.payload.sub);
     if(request.method==="PUT"||request.method==="POST")return saveProfile(request,env,headers,auth.payload.sub);
     return json({success:false,error:{code:"METHOD_NOT_ALLOWED",message:"Method not allowed"}},405,headers);
+  }
+  if(url.pathname==="/api/member/consent"){
+    if(request.method!=="POST")return json({success:false,error:{code:"METHOD_NOT_ALLOWED",message:"Method not allowed"}},405,headers);
+    return savePolicyAcceptance(request,env,headers,auth.payload.sub);
   }
   if(url.pathname==="/api/member/daily"){if(request.method!=="GET")return json({success:false,error:{code:"METHOD_NOT_ALLOWED",message:"Method not allowed"}},405,headers);return getDaily(env,headers,auth.payload.sub,deck)}
   if(url.pathname==="/api/member/astrology"){if(request.method!=="GET")return json({success:false,error:{code:"METHOD_NOT_ALLOWED",message:"Method not allowed"}},405,headers);return getAstrology(env,headers,auth.payload.sub)}
@@ -43,11 +49,13 @@ async function saveProfile(request,env,headers,sub){
 }
 
 async function getAstrology(env,headers,sub){
-  if(!env.GEMINI_API_KEY)return json({success:false,error:{code:"SERVER_CONFIG_ERROR",message:"AI service is not configured"}},500,headers);
   const p=await env.DB.prepare("SELECT birth_date,birth_time,birth_place,birth_lat,birth_lng,birth_timezone FROM member_profiles WHERE user_sub=?").bind(sub).first();
   if(!p)return json({success:false,error:{code:"PROFILE_REQUIRED",message:"กรุณาเพิ่มวันเดือนปีเกิดในหน้า ฉัน ก่อนดูแบบเชิงลึก"}},409,headers);
+  const cached=await getMemberAiResult(env,sub,"member:astrology:v1",{model:env.GEMINI_MODEL||"gemini-3.6-flash",birthDate:p.birth_date,birthTime:p.birth_time||"",birthPlace:p.birth_place||"",birthLat:p.birth_lat??null,birthLng:p.birth_lng??null,birthTimezone:p.birth_timezone||""});
+  if(cached.cached)return json({success:true,cached:true,reading:cached.value},200,headers);
+  if(!env.GEMINI_API_KEY)return json({success:false,error:{code:"SERVER_CONFIG_ERROR",message:"AI service is not configured"}},500,headers);
   const prompt=`Create a deeper reflective astrology-style profile in natural Thai using: birth date ${p.birth_date}, birth time ${p.birth_time||"not provided"}, birth place ${p.birth_place||"not provided"}, coordinates ${p.birth_lat??"not provided"}, ${p.birth_lng??"not provided"}, timezone ${p.birth_timezone||"not provided"}. Do not invent exact planetary placements, houses, ascendant, or astronomical calculations. Focus on themes, strengths, growth areas, relationships, and one reflection question.`;
-  try{return json({success:true,reading:await generateStructured(env,"You provide grounded astrology-inspired reflective guidance. Never claim astronomical positions that were not calculated. Never present fate as certain.",prompt,ASTRO_SCHEMA)},200,headers)}catch(error){const t=error?.name==="AbortError";return json({success:false,error:{code:t?"AI_TIMEOUT":"AI_GENERATION_FAILED",message:"ไม่สามารถสร้างการอ่านเชิงลึกได้ในขณะนี้"}},t?504:502,headers)}
+  try{const reading=await generateStructured(env,"You provide grounded astrology-inspired reflective guidance. Never claim astronomical positions that were not calculated. Never present fate as certain.",prompt,ASTRO_SCHEMA);await saveMemberAiResult(env,sub,"member:astrology:v1",cached.key,reading);return json({success:true,cached:false,reading},200,headers)}catch(error){const t=error?.name==="AbortError";return json({success:false,error:{code:t?"AI_TIMEOUT":"AI_GENERATION_FAILED",message:"ไม่สามารถสร้างการอ่านเชิงลึกได้ในขณะนี้"}},t?504:502,headers)}
 }
 
 async function getDaily(env,headers,sub,deck){
@@ -64,7 +72,7 @@ async function getDaily(env,headers,sub,deck){
   try{const horoscope=await generateStructured(env,"You create concise, grounded daily reflective horoscope guidance in natural Thai. Treat astrology and Tarot as reflective frameworks, not factual prediction. Never claim certainty.",`Create today's personalized daily reflection for ${day}. Birth date: ${p.birth_date}. Birth time: ${p.birth_time||"not provided"}. Birth place: ${p.birth_place||"not provided"}. Daily Tarot card: ${card.name}.`,DAILY_SCHEMA);await env.DB.prepare("UPDATE daily_readings SET status='ready',horoscope_json=?,updated_at=CURRENT_TIMESTAMP WHERE user_sub=? AND reading_date=?").bind(JSON.stringify(horoscope),sub,day).run();return json({success:true,cached:false,date:day,card:{id:card.id,name:card.name},horoscope},200,headers)}catch(error){await env.DB.prepare("DELETE FROM daily_readings WHERE user_sub=? AND reading_date=? AND status='pending'").bind(sub,day).run();const t=error?.name==="AbortError";return json({success:false,error:{code:t?"AI_TIMEOUT":"AI_GENERATION_FAILED",message:"ไม่สามารถสร้างดวงประจำวันได้ในขณะนี้"}},t?504:502,headers)}
 }
 
-async function generateStructured(env,system,prompt,schema){const model=env.GEMINI_MODEL||"gemini-3.6-flash",endpoint=`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(env.GEMINI_API_KEY)}`,controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),25000);try{const response=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({systemInstruction:{parts:[{text:system}]},contents:[{role:"user",parts:[{text:prompt}]}],generationConfig:{responseMimeType:"application/json",responseJsonSchema:schema,maxOutputTokens:2048}}),signal:controller.signal});if(!response.ok)throw new Error("AI request failed");const raw=await response.json(),text=raw?.candidates?.[0]?.content?.parts?.map(p=>p.text||"").join("")||"",result=JSON.parse(text);if(!result||typeof result!=="object")throw new Error("AI response is invalid");return result}finally{clearTimeout(timeout)}}
+async function generateStructured(env,system,prompt,schema){const model=env.GEMINI_MODEL||"gemini-3.6-flash",endpoint=`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(env.GEMINI_API_KEY)}`,controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),40000);try{const response=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({systemInstruction:{parts:[{text:system}]},contents:[{role:"user",parts:[{text:prompt}]}],generationConfig:{responseMimeType:"application/json",responseJsonSchema:schema,maxOutputTokens:2048}}),signal:controller.signal});if(!response.ok)throw new Error("AI request failed");const raw=await response.json(),text=raw?.candidates?.[0]?.content?.parts?.map(p=>p.text||"").join("")||"",result=JSON.parse(text);if(!result||typeof result!=="object")throw new Error("AI response is invalid");return result}finally{clearTimeout(timeout)}}
 function bangkokDate(){const parts=new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Bangkok",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date()),v=Object.fromEntries(parts.map(p=>[p.type,p.value]));return `${v.year}-${v.month}-${v.day}`}
 async function dailyCardId(seed,length){const bytes=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(seed));return new DataView(bytes).getUint32(0,false)%length}
 function json(data,status,headers){return new Response(JSON.stringify(data),{status,headers})}
