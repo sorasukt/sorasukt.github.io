@@ -1,6 +1,6 @@
 # Tarot API (Cloudflare Worker + Gemini)
 
-API สำหรับ `/tarot` โดย Cloudflare Worker ที่ `https://api.sorasukt.com` ทำหน้าที่ทั้ง member API, Auth0 server-side callback และ AI API proxy
+API สำหรับ `/tarot` โดย Cloudflare Worker ที่ `https://api.sorasukt.com` ทำหน้าที่ทั้ง member API, Auth0 server-side callback, Google Places proxy และ AI API proxy
 
 ## Auth0 — Regular Web Application
 
@@ -17,65 +17,31 @@ Flow:
 7. Browser กลับ `https://sorasukt.com/tarot/`
 8. Member APIs ใช้ session cookie โดย frontend เรียกด้วย `credentials: include`
 
-## Auth0 Dashboard
-
-Application Type:
-
-```text
-Regular Web Application
-```
-
-Allowed Callback URLs:
-
-```text
-https://api.sorasukt.com/auth/callback
-```
-
-Allowed Logout URLs:
-
-```text
-https://sorasukt.com/tarot/
-https://www.sorasukt.com/tarot/
-```
-
-Application Login URI:
-
-```text
-https://api.sorasukt.com/auth/login
-```
-
-Custom Domain:
-
-```text
-auth.sorasukt.com
-```
-
-## Cloudflare configuration
-
-Public/server configuration ใน `wrangler.jsonc`:
-
-```text
-AUTH0_DOMAIN=auth.sorasukt.com
-AUTH0_CLIENT_ID=NbMkuqqsuljnBKcAKVDr8bICryQZR4MI
-```
-
-Client Secret ต้องเป็น Cloudflare Worker Secret เท่านั้น:
+## Cloudflare secrets
 
 ```bash
 cd cloudflare/tarot-api
 npx wrangler secret put AUTH0_CLIENT_SECRET
+npx wrangler secret put GEMINI_API_KEY
+npx wrangler secret put GOOGLE_MAPS_API_KEY
 ```
+
+`GOOGLE_MAPS_API_KEY` ใช้เฉพาะ Worker และไม่ถูกส่งไป browser เปิด API ใน Google Cloud อย่างน้อย:
+
+- Places API (New)
+- Time Zone API
+
+แนะนำให้จำกัด key ให้ใช้เฉพาะ API เหล่านี้และตั้ง quota/budget alert ใน Google Cloud
 
 สำหรับ local development ใช้ `.dev.vars`:
 
 ```env
 AUTH0_CLIENT_SECRET=your_auth0_client_secret
 GEMINI_API_KEY=your_gemini_key
+GOOGLE_MAPS_API_KEY=your_google_maps_key
 ```
 
-ห้ามใส่ Client Secret ใน `wrangler.jsonc`, frontend หรือ GitHub repository
-
-## Authentication routes
+## Member & Places routes
 
 ```text
 GET /auth/login
@@ -83,9 +49,13 @@ GET /auth/callback
 GET /auth/logout
 GET /api/member/me
 GET /api/member/profile
-PUT /api/member/profile
+POST /api/member/profile
 GET /api/member/daily
+GET /api/member/astrology
+GET /api/member/places/autocomplete?q=...
 ```
+
+เมื่อผู้ใช้เลือกสถานที่เกิด Worker จะ resolve Google Place ID เป็นชื่อสถานที่ พิกัด latitude/longitude และ timezone แล้วเก็บลง D1 โดยไม่เชื่อถือพิกัดที่ส่งมาจาก browser
 
 Session cookie เป็น `HttpOnly`, `Secure`, `SameSite=Lax` และ signed ฝั่ง Worker
 
@@ -96,5 +66,4 @@ Session cookie เป็น `HttpOnly`, `Secure`, `SameSite=Lax` และ signe
 - ID token ตรวจ RS256 signature ผ่าน Auth0 JWKS
 - session cookie อ่านจาก JavaScript ไม่ได้
 - CORS จำกัด `https://sorasukt.com` และ `https://www.sorasukt.com`
-- Member API ใช้ `Access-Control-Allow-Credentials: true` เฉพาะ origin ที่อนุญาต
-- Client Secret และ Gemini API key ไม่ถูกส่งกลับ client
+- Auth0, Gemini และ Google Maps secrets ไม่ถูกส่งกลับ client
