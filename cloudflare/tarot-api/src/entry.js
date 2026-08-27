@@ -46,10 +46,15 @@ export default {
     if(!session)return json({success:false,error:{code:"UNAUTHORIZED",message:"Authentication required"}},401,headers);
     const auth={ok:true,payload:session};
 
-    if(url.pathname==="/api/member/me"){
+    if(url.pathname==="/api/member/me"||url.pathname==="/api/member/context"){
       if(request.method!=="GET")return json({success:false,error:{code:"METHOD_NOT_ALLOWED",message:"Method not allowed"}},405,headers);
-      const {sub,name,nickname,email,picture}=session;
-      return json({success:true,user:{sub,name,nickname,email,picture}},200,headers);
+      try{
+        const context=await getMemberContext(env,session);
+        return json({success:true,...context},200,headers);
+      }catch(error){
+        console.error("Member context failed",error?.message||"error");
+        return json({success:false,error:{code:"MEMBER_CONTEXT_ERROR",message:"ไม่สามารถโหลดข้อมูลสมาชิกได้ในขณะนี้"}},500,headers);
+      }
     }
 
     try{
@@ -61,6 +66,25 @@ export default {
     }
   }
 };
+
+async function getMemberContext(env,session){
+  const {sub,name,nickname,email,picture}=session;
+  if(env.DB){
+    await env.DB.prepare(`INSERT INTO member_accounts(user_sub,display_name,nickname,email,picture_url,last_seen_at,updated_at)
+      VALUES(?,?,?,?,?,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)
+      ON CONFLICT(user_sub) DO UPDATE SET display_name=excluded.display_name,nickname=excluded.nickname,email=excluded.email,picture_url=excluded.picture_url,last_seen_at=CURRENT_TIMESTAMP,updated_at=CURRENT_TIMESTAMP`)
+      .bind(sub,name||null,nickname||null,email||null,picture||null).run();
+  }
+  const profile=env.DB?await env.DB.prepare("SELECT birth_date,birth_time,birth_place,birth_place_id,birth_lat,birth_lng,birth_timezone,timezone,created_at,updated_at FROM member_profiles WHERE user_sub=?").bind(sub).first():null;
+  const completion={
+    hasBirthDate:Boolean(profile?.birth_date),
+    hasBirthTime:Boolean(profile?.birth_time),
+    hasBirthPlace:Boolean(profile?.birth_place&&profile?.birth_place_id),
+    readyForDaily:Boolean(profile?.birth_date),
+    readyForDeepAstrology:Boolean(profile?.birth_date&&profile?.birth_time&&profile?.birth_place_id)
+  };
+  return {user:{sub,name,nickname,email,picture},profile:profile||null,completion};
+}
 
 function allowedOrigin(origin,env){
   const allowed=(env.ALLOWED_ORIGINS||"https://sorasukt.com,https://www.sorasukt.com").split(",").map(x=>x.trim()).filter(Boolean);
