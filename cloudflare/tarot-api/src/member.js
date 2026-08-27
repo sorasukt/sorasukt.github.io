@@ -6,7 +6,7 @@ export async function handleMember(request,env,headers,auth,deck){
 
   if(url.pathname==="/api/member/profile"){
     if(request.method==="GET")return getProfile(env,headers,auth.payload.sub);
-    if(request.method==="PUT")return saveProfile(request,env,headers,auth.payload.sub);
+    if(request.method==="PUT"||request.method==="POST")return saveProfile(request,env,headers,auth.payload.sub);
     return json({success:false,error:{code:"METHOD_NOT_ALLOWED",message:"Method not allowed"}},405,headers);
   }
 
@@ -24,7 +24,13 @@ async function getProfile(env,headers,sub){
 }
 
 async function saveProfile(request,env,headers,sub){
-  let body;try{body=await request.json()}catch{return json({success:false,error:{code:"INVALID_REQUEST",message:"Invalid JSON request"}},400,headers)}
+  let body;
+  try{
+    const text=await request.text();
+    body=JSON.parse(text);
+  }catch{
+    return json({success:false,error:{code:"INVALID_REQUEST",message:"Invalid JSON request"}},400,headers);
+  }
   const birthDate=typeof body.birthDate==="string"?body.birthDate.trim():"";
   const birthTime=typeof body.birthTime==="string"?body.birthTime.trim():"";
   if(!/^\d{4}-\d{2}-\d{2}$/.test(birthDate)||Number.isNaN(Date.parse(`${birthDate}T00:00:00Z`)))return json({success:false,error:{code:"INVALID_BIRTH_DATE",message:"กรุณาระบุวันเดือนปีเกิดให้ถูกต้อง"}},400,headers);
