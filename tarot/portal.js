@@ -3,23 +3,41 @@
   const $ = id => document.getElementById(id);
   const returnTo = window.location.href;
   let memberCache=null;
+  let memberRequest=null;
 
   function ensureEnhancementStyles(){
     if(document.querySelector('link[data-tarot-enhancements]'))return;
     const link=document.createElement('link');link.rel='stylesheet';link.href='/tarot/portal-enhancements.css?v=20260827-1322';link.dataset.tarotEnhancements='true';document.head.append(link);
   }
 
-  async function api(path, options={}) { return fetch(`${API}${path}`, {...options, credentials:"include"}); }
+  async function api(path, options={}) {
+    const {timeout=10000,...fetchOptions}=options;
+    const controller=new AbortController();
+    const timer=setTimeout(()=>controller.abort(),timeout);
+    try{return await fetch(`${API}${path}`,{...fetchOptions,credentials:"include",signal:fetchOptions.signal||controller.signal});}
+    finally{clearTimeout(timer);}
+  }
 
   async function getMember({refresh=false}={}){
     if(memberCache&&!refresh)return memberCache;
-    const r=await api('/api/member/context');
-    if(!r.ok){memberCache=null;return null;}
-    memberCache=await r.json();
-    return memberCache;
+    if(memberRequest&&!refresh)return memberRequest;
+    memberRequest=(async()=>{
+      try{
+        const r=await api('/api/member/context',{timeout:6500});
+        if(!r.ok){memberCache=null;return null;}
+        const data=await r.json();
+        memberCache=data;
+        return data;
+      }catch(error){
+        memberCache=null;
+        if(error?.name==='AbortError')console.warn('Member context request timed out');
+        return null;
+      }finally{memberRequest=null;}
+    })();
+    return memberRequest;
   }
 
-  function clearMemberCache(){memberCache=null;}
+  function clearMemberCache(){memberCache=null;memberRequest=null;}
 
   function initNavigation(){
     const header=document.querySelector('.portal-header');
@@ -41,13 +59,18 @@
   async function initAccount(){
     const signIn=$("portalSignIn"), me=$("portalMe"), logout=$("portalLogout");
     if(!signIn&&!me&&!logout)return;
+    if(signIn)signIn.onclick=()=>location.assign(`${API}/auth/login?returnTo=${encodeURIComponent(returnTo)}`);
     try{
-      const member=await getMember({refresh:true});
+      const member=await getMember();
       const ok=Boolean(member?.success);
-      if(signIn){signIn.hidden=ok;signIn.onclick=()=>location.assign(`${API}/auth/login?returnTo=${encodeURIComponent(returnTo)}`);}
+      if(signIn)signIn.hidden=ok;
       if(me)me.hidden=!ok;
       if(logout){logout.hidden=!ok;logout.onclick=()=>{clearMemberCache();location.assign(`${API}/auth/logout?returnTo=${encodeURIComponent(location.origin+"/tarot/")}`);};}
-    }catch{if(signIn)signIn.hidden=false;}
+    }catch{
+      if(signIn)signIn.hidden=false;
+      if(me)me.hidden=true;
+      if(logout)logout.hidden=true;
+    }
   }
 
   function initFooter(){

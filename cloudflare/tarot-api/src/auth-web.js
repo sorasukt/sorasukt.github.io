@@ -86,6 +86,18 @@ async function finishLogin(request, env) {
   const now = Math.floor(Date.now() / 1000);
   const exp = Math.min(Number(claims.exp) || now + 28800, now + 28800);
   const session = { sub: claims.sub, name: claims.name || null, nickname: claims.nickname || null, email: claims.email || null, picture: claims.picture || null, exp };
+
+  if (env.DB) {
+    try {
+      await env.DB.prepare(`INSERT INTO member_accounts(user_sub,display_name,nickname,email,picture_url,last_seen_at,updated_at)
+        VALUES(?,?,?,?,?,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)
+        ON CONFLICT(user_sub) DO UPDATE SET display_name=excluded.display_name,nickname=excluded.nickname,email=excluded.email,picture_url=excluded.picture_url,last_seen_at=CURRENT_TIMESTAMP,updated_at=CURRENT_TIMESTAMP`)
+        .bind(session.sub,session.name,session.nickname,session.email,session.picture).run();
+    } catch (error) {
+      console.warn("Unable to persist member account snapshot", error?.message || "error");
+    }
+  }
+
   const payload = encodeBase64Url(JSON.stringify(session));
   const signature = await sign(payload, env.AUTH0_CLIENT_SECRET);
   const maxAge = Math.max(60, exp - now);

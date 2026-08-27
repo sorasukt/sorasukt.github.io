@@ -6,7 +6,7 @@
     const status=$('#profileStatus');
     status.textContent='กำลังโหลดข้อมูล…';
     try{
-      const member=await window.TarotPortal.getMember({refresh:true});
+      const member=await window.TarotPortal.getMember();
       signedIn=Boolean(member?.success);
       if(!signedIn){
         $('#accountName').textContent='ยังไม่ได้ลงชื่อใช้งาน';
@@ -87,7 +87,8 @@
       if(!r.ok)throw new Error(d?.error?.message||'บันทึกข้อมูลไม่สำเร็จ');
       window.TarotPortal.clearMemberCache();
       const member=await window.TarotPortal.getMember({refresh:true});
-      renderAccount(member.user||{},member.completion||{});renderProfile(member.profile||d.profile||null);
+      if(member){renderAccount(member.user||{},member.completion||{});renderProfile(member.profile||d.profile||null);}
+      else renderProfile(d.profile||null);
       status.textContent='บันทึกข้อมูลเรียบร้อยแล้ว ข้อมูลชุดนี้พร้อมใช้งานในหน้าอื่น';
     }catch(e){status.textContent=e?.message||'บันทึกข้อมูลไม่สำเร็จ';}
     finally{btn.disabled=false;btn.textContent='บันทึกข้อมูล';}

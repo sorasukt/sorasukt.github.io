@@ -1,6 +1,7 @@
 import tarotWorker from "./index.js";
 import {handleMember} from "./member.js";
 import {handleAuthRoute,getSession} from "./auth-web.js";
+import {handleFortune} from "./fortune.js";
 
 const MAJOR=["The Fool","The Magician","The High Priestess","The Empress","The Emperor","The Hierophant","The Lovers","The Chariot","Strength","The Hermit","Wheel of Fortune","Justice","The Hanged Man","Death","Temperance","The Devil","The Tower","The Star","The Moon","The Sun","Judgement","The World"];
 const RANKS=["Ace","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten","Page","Knight","Queen","King"];
@@ -21,23 +22,26 @@ export default {
       }
     }
 
+    if(url.pathname.startsWith('/api/fortune/')){
+      const origin=request.headers.get('Origin')||'';
+      const corsOrigin=allowedOrigin(origin,env);
+      if(request.method==='OPTIONS')return preflight(corsOrigin);
+      const headers=baseHeaders(request,env);
+      if(origin&&!corsOrigin)return json({success:false,error:{code:'ORIGIN_NOT_ALLOWED',message:'Origin not allowed'}},403,headers);
+      let session=null,profile=null;
+      try{
+        session=await getSession(request,env);
+        if(session&&env.DB)profile=await loadProfile(env,session.sub);
+      }catch(error){console.error('Optional fortune member context failed',error?.message||'error');}
+      const response=await handleFortune(request,env,headers,session,profile);
+      return response||json({success:false,error:{code:'NOT_FOUND',message:'Not found'}},404,headers);
+    }
+
     if(!url.pathname.startsWith("/api/member/"))return tarotWorker.fetch(request,env,ctx);
 
     const origin=request.headers.get("Origin")||"";
     const corsOrigin=allowedOrigin(origin,env);
-
-    if(request.method==="OPTIONS"){
-      if(!corsOrigin)return new Response(null,{status:403,headers:{"Cache-Control":"no-store","Vary":"Origin"}});
-      const preflightHeaders=new Headers();
-      preflightHeaders.set("Access-Control-Allow-Origin",corsOrigin);
-      preflightHeaders.set("Access-Control-Allow-Credentials","true");
-      preflightHeaders.set("Access-Control-Allow-Methods","GET, POST, PUT, OPTIONS");
-      preflightHeaders.set("Access-Control-Allow-Headers","Content-Type");
-      preflightHeaders.set("Access-Control-Max-Age","86400");
-      preflightHeaders.set("Cache-Control","no-store");
-      preflightHeaders.set("Vary","Origin, Access-Control-Request-Method, Access-Control-Request-Headers");
-      return new Response(null,{status:204,headers:preflightHeaders});
-    }
+    if(request.method==="OPTIONS")return preflight(corsOrigin);
 
     const headers=baseHeaders(request,env);
     if(origin&&!corsOrigin)return json({success:false,error:{code:"ORIGIN_NOT_ALLOWED",message:"Origin not allowed"}},403,headers);
@@ -67,42 +71,17 @@ export default {
   }
 };
 
+async function loadProfile(env,sub){return env.DB.prepare("SELECT birth_date,birth_time,birth_place,birth_place_id,birth_lat,birth_lng,birth_timezone,timezone,created_at,updated_at FROM member_profiles WHERE user_sub=?").bind(sub).first()}
 async function getMemberContext(env,session){
   const {sub,name,nickname,email,picture}=session;
-  if(env.DB){
-    await env.DB.prepare(`INSERT INTO member_accounts(user_sub,display_name,nickname,email,picture_url,last_seen_at,updated_at)
-      VALUES(?,?,?,?,?,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)
-      ON CONFLICT(user_sub) DO UPDATE SET display_name=excluded.display_name,nickname=excluded.nickname,email=excluded.email,picture_url=excluded.picture_url,last_seen_at=CURRENT_TIMESTAMP,updated_at=CURRENT_TIMESTAMP`)
-      .bind(sub,name||null,nickname||null,email||null,picture||null).run();
-  }
-  const profile=env.DB?await env.DB.prepare("SELECT birth_date,birth_time,birth_place,birth_place_id,birth_lat,birth_lng,birth_timezone,timezone,created_at,updated_at FROM member_profiles WHERE user_sub=?").bind(sub).first():null;
-  const completion={
-    hasBirthDate:Boolean(profile?.birth_date),
-    hasBirthTime:Boolean(profile?.birth_time),
-    hasBirthPlace:Boolean(profile?.birth_place&&profile?.birth_place_id),
-    readyForDaily:Boolean(profile?.birth_date),
-    readyForDeepAstrology:Boolean(profile?.birth_date&&profile?.birth_time&&profile?.birth_place_id)
-  };
+  const profile=env.DB?await loadProfile(env,sub):null;
+  const completion={hasBirthDate:Boolean(profile?.birth_date),hasBirthTime:Boolean(profile?.birth_time),hasBirthPlace:Boolean(profile?.birth_place&&profile?.birth_place_id),readyForDaily:Boolean(profile?.birth_date),readyForDeepAstrology:Boolean(profile?.birth_date&&profile?.birth_time&&profile?.birth_place_id)};
   return {user:{sub,name,nickname,email,picture},profile:profile||null,completion};
 }
-
-function allowedOrigin(origin,env){
-  const allowed=(env.ALLOWED_ORIGINS||"https://sorasukt.com,https://www.sorasukt.com").split(",").map(x=>x.trim()).filter(Boolean);
-  return allowed.includes(origin)?origin:"";
+function preflight(corsOrigin){
+  if(!corsOrigin)return new Response(null,{status:403,headers:{"Cache-Control":"no-store","Vary":"Origin"}});
+  const headers=new Headers();headers.set('Access-Control-Allow-Origin',corsOrigin);headers.set('Access-Control-Allow-Credentials','true');headers.set('Access-Control-Allow-Methods','GET, POST, PUT, OPTIONS');headers.set('Access-Control-Allow-Headers','Content-Type');headers.set('Access-Control-Max-Age','86400');headers.set('Cache-Control','no-store');headers.set('Vary','Origin, Access-Control-Request-Method, Access-Control-Request-Headers');return new Response(null,{status:204,headers});
 }
-
-function baseHeaders(request,env){
-  const origin=request.headers.get("Origin")||"";
-  const corsOrigin=allowedOrigin(origin,env);
-  const headers=new Headers();
-  headers.set("Content-Type","application/json; charset=utf-8");
-  headers.set("Cache-Control","no-store");
-  headers.set("Vary","Origin");
-  if(corsOrigin){
-    headers.set("Access-Control-Allow-Origin",corsOrigin);
-    headers.set("Access-Control-Allow-Credentials","true");
-  }
-  return headers;
-}
-
+function allowedOrigin(origin,env){const allowed=(env.ALLOWED_ORIGINS||"https://sorasukt.com,https://www.sorasukt.com").split(",").map(x=>x.trim()).filter(Boolean);return allowed.includes(origin)?origin:""}
+function baseHeaders(request,env){const origin=request.headers.get("Origin")||"",corsOrigin=allowedOrigin(origin,env),headers=new Headers();headers.set("Content-Type","application/json; charset=utf-8");headers.set("Cache-Control","no-store");headers.set("Vary","Origin");if(corsOrigin){headers.set("Access-Control-Allow-Origin",corsOrigin);headers.set("Access-Control-Allow-Credentials","true");}return headers}
 function json(data,status,headers){return new Response(JSON.stringify(data),{status,headers})}
