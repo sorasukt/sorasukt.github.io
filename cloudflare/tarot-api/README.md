@@ -77,6 +77,8 @@ STRIPE_PRICE_ONETIME_YEARLY
 
 Price กลุ่ม `SUB` ต้องเป็น recurring prices รอบละ 1 สัปดาห์/เดือน/ปี และกลุ่ม `ONETIME` ต้องเป็น one-time prices Worker ตรวจ Price ID, จำนวนเงิน, สกุลเงิน ประเภท Price และรอบต่ออายุกับ Stripe ก่อนสร้าง Checkout หากตั้งค่าผิด แผนนั้นจะไม่เปิดรับชำระเงิน
 
+Subscription ใช้การชำระด้วยบัตรเท่านั้น ส่วน PromptPay เปิดให้เลือกเฉพาะ Pay as you go และรายการสนับสนุนแบบชำระครั้งเดียว
+
 ตั้ง Stripe webhook endpoint เป็น:
 
 ```text

@@ -49,6 +49,22 @@ test("membership Checkout selects only the server-configured Price ID",async()=>
     assert.equal(checkout.get("line_items[0][price]"),"price_trusted");
     assert.notEqual(checkout.get("line_items[0][price]"),"price_attacker");
     assert.equal(checkout.get("metadata[user_sub]"),session.sub);
+    assert.equal(checkout.get("payment_method_types[0]"),"card");
+    assert.equal(checkout.get("payment_method_types[1]"),"promptpay");
+  }finally{globalThis.fetch=originalFetch}
+});
+
+test("PromptPay is excluded from Subscription Checkout",async()=>{
+  const originalFetch=globalThis.fetch;let checkoutBody="";
+  globalThis.fetch=async (url,options={})=>{if(url.endsWith("/prices/price_subscription"))return Response.json({active:true,currency:"thb",unit_amount:19900,recurring:{interval:"month",interval_count:1}});if(url.endsWith("/customers"))return Response.json({id:"cus_subscription"});checkoutBody=options.body||"";return Response.json({id:"cs_test_subscription",url:"https://checkout.stripe.com/c/pay/subscription"})};
+  const DB={prepare(){return {bind(){return this},async first(){return null},async run(){return {meta:{changes:1}}}}}};
+  try{
+    const request=new Request("https://api.sorasukt.com/api/billing/checkout/membership",{method:"POST",headers,body:JSON.stringify({period:"monthly",paymentType:"subscription",requestId:"123e4567-e89b-12d3-a456-426614174009"})});
+    const response=await handleBilling(request,{DB,STRIPE_SECRET_KEY:"sk_test",STRIPE_PRICE_SUB_MONTHLY:"price_subscription"},headers,{sub:"auth0|subscriber"});
+    const checkout=new URLSearchParams(checkoutBody);
+    assert.equal(response.status,200);
+    assert.equal(checkout.get("payment_method_types[0]"),"card");
+    assert.equal(checkout.has("payment_method_types[1]"),false);
   }finally{globalThis.fetch=originalFetch}
 });
 

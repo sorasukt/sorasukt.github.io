@@ -127,6 +127,8 @@ async function membershipCheckout(request,env,headers,session){
   const customerId=await getOrCreateCustomer(env,session);
   const params=new URLSearchParams();
   params.set("mode",paymentType==="subscription"?"subscription":"payment");
+  params.set("payment_method_types[0]","card");
+  if(paymentType==="one_time")params.set("payment_method_types[1]","promptpay");
   params.set("customer",customerId);
   params.set("client_reference_id",session.sub);
   params.set("line_items[0][price]",priceId);
