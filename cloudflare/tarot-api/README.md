@@ -26,6 +26,8 @@ npx wrangler secret put GEMINI_API_KEY
 npx wrangler secret put GOOGLE_MAPS_API_KEY
 ```
 
+ทั้งสาม secret ถูกประกาศเป็น required ใน `wrangler.json` ดังนั้น deployment จะหยุดก่อนเผยแพร่หาก Worker ยังขาดค่าใดค่าหนึ่ง
+
 `GOOGLE_MAPS_API_KEY` ใช้เฉพาะ Worker และไม่ถูกส่งไป browser เปิด API ใน Google Cloud อย่างน้อย:
 
 - Places API (New)
@@ -58,6 +60,13 @@ GET /api/member/places/autocomplete?q=...
 เมื่อผู้ใช้เลือกสถานที่เกิด Worker จะ resolve Google Place ID เป็นชื่อสถานที่ พิกัด latitude/longitude และ timezone แล้วเก็บลง D1 โดยไม่เชื่อถือพิกัดที่ส่งมาจาก browser
 
 Session cookie เป็น `HttpOnly`, `Secure`, `SameSite=Lax` และ signed ฝั่ง Worker
+
+## Abuse protection and validation
+
+- คำขอที่เรียก Gemini ถูกจำกัดรวม 20 ครั้งต่อนาทีต่อสมาชิก หรือ per-IP สำหรับผู้ใช้ทั่วไป ผ่าน `AI_RATE_LIMITER`
+- Request body ถูกอ่านแบบ bounded stream: 12 KB สำหรับ AI routes และ 4 KB สำหรับ member profile
+- ผลลัพธ์จาก Gemini จำกัด output token และ daily reading ที่ค้าง `pending` เกินหนึ่งนาทีสามารถเริ่มใหม่ได้
+- รัน `npm run check` เพื่อตรวจ syntax และชุดทดสอบด้วย Node.js test runner
 
 ## Security notes
 
