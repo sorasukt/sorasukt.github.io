@@ -24,7 +24,9 @@
   <script>
     (async()=>{
       try{
-        await window.SorasuktAuth.login();
+        const params = new URLSearchParams(window.location.search);
+        const returnTo = params.get("returnTo") || "/tarot/";
+        await window.SorasuktAuth.login(returnTo);
       }catch(error){
         console.error("Auth0 sign-in bootstrap failed",error);
         document.getElementById("status").textContent="ไม่สามารถเปิดหน้าลงชื่อใช้งานได้: "+(error?.message||"Unknown error");
