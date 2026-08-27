@@ -4,6 +4,11 @@
   const returnTo = window.location.href;
   let memberCache=null;
 
+  function ensureEnhancementStyles(){
+    if(document.querySelector('link[data-tarot-enhancements]'))return;
+    const link=document.createElement('link');link.rel='stylesheet';link.href='/tarot/portal-enhancements.css?v=20260827-1322';link.dataset.tarotEnhancements='true';document.head.append(link);
+  }
+
   async function api(path, options={}) { return fetch(`${API}${path}`, {...options, credentials:"include"}); }
 
   async function getMember({refresh=false}={}){
@@ -52,5 +57,6 @@
   }
 
   window.TarotPortal={api,getMember,clearMemberCache};
+  ensureEnhancementStyles();
   addEventListener("DOMContentLoaded",()=>{initNavigation();initFooter();initAccount();});
 })();
