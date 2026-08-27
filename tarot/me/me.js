@@ -1,5 +1,5 @@
 (() => {
-  const $=id=>document.getElementById(id);
+  const $=selector=>document.querySelector(selector);
   let timer=null,selectedPlaceId='',signedIn=false;
 
   async function load(){
