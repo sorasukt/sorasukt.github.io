@@ -1,8 +1,10 @@
 # Tarot social preview image
 
-Place the production Open Graph / social sharing image at:
+The Tarot pages currently use the existing site logo as their Open Graph and Twitter/X fallback:
 
-`tarot/assets/og/tarot-cover.jpg`
+`https://sorasukt.com/img/logo.png`
+
+When a dedicated cover is ready, place it at `tarot/assets/og/tarot-cover.jpg` and update the metadata in `tarot/index.html`.
 
 Recommended master/export specification:
 
@@ -14,8 +16,4 @@ Recommended master/export specification:
 - Keep key logo/title/artwork inside a generous safe area so crops on social platforms do not remove important content
 - Avoid tiny text; the image should remain readable when reduced on mobile
 
-The page references the absolute production URL:
-
-`https://sorasukt.com/tarot/assets/og/tarot-cover.jpg`
-
-The same image is used for Open Graph and Twitter/X large-card previews.
+Do not commit an empty placeholder image because crawlers cache invalid previews for long periods.

@@ -1,4 +1,6 @@
 import {autocompletePlaces,resolvePlace} from "./google-places.js";
+import {readJsonBody,RequestBodyError} from "./request.js";
+import {validIsoDate,validTime} from "./validation.js";
 
 const DAILY_SCHEMA={type:"object",additionalProperties:false,required:["title","summary","energy","focus","avoid","advice"],properties:{title:{type:"string"},summary:{type:"string"},energy:{type:"string"},focus:{type:"string"},avoid:{type:"string"},advice:{type:"string"}}};
 const ASTRO_SCHEMA={type:"object",additionalProperties:false,required:["title","overview","strengths","growth","relationships","reflection"],properties:{title:{type:"string"},overview:{type:"string"},strengths:{type:"array",minItems:2,maxItems:4,items:{type:"string"}},growth:{type:"array",minItems:2,maxItems:4,items:{type:"string"}},relationships:{type:"string"},reflection:{type:"string"}}};
@@ -23,13 +25,14 @@ export async function handleMember(request,env,headers,auth,deck){
 async function getProfile(env,headers,sub){const profile=await env.DB.prepare("SELECT birth_date,birth_time,birth_place,birth_place_id,birth_lat,birth_lng,birth_timezone,timezone,updated_at FROM member_profiles WHERE user_sub=?").bind(sub).first();return json({success:true,profile:profile||null},200,headers)}
 
 async function saveProfile(request,env,headers,sub){
-  let body;try{body=JSON.parse(await request.text())}catch{return json({success:false,error:{code:"INVALID_REQUEST",message:"Invalid JSON request"}},400,headers)}
-  const birthDate=typeof body.birthDate==="string"?body.birthDate.trim():"";
+  let body;
+  try{body=await readJsonBody(request,4_096)}
+  catch(error){if(error instanceof RequestBodyError)return json({success:false,error:{code:error.code,message:error.status===413?"ข้อมูลคำขอมีขนาดใหญ่เกินไป":"ข้อมูลคำขอไม่ถูกต้อง"}},error.status,headers);throw error}
+  const birthDate=validIsoDate(typeof body.birthDate==="string"?body.birthDate.trim():"");
   const birthTime=typeof body.birthTime==="string"?body.birthTime.trim():"";
   const birthPlaceId=typeof body.birthPlaceId==="string"?body.birthPlaceId.trim():"";
-  if(!/^\d{4}-\d{2}-\d{2}$/.test(birthDate)||Number.isNaN(Date.parse(`${birthDate}T00:00:00Z`)))return json({success:false,error:{code:"INVALID_BIRTH_DATE",message:"กรุณาระบุวันเดือนปีเกิดให้ถูกต้อง"}},400,headers);
-  if(birthTime&&!/^([01]\d|2[0-3]):[0-5]\d$/.test(birthTime))return json({success:false,error:{code:"INVALID_BIRTH_TIME",message:"เวลาเกิดไม่ถูกต้อง"}},400,headers);
-  if(new Date(`${birthDate}T00:00:00Z`)>new Date())return json({success:false,error:{code:"INVALID_BIRTH_DATE",message:"วันเกิดต้องไม่อยู่ในอนาคต"}},400,headers);
+  if(!birthDate)return json({success:false,error:{code:"INVALID_BIRTH_DATE",message:"กรุณาระบุวันเดือนปีเกิดให้ถูกต้อง"}},400,headers);
+  if(birthTime&&!validTime(birthTime))return json({success:false,error:{code:"INVALID_BIRTH_TIME",message:"เวลาเกิดไม่ถูกต้อง"}},400,headers);
   let place={placeId:null,name:null,lat:null,lng:null,timezone:null};
   if(birthPlaceId){try{place=await resolvePlace(env,birthPlaceId)}catch{return json({success:false,error:{code:"INVALID_BIRTH_PLACE",message:"ไม่สามารถยืนยันสถานที่เกิดได้ กรุณาเลือกจากรายการอีกครั้ง"}},400,headers)}}
   else if(body.birthPlace){return json({success:false,error:{code:"BIRTH_PLACE_SELECTION_REQUIRED",message:"กรุณาเลือกสถานที่เกิดจากรายการแนะนำ"}},400,headers)}
@@ -53,12 +56,15 @@ async function getDaily(env,headers,sub,deck){
   if(!p)return json({success:false,error:{code:"PROFILE_REQUIRED",message:"กรุณาระบุวันเดือนปีเกิดก่อนดูดวงประจำวัน"}},409,headers);
   const day=bangkokDate();const cached=await env.DB.prepare("SELECT status,card_id,card_name,horoscope_json FROM daily_readings WHERE user_sub=? AND reading_date=?").bind(sub,day).first();
   if(cached?.status==="ready"&&cached.horoscope_json){try{return json({success:true,cached:true,date:day,card:{id:cached.card_id,name:cached.card_name},horoscope:JSON.parse(cached.horoscope_json)},200,headers)}catch{await env.DB.prepare("DELETE FROM daily_readings WHERE user_sub=? AND reading_date=?").bind(sub,day).run()}}
-  if(cached?.status==="pending")return json({success:false,pending:true,error:{code:"DAILY_PENDING",message:"กำลังจัดทำดวงประจำวันของคุณ"}},202,headers);
+  if(cached?.status==="pending"){
+    const released=await env.DB.prepare("DELETE FROM daily_readings WHERE user_sub=? AND reading_date=? AND status='pending' AND updated_at <= datetime('now','-1 minute')").bind(sub,day).run();
+    if(!released.meta?.changes)return json({success:false,pending:true,error:{code:"DAILY_PENDING",message:"กำลังจัดทำดวงประจำวันของคุณ"}},202,headers);
+  }
   const cardId=await dailyCardId(`${sub}:${day}`,deck.length),card=deck[cardId];const inserted=await env.DB.prepare("INSERT OR IGNORE INTO daily_readings(user_sub,reading_date,status,card_id,card_name,updated_at) VALUES(?,?,?,?,?,CURRENT_TIMESTAMP)").bind(sub,day,"pending",card.id,card.name).run();if(!inserted.meta?.changes)return json({success:false,pending:true,error:{code:"DAILY_PENDING",message:"กำลังจัดทำดวงประจำวันของคุณ"}},202,headers);
   try{const horoscope=await generateStructured(env,"You create concise, grounded daily reflective horoscope guidance in natural Thai. Treat astrology and Tarot as reflective frameworks, not factual prediction. Never claim certainty.",`Create today's personalized daily reflection for ${day}. Birth date: ${p.birth_date}. Birth time: ${p.birth_time||"not provided"}. Birth place: ${p.birth_place||"not provided"}. Daily Tarot card: ${card.name}.`,DAILY_SCHEMA);await env.DB.prepare("UPDATE daily_readings SET status='ready',horoscope_json=?,updated_at=CURRENT_TIMESTAMP WHERE user_sub=? AND reading_date=?").bind(JSON.stringify(horoscope),sub,day).run();return json({success:true,cached:false,date:day,card:{id:card.id,name:card.name},horoscope},200,headers)}catch(error){await env.DB.prepare("DELETE FROM daily_readings WHERE user_sub=? AND reading_date=? AND status='pending'").bind(sub,day).run();const t=error?.name==="AbortError";return json({success:false,error:{code:t?"AI_TIMEOUT":"AI_GENERATION_FAILED",message:"ไม่สามารถสร้างดวงประจำวันได้ในขณะนี้"}},t?504:502,headers)}
 }
 
-async function generateStructured(env,system,prompt,schema){const model=env.GEMINI_MODEL||"gemini-3.6-flash",endpoint=`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(env.GEMINI_API_KEY)}`,controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),25000);try{const response=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({systemInstruction:{parts:[{text:system}]},contents:[{role:"user",parts:[{text:prompt}]}],generationConfig:{responseMimeType:"application/json",responseJsonSchema:schema}}),signal:controller.signal});if(!response.ok)throw new Error("AI request failed");const raw=await response.json(),text=raw?.candidates?.[0]?.content?.parts?.map(p=>p.text||"").join("")||"",result=JSON.parse(text);if(!result||typeof result!=="object")throw new Error("AI response is invalid");return result}finally{clearTimeout(timeout)}}
+async function generateStructured(env,system,prompt,schema){const model=env.GEMINI_MODEL||"gemini-3.6-flash",endpoint=`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(env.GEMINI_API_KEY)}`,controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),25000);try{const response=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({systemInstruction:{parts:[{text:system}]},contents:[{role:"user",parts:[{text:prompt}]}],generationConfig:{responseMimeType:"application/json",responseJsonSchema:schema,maxOutputTokens:2048}}),signal:controller.signal});if(!response.ok)throw new Error("AI request failed");const raw=await response.json(),text=raw?.candidates?.[0]?.content?.parts?.map(p=>p.text||"").join("")||"",result=JSON.parse(text);if(!result||typeof result!=="object")throw new Error("AI response is invalid");return result}finally{clearTimeout(timeout)}}
 function bangkokDate(){const parts=new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Bangkok",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date()),v=Object.fromEntries(parts.map(p=>[p.type,p.value]));return `${v.year}-${v.month}-${v.day}`}
 async function dailyCardId(seed,length){const bytes=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(seed));return new DataView(bytes).getUint32(0,false)%length}
 function json(data,status,headers){return new Response(JSON.stringify(data),{status,headers})}

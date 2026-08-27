@@ -51,7 +51,7 @@ async function createReading(){
     const base=(window.TAROT_CONFIG?.apiBaseUrl||"").replace(/\/$/,"");
     const endpoint=window.TAROT_CONFIG?.endpoint||"/api/tarot/reading";
     const controller=new AbortController(); const timeout=setTimeout(()=>controller.abort(),30000);
-    const res=await fetch(base+endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({question:state.question,language:"th",cards:state.selected.map(c=>({cardId:c.id,orientation:"upright"}))}),signal:controller.signal});
+    const res=await fetch(base+endpoint,{method:"POST",credentials:"include",headers:{"Content-Type":"application/json"},body:JSON.stringify({question:state.question,language:"th",cards:state.selected.map(c=>({cardId:c.id,orientation:"upright"}))}),signal:controller.signal});
     clearTimeout(timeout); const data=await res.json().catch(()=>null);
     if(!res.ok||!data?.success)throw new Error(data?.error?.message||"ไม่สามารถสร้างคำอ่านไพ่ได้");
     renderReading(data.reading);

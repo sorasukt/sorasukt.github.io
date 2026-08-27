@@ -1,3 +1,6 @@
+import {readJsonBody,RequestBodyError} from "./request.js";
+import {validIsoDate,validTime} from "./validation.js";
+
 const RESULT_SCHEMA={type:"object",additionalProperties:false,required:["title","summary","insights","reflection"],properties:{title:{type:"string"},summary:{type:"string"},insights:{type:"array",minItems:2,maxItems:4,items:{type:"string"}},reflection:{type:"string"}}};
 const NAMING_SCHEMA={type:"object",additionalProperties:false,required:["title","names","note"],properties:{title:{type:"string"},names:{type:"array",minItems:3,maxItems:6,items:{type:"object",additionalProperties:false,required:["name","meaning","tone"],properties:{name:{type:"string"},meaning:{type:"string"},tone:{type:"string"}}}},note:{type:"string"}}};
 
@@ -6,7 +9,12 @@ export async function handleFortune(request,env,headers,session=null,profile=nul
   if(!url.pathname.startsWith('/api/fortune/'))return null;
   if(request.method!=="POST")return json({success:false,error:{code:"METHOD_NOT_ALLOWED",message:"Method not allowed"}},405,headers);
   if(!env.GEMINI_API_KEY)return json({success:false,error:{code:"SERVER_CONFIG_ERROR",message:"AI service is not configured"}},500,headers);
-  let body;try{body=await request.json()}catch{return json({success:false,error:{code:"INVALID_REQUEST",message:"ข้อมูลคำขอไม่ถูกต้อง"}},400,headers)}
+  let body;
+  try{body=await readJsonBody(request,12_000)}
+  catch(error){
+    if(error instanceof RequestBodyError)return json({success:false,error:{code:error.code,message:error.status===413?"ข้อมูลคำขอมีขนาดใหญ่เกินไป":"ข้อมูลคำขอไม่ถูกต้อง"}},error.status,headers);
+    throw error;
+  }
   const kind=url.pathname.slice('/api/fortune/'.length);
   try{
     if(kind==='zodiac')return zodiac(body,env,headers,session,profile);
@@ -22,7 +30,7 @@ export async function handleFortune(request,env,headers,session=null,profile=nul
 }
 
 async function zodiac(body,env,headers,session,profile){
-  const birthDate=validDate(body.birthDate)||profile?.birth_date;
+  const birthDate=validIsoDate(body.birthDate)||profile?.birth_date;
   if(!birthDate)return json({success:false,error:{code:'INVALID_BIRTH_DATE',message:'กรุณาระบุวันเดือนปีเกิด'}},400,headers);
   const context=memberContext(session,profile);
   const prompt=`Create a concise zodiac-inspired reflective reading in natural Thai for birth date ${birthDate}. ${context} Explain the sun-sign theme without presenting personality as fixed or fate as certain. Give practical reflective insights for everyday life.`;
@@ -31,9 +39,9 @@ async function zodiac(body,env,headers,session,profile){
 }
 
 async function astrology(body,env,headers,session,profile){
-  const birthDate=validDate(body.birthDate)||profile?.birth_date;
+  const birthDate=validIsoDate(body.birthDate)||profile?.birth_date;
   if(!birthDate)return json({success:false,error:{code:'INVALID_BIRTH_DATE',message:'กรุณาระบุวันเดือนปีเกิด'}},400,headers);
-  const suppliedTime=typeof body.birthTime==='string'?body.birthTime.trim():'';
+  const suppliedTime=validTime(typeof body.birthTime==='string'?body.birthTime.trim():'');
   const birthTime=suppliedTime||profile?.birth_time||'';
   const context=memberContext(session,profile);
   const prompt=`Create a grounded astrology-inspired overview in natural Thai using birth date ${birthDate}${birthTime?`, birth time ${birthTime}`:''}. ${context} Do not invent exact planets, houses, ascendant, aspects, or astronomical positions because no ephemeris calculation is provided. Focus on reflective themes, strengths, tensions, and one useful reflection question.`;
@@ -72,13 +80,12 @@ function memberContext(session,profile){
   if(profile?.birth_place)bits.push(`saved birth place ${profile.birth_place}`);
   return bits.length?`The signed-in member also has ${bits.join(', ')}; use this only as secondary context when relevant.`:'The user is signed in but has no additional saved birth profile context.';
 }
-function validDate(v){if(typeof v!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(v))return '';const d=new Date(`${v}T00:00:00Z`);return Number.isNaN(d.valueOf())||d>new Date()?'':v;}
 async function generate(env,system,prompt,schema){
   const model=env.GEMINI_MODEL||'gemini-3.6-flash';
   const endpoint=`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(env.GEMINI_API_KEY)}`;
   const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),25000);
   try{
-    const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({systemInstruction:{parts:[{text:system}]},contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{responseMimeType:'application/json',responseJsonSchema:schema}}),signal:controller.signal});
+    const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({systemInstruction:{parts:[{text:system}]},contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{responseMimeType:'application/json',responseJsonSchema:schema,maxOutputTokens:2048}}),signal:controller.signal});
     if(!response.ok){console.error('Gemini fortune request failed',response.status);throw new Error('Gemini request failed');}
     const raw=await response.json();
     const text=raw?.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('')||'';

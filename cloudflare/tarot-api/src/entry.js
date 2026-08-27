@@ -2,6 +2,7 @@ import tarotWorker from "./index.js";
 import {handleMember} from "./member.js";
 import {handleAuthRoute,getSession} from "./auth-web.js";
 import {handleFortune} from "./fortune.js";
+import {enforceAiRateLimit} from "./rate-limit.js";
 
 const MAJOR=["The Fool","The Magician","The High Priestess","The Empress","The Emperor","The Hierophant","The Lovers","The Chariot","Strength","The Hermit","Wheel of Fortune","Justice","The Hanged Man","Death","Temperance","The Devil","The Tower","The Star","The Moon","The Sun","Judgement","The World"];
 const RANKS=["Ace","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten","Page","Knight","Queen","King"];
@@ -22,6 +23,18 @@ export default {
       }
     }
 
+    if(url.pathname==="/api/tarot/reading"&&request.method==="POST"){
+      const origin=request.headers.get("Origin")||"";
+      const corsOrigin=allowedOrigin(origin,env);
+      const headers=baseHeaders(request,env);
+      if(origin&&!corsOrigin)return json({success:false,error:{code:"ORIGIN_NOT_ALLOWED",message:"Origin not allowed"}},403,headers);
+      let session=null;
+      try{session=await getSession(request,env)}catch(error){console.error(JSON.stringify({message:"Optional Tarot member context failed",error:error?.message||"error"}))}
+      const limit=await enforceAiRateLimit(request,env,session?.sub||"");
+      if(!limit.allowed)return limited(limit,headers);
+      return tarotWorker.fetch(request,env,ctx);
+    }
+
     if(url.pathname.startsWith('/api/fortune/')){
       const origin=request.headers.get('Origin')||'';
       const corsOrigin=allowedOrigin(origin,env);
@@ -33,6 +46,8 @@ export default {
         session=await getSession(request,env);
         if(session&&env.DB)profile=await loadProfile(env,session.sub);
       }catch(error){console.error('Optional fortune member context failed',error?.message||'error');}
+      const limit=await enforceAiRateLimit(request,env,session?.sub||"");
+      if(!limit.allowed)return limited(limit,headers);
       const response=await handleFortune(request,env,headers,session,profile);
       return response||json({success:false,error:{code:'NOT_FOUND',message:'Not found'}},404,headers);
     }
@@ -49,6 +64,11 @@ export default {
     const session=await getSession(request,env);
     if(!session)return json({success:false,error:{code:"UNAUTHORIZED",message:"Authentication required"}},401,headers);
     const auth={ok:true,payload:session};
+
+    if((url.pathname==="/api/member/daily"||url.pathname==="/api/member/astrology")&&request.method==="GET"){
+      const limit=await enforceAiRateLimit(request,env,session.sub);
+      if(!limit.allowed)return limited(limit,headers);
+    }
 
     if(url.pathname==="/api/member/me"||url.pathname==="/api/member/context"){
       if(request.method!=="GET")return json({success:false,error:{code:"METHOD_NOT_ALLOWED",message:"Method not allowed"}},405,headers);
@@ -85,3 +105,4 @@ function preflight(corsOrigin){
 function allowedOrigin(origin,env){const allowed=(env.ALLOWED_ORIGINS||"https://sorasukt.com,https://www.sorasukt.com").split(",").map(x=>x.trim()).filter(Boolean);return allowed.includes(origin)?origin:""}
 function baseHeaders(request,env){const origin=request.headers.get("Origin")||"",corsOrigin=allowedOrigin(origin,env),headers=new Headers();headers.set("Content-Type","application/json; charset=utf-8");headers.set("Cache-Control","no-store");headers.set("Vary","Origin");if(corsOrigin){headers.set("Access-Control-Allow-Origin",corsOrigin);headers.set("Access-Control-Allow-Credentials","true");}return headers}
 function json(data,status,headers){return new Response(JSON.stringify(data),{status,headers})}
+function limited(result,headers){const responseHeaders=new Headers(headers);if(result.retryAfter)responseHeaders.set("Retry-After",String(result.retryAfter));return json({success:false,error:{code:result.code,message:result.message}},result.status,responseHeaders)}
