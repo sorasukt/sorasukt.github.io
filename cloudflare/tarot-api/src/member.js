@@ -1,4 +1,5 @@
 const DAILY_SCHEMA={type:"object",additionalProperties:false,required:["title","summary","energy","focus","avoid","advice"],properties:{title:{type:"string"},summary:{type:"string"},energy:{type:"string"},focus:{type:"string"},avoid:{type:"string"},advice:{type:"string"}}};
+const ASTRO_SCHEMA={type:"object",additionalProperties:false,required:["title","overview","strengths","growth","relationships","reflection"],properties:{title:{type:"string"},overview:{type:"string"},strengths:{type:"array",minItems:2,maxItems:4,items:{type:"string"}},growth:{type:"array",minItems:2,maxItems:4,items:{type:"string"}},relationships:{type:"string"},reflection:{type:"string"}}};
 
 export async function handleMember(request,env,headers,auth,deck){
   const url=new URL(request.url);
@@ -13,6 +14,11 @@ export async function handleMember(request,env,headers,auth,deck){
   if(url.pathname==="/api/member/daily"){
     if(request.method!=="GET")return json({success:false,error:{code:"METHOD_NOT_ALLOWED",message:"Method not allowed"}},405,headers);
     return getDaily(env,headers,auth.payload.sub,deck);
+  }
+
+  if(url.pathname==="/api/member/astrology"){
+    if(request.method!=="GET")return json({success:false,error:{code:"METHOD_NOT_ALLOWED",message:"Method not allowed"}},405,headers);
+    return getAstrology(env,headers,auth.payload.sub);
   }
 
   return null;
@@ -36,6 +42,20 @@ async function saveProfile(request,env,headers,sub){
     ON CONFLICT(user_sub) DO UPDATE SET birth_date=excluded.birth_date,birth_time=excluded.birth_time,birth_place=excluded.birth_place,timezone=excluded.timezone,updated_at=CURRENT_TIMESTAMP`)
     .bind(sub,birthDate,birthTime||null,birthPlace||null,"Asia/Bangkok").run();
   return json({success:true,profile:{birth_date:birthDate,birth_time:birthTime||null,birth_place:birthPlace||null,timezone:"Asia/Bangkok"}},200,headers);
+}
+
+async function getAstrology(env,headers,sub){
+  if(!env.GEMINI_API_KEY)return json({success:false,error:{code:"SERVER_CONFIG_ERROR",message:"AI service is not configured"}},500,headers);
+  const profile=await env.DB.prepare("SELECT birth_date,birth_time,birth_place FROM member_profiles WHERE user_sub=?").bind(sub).first();
+  if(!profile)return json({success:false,error:{code:"PROFILE_REQUIRED",message:"กรุณาเพิ่มวันเดือนปีเกิดในหน้า ฉัน ก่อนดูแบบเชิงลึก"}},409,headers);
+  const prompt=`Create a deeper reflective astrology-style profile in natural Thai using these details: birth date ${profile.birth_date}, birth time ${profile.birth_time||"not provided"}, birth place ${profile.birth_place||"not provided"}. Do not invent exact planetary placements, houses, ascendant, or astronomical calculations. If time/place are missing, say the interpretation is broader. Focus on themes, strengths, growth areas, relationships, and one reflection question.`;
+  try{
+    const reading=await generateStructured(env,"You provide grounded astrology-inspired reflective guidance. Never claim astronomical positions that were not calculated. Never present fate as certain. Keep the tone thoughtful and useful.",prompt,ASTRO_SCHEMA);
+    return json({success:true,reading},200,headers);
+  }catch(error){
+    const timedOut=error?.name==="AbortError";
+    return json({success:false,error:{code:timedOut?"AI_TIMEOUT":"AI_GENERATION_FAILED",message:"ไม่สามารถสร้างการอ่านเชิงลึกได้ในขณะนี้"}},timedOut?504:502,headers);
+  }
 }
 
 async function getDaily(env,headers,sub,deck){
@@ -64,17 +84,20 @@ async function getDaily(env,headers,sub,deck){
 }
 
 async function generateDaily(env,{day,birthDate,birthTime,birthPlace,card}){
+  const prompt=`Create today's personalized daily reflection for date ${day} in Thailand. Birth date: ${birthDate}. Birth time: ${birthTime||"not provided"}. Birth place: ${birthPlace||"not provided"}. Daily Tarot card: ${card.name}. Use the birth details only to personalize tone/themes; do not invent precise astronomical placements that were not calculated. Keep it useful and specific.`;
+  return generateStructured(env,"You create concise, grounded daily reflective horoscope guidance in natural Thai. Treat astrology and Tarot as reflective frameworks, not factual prediction. Never claim certainty. Avoid fear, medical/legal/financial directives, or deterministic statements.",prompt,DAILY_SCHEMA);
+}
+
+async function generateStructured(env,system,prompt,schema){
   const model=env.GEMINI_MODEL||"gemini-3.6-flash";
   const endpoint=`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(env.GEMINI_API_KEY)}`;
-  const system="You create concise, grounded daily reflective horoscope guidance in natural Thai. Treat astrology and Tarot as reflective frameworks, not factual prediction. Never claim certainty. Avoid fear, medical/legal/financial directives, or deterministic statements.";
-  const prompt=`Create today's personalized daily reflection for date ${day} in Thailand. Birth date: ${birthDate}. Birth time: ${birthTime||"not provided"}. Birth place: ${birthPlace||"not provided"}. Daily Tarot card: ${card.name}. Use the birth details only to personalize tone/themes; do not invent precise astronomical placements that were not calculated. Keep it useful and specific.`;
   const controller=new AbortController(); const timeout=setTimeout(()=>controller.abort(),25000);
   try{
-    const response=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({systemInstruction:{parts:[{text:system}]},contents:[{role:"user",parts:[{text:prompt}]}],generationConfig:{responseMimeType:"application/json",responseJsonSchema:DAILY_SCHEMA}}),signal:controller.signal});
-    if(!response.ok)throw new Error("Gemini daily request failed");
-    const raw=await response.json(); const text=raw?.candidates?.[0]?.content?.parts?.map(p=>p.text||"").join("")||""; const horoscope=JSON.parse(text);
-    if(!horoscope||typeof horoscope!=="object")throw new Error("Gemini daily response is invalid");
-    return horoscope;
+    const response=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({systemInstruction:{parts:[{text:system}]},contents:[{role:"user",parts:[{text:prompt}]}],generationConfig:{responseMimeType:"application/json",responseJsonSchema:schema}}),signal:controller.signal});
+    if(!response.ok)throw new Error("AI request failed");
+    const raw=await response.json(); const text=raw?.candidates?.[0]?.content?.parts?.map(p=>p.text||"").join("")||""; const result=JSON.parse(text);
+    if(!result||typeof result!=="object")throw new Error("AI response is invalid");
+    return result;
   }finally{clearTimeout(timeout)}
 }
 
