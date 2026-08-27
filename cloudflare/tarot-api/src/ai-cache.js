@@ -1,4 +1,4 @@
-const CACHE_RETENTION_DAYS=180;
+const CACHE_RETENTION_DAYS=60;
 
 export async function getMemberAiResult(env,userSub,feature,input){
   if(!env.DB||!userSub)return {cached:false,key:"",value:null};

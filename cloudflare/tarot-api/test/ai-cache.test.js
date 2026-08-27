@@ -25,5 +25,5 @@ test("generated member result is upserted with finite retention",async()=>{
   const env={DB:{prepare(){return {bind(...values){bound=values;return this},async run(){ran=true}}}}};
   await saveMemberAiResult(env,"auth0|member","tarot:reading:v1","abc123",{readingTitle:"saved"});
   assert.equal(ran,true);
-  assert.deepEqual(bound,["auth0|member","tarot:reading:v1","abc123",JSON.stringify({readingTitle:"saved"}),"+180 days"]);
+  assert.deepEqual(bound,["auth0|member","tarot:reading:v1","abc123",JSON.stringify({readingTitle:"saved"}),"+60 days"]);
 });

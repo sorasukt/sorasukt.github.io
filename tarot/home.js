@@ -25,9 +25,15 @@
 
   async function loadDaily(){
     const status=$("memberStatus");
-    let r=await window.TarotPortal.api("/api/member/daily");
-    if(r.status===202){ status.textContent="กำลังเตรียมข้อความประจำวันของคุณ…"; await new Promise(x=>setTimeout(x,1800)); r=await window.TarotPortal.api("/api/member/daily"); }
+    status.dataset.loading="true";status.setAttribute("role","status");status.setAttribute("aria-live","polite");status.textContent="กำลังเตรียมข้อความประจำวันของคุณ…";
+    let r=await window.TarotPortal.ai("daily","/api/member/daily");
+    for(let attempt=0;r.status===202&&attempt<20;attempt+=1){
+      status.textContent="กำลังจัดทำข้อความประจำวันของคุณ…";
+      await new Promise(resolve=>setTimeout(resolve,2000));
+      r=await window.TarotPortal.ai("daily","/api/member/daily");
+    }
     const data=await r.json();
+    delete status.dataset.loading;
     if(r.status===409&&data?.error?.code==="PROFILE_REQUIRED"){ if(authenticated)openBirthModal(); return; }
     if(!r.ok){ status.textContent=data?.error?.message||"ไม่สามารถโหลดดวงวันนี้ได้"; return; }
     $("dailyDate").textContent=data.date||"";

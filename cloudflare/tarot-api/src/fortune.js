@@ -26,7 +26,7 @@ export async function handleFortune(request,env,headers,session=null,profile=nul
   }catch(error){
     const timeout=error?.name==='AbortError';
     console.error('Fortune API failed',kind,error?.name||error?.message||'error');
-    return json({success:false,error:{code:timeout?'AI_TIMEOUT':'AI_GENERATION_FAILED',message:timeout?'ใช้เวลาประมวลผลนานเกินไป กรุณาลองใหม่':'ไม่สามารถสร้างผลลัพธ์ได้ในขณะนี้'}},timeout?504:502,headers);
+    return json({success:false,error:{code:timeout?'AI_TIMEOUT':'AI_GENERATION_FAILED',message:timeout?'กำลังใช้เวลานานกว่าปกติ เราจะลองให้อีกครั้งอัตโนมัติ':'ไม่สามารถสร้างผลลัพธ์ได้ในขณะนี้'}},timeout?504:502,headers);
   }
 }
 
@@ -95,7 +95,7 @@ async function generateCached(env,session,feature,input,system,prompt,schema){
 async function generate(env,system,prompt,schema){
   const model=env.GEMINI_MODEL||'gemini-3.6-flash';
   const endpoint=`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(env.GEMINI_API_KEY)}`;
-  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),25000);
+  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),40000);
   try{
     const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({systemInstruction:{parts:[{text:system}]},contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{responseMimeType:'application/json',responseJsonSchema:schema,maxOutputTokens:2048}}),signal:controller.signal});
     if(!response.ok){console.error('Gemini fortune request failed',response.status);throw new Error('Gemini request failed');}

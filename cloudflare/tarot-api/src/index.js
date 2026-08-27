@@ -22,7 +22,7 @@ export default {async fetch(request,env,ctx,memberContext=null){
   const headers={"Content-Type":"application/json; charset=utf-8","Cache-Control":"no-store","Vary":"Origin",...(corsOrigin?{"Access-Control-Allow-Origin":corsOrigin,"Access-Control-Allow-Credentials":"true"}:{})};
   if(request.method==="OPTIONS"){
     if(!corsOrigin)return new Response(null,{status:403});
-    return new Response(null,{status:204,headers:{...headers,"Access-Control-Allow-Methods":"GET, POST, OPTIONS","Access-Control-Allow-Headers":"Authorization, Content-Type","Access-Control-Max-Age":"86400"}});
+    return new Response(null,{status:204,headers:{...headers,"Access-Control-Allow-Methods":"GET, POST, OPTIONS","Access-Control-Allow-Headers":"Authorization, Content-Type, X-Tarot-Policy-Version","Access-Control-Max-Age":"86400"}});
   }
   const url=new URL(request.url);
   if(origin&&!corsOrigin)return json({success:false,error:{code:"ORIGIN_NOT_ALLOWED",message:"Origin not allowed"}},403,headers);
@@ -51,7 +51,7 @@ export default {async fetch(request,env,ctx,memberContext=null){
   const prompt=`Read the five selected Tarot cards in direct relation to the user's question. Analyze both each card in its spread position and useful cross-card patterns. Avoid generic dictionary definitions.${profile?" Use the saved member profile only as optional secondary context when it is relevant.":""}\n\n<user_question>\n${question}\n</user_question>\n\n<selected_cards>\n${cardText}\n</selected_cards>${profile?`\n\n<saved_member_profile>\n${memberProfileText(profile)}\n</saved_member_profile>`:""}`;
   const model=env.GEMINI_MODEL||"gemini-3.6-flash";
   const endpoint=`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(env.GEMINI_API_KEY)}`;
-  const controller=new AbortController(); const timeout=setTimeout(()=>controller.abort(),25000);
+  const controller=new AbortController(); const timeout=setTimeout(()=>controller.abort(),40000);
   try{
     const response=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({systemInstruction:{parts:[{text:system}]},contents:[{role:"user",parts:[{text:prompt}]}],generationConfig:{responseMimeType:"application/json",responseJsonSchema:JSON_SCHEMA,maxOutputTokens:4096}}),signal:controller.signal});
     clearTimeout(timeout);
@@ -61,7 +61,7 @@ export default {async fetch(request,env,ctx,memberContext=null){
     if(!reading||!Array.isArray(reading.cards)||reading.cards.length!==5)return json({success:false,error:{code:"AI_INVALID_RESPONSE",message:"ผลการอ่านไพ่ไม่สมบูรณ์ กรุณาลองใหม่"}},502,headers);
     await saveMemberAiResult(env,memberContext?.session?.sub||"","tarot:reading:v1",cache.key,reading);
     return json({success:true,cached:false,reading},200,headers);
-  }catch(error){clearTimeout(timeout);console.error("Tarot API error",error?.name||"error");return json({success:false,error:{code:error?.name==="AbortError"?"AI_TIMEOUT":"INTERNAL_ERROR",message:"ไม่สามารถสร้างคำอ่านไพ่ได้ในขณะนี้"}},error?.name==="AbortError"?504:500,headers)}
+  }catch(error){clearTimeout(timeout);console.error("Tarot API error",error?.name||"error");return json({success:false,error:{code:error?.name==="AbortError"?"AI_TIMEOUT":"INTERNAL_ERROR",message:error?.name==="AbortError"?"กำลังใช้เวลานานกว่าปกติ เราจะลองให้อีกครั้งอัตโนมัติ":"ไม่สามารถสร้างคำอ่านไพ่ได้ในขณะนี้"}},error?.name==="AbortError"?504:500,headers)}
 }};
 
 async function authenticate(request,env){

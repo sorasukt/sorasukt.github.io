@@ -14,7 +14,7 @@ const positions = [
 ];
 const state={question:"",selected:[]};
 const $=id=>document.getElementById(id);
-const els={question:$("question"),charCount:$("charCount"),start:$("startButton"),counter:$("counter"),questionStep:$("questionStep"),deckStep:$("deckStep"),deck:$("deck"),selectedStrip:$("selectedStrip"),sticky:$("stickyAction"),reveal:$("revealButton"),readingStep:$("readingStep"),readingGrid:$("readingGrid"),readingCopy:$("readingCopy"),readingTitle:$("readingTitle"),questionDisplay:$("questionDisplay"),loading:$("loading"),loadingText:$("loadingText")};
+const els={question:$("question"),charCount:$("charCount"),start:$("startButton"),counter:$("counter"),questionStep:$("questionStep"),deckStep:$("deckStep"),deck:$("deck"),selectedStrip:$("selectedStrip"),sticky:$("stickyAction"),reveal:$("revealButton"),readingStep:$("readingStep"),readingGrid:$("readingGrid"),readingCopy:$("readingCopy"),readingTitle:$("readingTitle"),questionDisplay:$("questionDisplay"),loading:$("loading"),loadingText:$("loadingText"),error:$("readingError")};
 
 function shuffledDeck(){return [...cards].sort(()=>Math.random()-.5)}
 function updateQuestion(){const q=els.question.value.trim(); els.charCount.textContent=`${els.question.value.length} / 500`; els.start.disabled=!q;}
@@ -36,26 +36,24 @@ function toggleCard(card,node,order){
   document.querySelectorAll(".card").forEach(n=>{const i=state.selected.findIndex(x=>x.id===Number(n.dataset.id)); const badge=n.querySelector(".order"); if(i>=0){n.classList.add("selected");badge.textContent=i+1;n.setAttribute("aria-pressed","true")}else{n.classList.remove("selected");badge.textContent="";n.setAttribute("aria-pressed","false")} n.classList.toggle("disabled",state.selected.length===5&&i<0)});
   updateSelectionUI();
 }
-function updateSelectionUI(){els.counter.textContent=`${state.selected.length} / 5 selected`;els.selectedStrip.textContent=state.selected.length?`เลือกแล้ว: ${state.selected.map((_,i)=>`ใบที่ ${i+1}`).join(" · ")}`:"ยังไม่ได้เลือกไพ่";els.sticky.hidden=state.selected.length!==5;}
+function updateSelectionUI(){els.counter.textContent=`เลือกแล้ว ${state.selected.length} / 5 ใบ`;els.selectedStrip.textContent=state.selected.length?`เลือกแล้ว: ${state.selected.map((_,i)=>`ใบที่ ${i+1}`).join(" · ")}`:"ยังไม่ได้เลือกไพ่";els.sticky.hidden=state.selected.length!==5;}
 $("resetSelection").addEventListener("click",renderDeck);
 $("newReading").addEventListener("click",()=>location.reload());
 els.reveal.addEventListener("click",createReading);
 
-function showLoading(on){els.loading.hidden=!on;}
+function showLoading(on){els.loading.hidden=!on;els.loading.setAttribute("aria-busy",String(on));document.querySelector("main")?.setAttribute("aria-busy",String(on));}
 async function createReading(){
   if(state.selected.length!==5)return;
-  els.sticky.hidden=true; showLoading(true);
+  els.sticky.hidden=true;els.error.hidden=true;showLoading(true);
   const messages=["กำลังพิจารณาคำถามของคุณ","กำลังเชื่อมโยงความหมายของไพ่","กำลังเรียบเรียงการอ่านของคุณ"];
   let mi=0; const timer=setInterval(()=>{mi=(mi+1)%messages.length;els.loadingText.textContent=messages[mi]},1400);
   try{
-    const base=(window.TAROT_CONFIG?.apiBaseUrl||"").replace(/\/$/,"");
     const endpoint=window.TAROT_CONFIG?.endpoint||"/api/tarot/reading";
-    const controller=new AbortController(); const timeout=setTimeout(()=>controller.abort(),30000);
-    const res=await fetch(base+endpoint,{method:"POST",credentials:"include",headers:{"Content-Type":"application/json"},body:JSON.stringify({question:state.question,language:"th",cards:state.selected.map(c=>({cardId:c.id,orientation:"upright"}))}),signal:controller.signal});
-    clearTimeout(timeout); const data=await res.json().catch(()=>null);
+    const res=await window.TarotPortal.ai("tarot",endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({question:state.question,language:"th",cards:state.selected.map(c=>({cardId:c.id,orientation:"upright"}))})});
+    const data=await res.json().catch(()=>null);
     if(!res.ok||!data?.success)throw new Error(data?.error?.message||"ไม่สามารถสร้างคำอ่านไพ่ได้");
     renderReading(data.reading);
-  }catch(err){alert(err.name==="AbortError"?"การอ่านไพ่ใช้เวลานานเกินไป กรุณาลองใหม่":"ไม่สามารถอ่านไพ่ได้ในขณะนี้: "+err.message);els.sticky.hidden=false;}
+  }catch(err){els.error.textContent=err?.message||"ยังเตรียมคำอ่านไม่ได้ กรุณาลองอีกครั้ง";els.error.hidden=false;els.error.focus();els.sticky.hidden=false;}
   finally{clearInterval(timer);showLoading(false)}
 }
 function renderReading(reading){
