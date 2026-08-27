@@ -32,6 +32,6 @@
     "head_sampling_rate": 1
   },
   "secrets": {
-    "required": ["GEMINI_API_KEY", "AUTH0_CLIENT_SECRET", "GOOGLE_MAPS_API_KEY"]
+    "required": ["GEMINI_API_KEY", "AUTH0_CLIENT_SECRET"]
   }
 }

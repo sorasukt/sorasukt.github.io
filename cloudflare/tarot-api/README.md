@@ -23,12 +23,19 @@ Flow:
 cd cloudflare/tarot-api
 npx wrangler secret put AUTH0_CLIENT_SECRET
 npx wrangler secret put GEMINI_API_KEY
+```
+
+สอง secret นี้ถูกประกาศเป็น required ใน `wrangler.json` ดังนั้น deployment จะหยุดก่อนเผยแพร่หาก Worker ยังขาดค่าใดค่าหนึ่ง
+
+`GOOGLE_MAPS_API_KEY` เป็น optional ชั่วคราวและไม่บล็อก deployment หากยังไม่มีคีย์ การบันทึกวันเกิดและเวลาเกิดยังใช้งานได้ตามปกติ แต่ระบบค้นหา/ยืนยันสถานที่เกิดจะยังไม่พร้อมใช้งาน หากต้องการเปิดภายหลังให้รัน:
+
+ระหว่างนี้ให้เว้นช่องสถานที่เกิดในหน้า `ฉัน` ไว้ก่อน
+
+```bash
 npx wrangler secret put GOOGLE_MAPS_API_KEY
 ```
 
-ทั้งสาม secret ถูกประกาศเป็น required ใน `wrangler.json` ดังนั้น deployment จะหยุดก่อนเผยแพร่หาก Worker ยังขาดค่าใดค่าหนึ่ง
-
-`GOOGLE_MAPS_API_KEY` ใช้เฉพาะ Worker และไม่ถูกส่งไป browser เปิด API ใน Google Cloud อย่างน้อย:
+คีย์นี้ใช้เฉพาะ Worker และไม่ถูกส่งไป browser โดยต้องเปิด API ใน Google Cloud อย่างน้อย:
 
 - Places API (New)
 - Time Zone API
@@ -40,7 +47,7 @@ npx wrangler secret put GOOGLE_MAPS_API_KEY
 ```env
 AUTH0_CLIENT_SECRET=your_auth0_client_secret
 GEMINI_API_KEY=your_gemini_key
-GOOGLE_MAPS_API_KEY=your_google_maps_key
+# Optional: GOOGLE_MAPS_API_KEY=your_google_maps_key
 ```
 
 ## Member & Places routes
