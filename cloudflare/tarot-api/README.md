@@ -68,7 +68,14 @@ STRIPE_PRICE_ONETIME_MONTHLY
 STRIPE_PRICE_ONETIME_YEARLY
 ```
 
-Price กลุ่ม `SUB` ต้องเป็น recurring prices และกลุ่ม `ONETIME` ต้องเป็น one-time prices หน้าเว็บเรียกราคาจาก Stripe จึงไม่ hard-code จำนวนเงินไว้ใน client
+ราคาที่กำหนดใน Stripe ต้องเป็นสกุลเงินบาทตามตารางนี้:
+
+| รูปแบบ | รายสัปดาห์ | รายเดือน | รายปี |
+| --- | ---: | ---: | ---: |
+| Subscription | ฿59 | ฿199 | ฿1,690 |
+| Pay as you go | ฿79 | ฿259 | ฿1,790 |
+
+Price กลุ่ม `SUB` ต้องเป็น recurring prices รอบละ 1 สัปดาห์/เดือน/ปี และกลุ่ม `ONETIME` ต้องเป็น one-time prices Worker ตรวจ Price ID, จำนวนเงิน, สกุลเงิน ประเภท Price และรอบต่ออายุกับ Stripe ก่อนสร้าง Checkout หากตั้งค่าผิด แผนนั้นจะไม่เปิดรับชำระเงิน
 
 ตั้ง Stripe webhook endpoint เป็น:
 

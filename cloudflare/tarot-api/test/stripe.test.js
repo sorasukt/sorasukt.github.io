@@ -37,7 +37,7 @@ test("support Checkout uses THB, PromptPay, card, and a required Thailand shippi
 
 test("membership Checkout selects only the server-configured Price ID",async()=>{
   const originalFetch=globalThis.fetch;const calls=[];
-  globalThis.fetch=async (url,options)=>{calls.push({url,body:options.body||""});if(url.endsWith("/customers"))return Response.json({id:"cus_test_member"});return Response.json({id:"cs_test_member",url:"https://checkout.stripe.com/c/pay/member"})};
+  globalThis.fetch=async (url,options={})=>{calls.push({url,body:options.body||""});if(url.endsWith("/prices/price_trusted"))return Response.json({id:"price_trusted",active:true,currency:"thb",unit_amount:25900});if(url.endsWith("/customers"))return Response.json({id:"cus_test_member"});return Response.json({id:"cs_test_member",url:"https://checkout.stripe.com/c/pay/member"})};
   const DB={prepare(sql){return {bind(){return this},async first(){return sql.includes("SELECT stripe_customer_id")?null:null},async run(){return {meta:{changes:1}}}}}};
   try{
     const request=new Request("https://api.sorasukt.com/api/billing/checkout/membership",{method:"POST",headers,body:JSON.stringify({period:"monthly",paymentType:"one_time",priceId:"price_attacker",requestId:"123e4567-e89b-12d3-a456-426614174001"})});
@@ -50,6 +50,13 @@ test("membership Checkout selects only the server-configured Price ID",async()=>
     assert.notEqual(checkout.get("line_items[0][price]"),"price_attacker");
     assert.equal(checkout.get("metadata[user_sub]"),session.sub);
   }finally{globalThis.fetch=originalFetch}
+});
+
+test("membership plans expose the confirmed THB prices",async()=>{
+  const response=await handleBilling(new Request("https://api.sorasukt.com/api/billing/plans"),{STRIPE_SECRET_KEY:"sk_test"},headers);
+  const data=await response.json(),prices=Object.fromEntries(data.plans.map(plan=>[`${plan.paymentType}:${plan.period}`,plan.amount]));
+  assert.equal(response.status,200);
+  assert.deepEqual(prices,{"subscription:weekly":5900,"one_time:weekly":7900,"subscription:monthly":19900,"one_time:monthly":25900,"subscription:yearly":169000,"one_time:yearly":179000});
 });
 
 test("verified Stripe events are claimed once before processing",async()=>{

@@ -5,6 +5,10 @@ const PAYMENT_TYPES=new Set(["subscription","one_time"]);
 const RETRY_SAFE_ID=/^[0-9a-f-]{16,64}$/i;
 const SESSION_ID=/^cs_(test_|live_)?[A-Za-z0-9_]+$/;
 const STRIPE_API="https://api.stripe.com/v1";
+const MEMBERSHIP_PRICING={
+  subscription:{weekly:{amount:5_900,interval:"week"},monthly:{amount:19_900,interval:"month"},yearly:{amount:169_000,interval:"year"}},
+  one_time:{weekly:{amount:7_900},monthly:{amount:25_900},yearly:{amount:179_000}}
+};
 
 class StripeApiError extends Error{
   constructor(status,code="STRIPE_ERROR"){super(`Stripe request failed with status ${status}`);this.name="StripeApiError";this.status=status;this.code=code}
@@ -46,6 +50,7 @@ export async function handleBilling(request,env,headers,session=null){
     if(error instanceof RequestBodyError)return json({success:false,error:{code:error.code,message:error.status===413?"ข้อมูลคำขอมีขนาดใหญ่เกินไป":"ข้อมูลคำขอไม่ถูกต้อง"}},error.status,headers);
     if(error instanceof StripeApiError){
       if(error.code==="STRIPE_NOT_CONFIGURED")return json({success:false,error:{code:"PAYMENT_NOT_CONFIGURED",message:"ระบบชำระเงินยังไม่พร้อมใช้งาน"}},503,headers);
+      if(error.code==="PRICE_CONFIGURATION_INVALID")return json({success:false,error:{code:"PLAN_NOT_CONFIGURED",message:"ราคาของแผนนี้ยังตั้งค่าไม่สมบูรณ์"}},503,headers);
       return json({success:false,error:{code:"PAYMENT_PROVIDER_ERROR",message:"ไม่สามารถเชื่อมต่อระบบชำระเงินได้ในขณะนี้ กรุณาลองอีกครั้ง"}},502,headers);
     }
     return json({success:false,error:{code:"BILLING_ERROR",message:"ไม่สามารถดำเนินการชำระเงินได้ในขณะนี้"}},500,headers);
@@ -99,9 +104,11 @@ async function plans(env,headers){
   assertStripe(env);
   const configured=planConfiguration(env);
   const entries=await Promise.all(configured.map(async plan=>{
-    if(!plan.priceId)return {...plan,configured:false};
+    const expected=expectedMembershipPrice(plan.period,plan.paymentType);
+    if(!plan.priceId)return {period:plan.period,paymentType:plan.paymentType,configured:false,active:false,amount:expected.amount,currency:"thb"};
     const price=await stripeRequest(env,`/prices/${encodeURIComponent(plan.priceId)}`);
-    return {period:plan.period,paymentType:plan.paymentType,configured:true,amount:price.unit_amount,currency:price.currency,recurring:price.recurring?{interval:price.recurring.interval,intervalCount:price.recurring.interval_count}:null,active:Boolean(price.active)};
+    const valid=validMembershipPrice(price,plan.period,plan.paymentType);
+    return {period:plan.period,paymentType:plan.paymentType,configured:valid,amount:expected.amount,currency:"thb",recurring:price.recurring?{interval:price.recurring.interval,intervalCount:price.recurring.interval_count}:null,active:Boolean(price.active)&&valid};
   }));
   return json({success:true,plans:entries},200,headers);
 }
@@ -115,6 +122,8 @@ async function membershipCheckout(request,env,headers,session){
   if(!period||!paymentType||!requestId)return json({success:false,error:{code:"INVALID_CHECKOUT",message:"กรุณาเลือกแผนและรูปแบบการชำระเงินให้ถูกต้อง"}},400,headers);
   const priceId=membershipPriceId(env,period,paymentType);
   if(!priceId)return json({success:false,error:{code:"PLAN_NOT_CONFIGURED",message:"แผนนี้ยังไม่พร้อมรับชำระเงิน"}},503,headers);
+  const price=await stripeRequest(env,`/prices/${encodeURIComponent(priceId)}`);
+  if(!validMembershipPrice(price,period,paymentType))throw new StripeApiError(503,"PRICE_CONFIGURATION_INVALID");
   const customerId=await getOrCreateCustomer(env,session);
   const params=new URLSearchParams();
   params.set("mode",paymentType==="subscription"?"subscription":"payment");
@@ -280,6 +289,8 @@ async function stripeRequest(env,path,{method="GET",body=null,idempotencyKey=""}
 
 function planConfiguration(env){return ["weekly","monthly","yearly"].flatMap(period=>["subscription","one_time"].map(paymentType=>({period,paymentType,priceId:membershipPriceId(env,period,paymentType)})))}
 function membershipPriceId(env,period,paymentType){const key=`STRIPE_PRICE_${paymentType==="subscription"?"SUB":"ONETIME"}_${period.toUpperCase()}`;const value=env[key];return typeof value==="string"&&/^price_[A-Za-z0-9]+$/.test(value)?value:""}
+function expectedMembershipPrice(period,paymentType){return MEMBERSHIP_PRICING[paymentType][period]}
+function validMembershipPrice(price,period,paymentType){const expected=expectedMembershipPrice(period,paymentType),recurring=price?.recurring;return Boolean(price?.active)&&price?.currency==="thb"&&price?.unit_amount===expected.amount&&(paymentType==="subscription"?recurring?.interval===expected.interval&&Number(recurring?.interval_count||1)===1:!recurring)}
 function publicMembership(value){if(!value)return null;return {period:value.plan_period||null,paymentType:value.payment_type||null,status:value.status||"inactive",active:["active","trialing"].includes(value.status)&&(!value.current_period_end||new Date(value.current_period_end)>new Date()),currentPeriodEnd:value.current_period_end||null,cancelAtPeriodEnd:Boolean(value.cancel_at_period_end),updatedAt:value.updated_at||null}}
 function checkoutUrl(checkout,headers){if(typeof checkout.url!=="string"||!checkout.url.startsWith("https://checkout.stripe.com/"))throw new StripeApiError(502,"INVALID_CHECKOUT_URL");return json({success:true,url:checkout.url},200,headers)}
 function validRequestId(value){return typeof value==="string"&&RETRY_SAFE_ID.test(value)?value:""}
