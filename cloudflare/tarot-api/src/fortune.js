@@ -42,7 +42,8 @@ async function astrology(body,env,headers,session,profile){
 }
 
 async function numbers(body,env,headers,session,profile){
-  const type=['phone','vehicle','house'].includes(body.type)?body.type:'general';
+  const rawType=typeof body.type==='string'?body.type:'';
+  const type=rawType==='car'?'vehicle':(['phone','vehicle','house'].includes(rawType)?rawType:'general');
   const value=typeof body.value==='string'?body.value.trim():'';
   if(!value||value.length>80)return json({success:false,error:{code:'INVALID_VALUE',message:'กรุณาระบุข้อมูลตัวเลขที่ต้องการวิเคราะห์'}},400,headers);
   const digits=(value.match(/\d/g)||[]).join('');
