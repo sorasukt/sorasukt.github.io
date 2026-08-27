@@ -14,17 +14,25 @@ const positions = [
 ];
 const state={question:"",selected:[]};
 const $=id=>document.getElementById(id);
-const els={question:$("question"),charCount:$("charCount"),start:$("startButton"),counter:$("counter"),questionStep:$("questionStep"),deckStep:$("deckStep"),deck:$("deck"),selectedStrip:$("selectedStrip"),sticky:$("stickyAction"),reveal:$("revealButton"),readingStep:$("readingStep"),readingGrid:$("readingGrid"),readingCopy:$("readingCopy"),readingTitle:$("readingTitle"),questionDisplay:$("questionDisplay"),loading:$("loading"),loadingText:$("loadingText"),error:$("readingError")};
+const els={question:$("question"),charCount:$("charCount"),start:$("startButton"),counter:$("counter"),questionStep:$("questionStep"),deckStep:$("deckStep"),deckTitle:$("deckTitle"),deckInstruction:$("deckInstruction"),shuffleStage:$("shuffleStage"),deck:$("deck"),selectedStrip:$("selectedStrip"),sticky:$("stickyAction"),reveal:$("revealButton"),readingStep:$("readingStep"),readingGrid:$("readingGrid"),readingCopy:$("readingCopy"),readingTitle:$("readingTitle"),questionDisplay:$("questionDisplay"),loading:$("loading"),loadingText:$("loadingText"),error:$("readingError")};
 
 function shuffledDeck(){return [...cards].sort(()=>Math.random()-.5)}
 function updateQuestion(){const q=els.question.value.trim(); els.charCount.textContent=`${els.question.value.length} / 500`; els.start.disabled=!q;}
 els.question.addEventListener("input",updateQuestion);
-els.start.addEventListener("click",()=>{state.question=els.question.value.trim(); if(!state.question)return; els.questionStep.hidden=true; els.deckStep.hidden=false; renderDeck(); window.scrollTo({top:0,behavior:"smooth"});});
+els.start.addEventListener("click",()=>{state.question=els.question.value.trim(); if(!state.question)return; els.questionStep.hidden=true; els.deckStep.hidden=false; window.scrollTo({top:0,behavior:"smooth"});void beginShuffle();});
+
+async function beginShuffle(){
+  state.selected=[];updateSelectionUI();els.deck.replaceChildren();els.deck.hidden=true;els.deck.setAttribute("inert","");els.selectedStrip.hidden=true;$("resetSelection").hidden=true;els.shuffleStage.hidden=false;els.deckStep.dataset.phase="shuffling";els.deckTitle.textContent="กำลังสับไพ่ของคุณ";els.deckInstruction.textContent="รอสักครู่ เมื่อสับไพ่เสร็จแล้วคุณจะเลือกได้ 5 ใบ";
+  const reduceMotion=window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+  await new Promise(resolve=>setTimeout(resolve,reduceMotion?250:1900));
+  renderDeck();els.shuffleStage.hidden=true;els.deck.hidden=false;els.deck.removeAttribute("inert");els.selectedStrip.hidden=false;$("resetSelection").hidden=false;delete els.deckStep.dataset.phase;els.deckTitle.textContent="เลือกไพ่ที่ดึงดูดคุณ";els.deckInstruction.textContent="สับไพ่เรียบร้อยแล้ว แตะไพ่เพื่อเลือก แตะอีกครั้งเพื่อยกเลิก เลือกให้ครบ 5 ใบ";els.deck.classList.add("is-dealing");setTimeout(()=>els.deck.classList.remove("is-dealing"),700);els.deckTitle.focus({preventScroll:true});
+}
 
 function renderDeck(){
   state.selected=[]; els.deck.replaceChildren();
-  shuffledDeck().forEach(card=>{
+  shuffledDeck().forEach((card,index)=>{
     const b=document.createElement("button"); b.className="card"; b.type="button"; b.dataset.id=card.id; b.setAttribute("aria-label",`เลือกไพ่ใบที่ ${card.id+1}`);
+    b.style.setProperty("--deal-index",index%12);
     const o=document.createElement("span"); o.className="order"; b.append(o);
     b.addEventListener("click",()=>toggleCard(card,b,o)); els.deck.append(b);
   }); updateSelectionUI();
@@ -37,7 +45,7 @@ function toggleCard(card,node,order){
   updateSelectionUI();
 }
 function updateSelectionUI(){els.counter.textContent=`เลือกแล้ว ${state.selected.length} / 5 ใบ`;els.selectedStrip.textContent=state.selected.length?`เลือกแล้ว: ${state.selected.map((_,i)=>`ใบที่ ${i+1}`).join(" · ")}`:"ยังไม่ได้เลือกไพ่";els.sticky.hidden=state.selected.length!==5;}
-$("resetSelection").addEventListener("click",renderDeck);
+$("resetSelection").addEventListener("click",()=>void beginShuffle());
 $("newReading").addEventListener("click",()=>location.reload());
 els.reveal.addEventListener("click",createReading);
 

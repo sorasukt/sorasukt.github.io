@@ -14,6 +14,7 @@
 <link rel="stylesheet" href="../portal.css">
 <link rel="stylesheet" href="../style.css">
 <link rel="stylesheet" href="../interaction.css">
+<link rel="stylesheet" href="../shuffle.css?v=20260827-shuffle1">
 </head>
 <body>
 <div class="portal">
@@ -54,12 +55,18 @@
 <div class="section-head">
 <div>
 <p class="eyebrow">CHOOSE FIVE</p>
-<h2>เลือกไพ่ที่ดึงดูดคุณ</h2>
+<h2 id="deckTitle" tabindex="-1">เลือกไพ่ที่ดึงดูดคุณ</h2>
 </div>
 <button class="text-button" id="resetSelection" type="button">เริ่มเลือกใหม่</button>
 </div>
-<p class="instruction">แตะไพ่เพื่อเลือก แตะอีกครั้งเพื่อยกเลิก ไพ่จะยังคว่ำหน้าจนกว่าคุณจะเลือกครบ 5 ใบ</p>
-<div class="deck" id="deck">
+<p class="instruction" id="deckInstruction" role="status" aria-live="polite">แตะไพ่เพื่อเลือก แตะอีกครั้งเพื่อยกเลิก ไพ่จะยังคว่ำหน้าจนกว่าคุณจะเลือกครบ 5 ใบ</p>
+<div class="shuffle-stage" id="shuffleStage" role="status" aria-live="polite" aria-label="กำลังสับไพ่" hidden>
+<div class="shuffle-stack" aria-hidden="true">
+<span></span><span></span><span></span><span></span><span></span><span></span>
+</div>
+<p>กำลังสับไพ่ให้คุณ…</p>
+</div>
+<div class="deck" id="deck" aria-label="สำรับไพ่ 78 ใบ" hidden>
 </div>
 <div class="selected-strip" id="selectedStrip">
 </div>
@@ -95,7 +102,7 @@
 </script>
 <script src="../config.js">
 </script>
-<script src="../app.js?v=20260827-ux1" defer>
+<script src="../app.js?v=20260827-shuffle1" defer>
 </script>
 </body>
 </html>

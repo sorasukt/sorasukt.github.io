@@ -99,3 +99,18 @@ test("Home uses member context to hydrate saved birth data", async () => {
   assert.equal(fixture.elements.get("#quickBirthDate").value,"1991-08-12");
   assert.equal(fixture.elements.get("#modalBirthTime").value,"07:45");
 });
+
+test("Tarot reading shuffles before enabling card selection", async () => {
+  const [html,script,styles]=await Promise.all([
+    readFile(new URL("tarot/reading/index.html",repositoryRoot),"utf8"),
+    readFile(new URL("tarot/app.js",repositoryRoot),"utf8"),
+    readFile(new URL("tarot/shuffle.css",repositoryRoot),"utf8")
+  ]);
+  assert.match(html,/id="shuffleStage"[^>]+aria-live="polite"/);
+  assert.match(html,/id="deck"[^>]+hidden/);
+  assert.match(script,/async function beginShuffle\(\)/);
+  assert.ok(script.indexOf("await new Promise")<script.indexOf("renderDeck();els.shuffleStage.hidden=true"));
+  assert.match(script,/setAttribute\("inert",""\)/);
+  assert.match(styles,/@keyframes shuffle-card/);
+  assert.match(styles,/@media \(prefers-reduced-motion: reduce\)/);
+});
