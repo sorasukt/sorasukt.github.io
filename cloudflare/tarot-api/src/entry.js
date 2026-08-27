@@ -69,12 +69,6 @@ export default {
 
 async function getMemberContext(env,session){
   const {sub,name,nickname,email,picture}=session;
-  if(env.DB){
-    await env.DB.prepare(`INSERT INTO member_accounts(user_sub,display_name,nickname,email,picture_url,last_seen_at,updated_at)
-      VALUES(?,?,?,?,?,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)
-      ON CONFLICT(user_sub) DO UPDATE SET display_name=excluded.display_name,nickname=excluded.nickname,email=excluded.email,picture_url=excluded.picture_url,last_seen_at=CURRENT_TIMESTAMP,updated_at=CURRENT_TIMESTAMP`)
-      .bind(sub,name||null,nickname||null,email||null,picture||null).run();
-  }
   const profile=env.DB?await env.DB.prepare("SELECT birth_date,birth_time,birth_place,birth_place_id,birth_lat,birth_lng,birth_timezone,timezone,created_at,updated_at FROM member_profiles WHERE user_sub=?").bind(sub).first():null;
   const completion={
     hasBirthDate:Boolean(profile?.birth_date),
