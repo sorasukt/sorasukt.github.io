@@ -93,10 +93,11 @@
     const birthTime = $("birthTime").value;
     if (!birthDate) { setStatus("กรุณาระบุวันเดือนปีเกิด"); return; }
     $("saveProfile").disabled = true;
+    setStatus("กำลังบันทึกข้อมูล...");
     try {
       const response = await api("/api/member/profile", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=UTF-8" },
         body: JSON.stringify({ birthDate, birthTime })
       });
       const data = await response.json();
@@ -104,7 +105,8 @@
       $("profileForm").hidden = true;
       await loadDaily();
     } catch (error) {
-      setStatus(error.message);
+      console.error("Profile save failed", error);
+      setStatus(error?.message === "Load failed" ? "เชื่อมต่อระบบสมาชิกไม่สำเร็จ กรุณาลองอีกครั้ง" : (error?.message || "บันทึกข้อมูลไม่สำเร็จ"));
     } finally {
       $("saveProfile").disabled = false;
     }
