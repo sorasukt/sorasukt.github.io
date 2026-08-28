@@ -140,9 +140,15 @@ test("billing pages use Stripe-hosted payment, shipping, receipts, and Customer 
   ]);
   assert.match(membership,/Subscription · ต่ออายุอัตโนมัติ/);
   assert.match(membership,/Pay as you go · ชำระครั้งเดียว/);
+  assert.match(membership,/Subscription คุ้มกว่าอย่างไร/);
+  assert.match(membership,/id="priceComparisonBody"/);
   assert.match(support,/PromptPay/);assert.match(support,/ที่อยู่จัดส่ง/);
+  assert.match(support,/id="supportButton"[^>]*>ดำเนินต่อ</);
   assert.match(success,/aria-live="polite"/);
   assert.match(membershipScript,/\/api\/billing\/portal/);
+  assert.match(membershipScript,/ลงชื่อใช้งานเพื่อสมัคร/);
+  assert.match(membershipScript,/ประหยัด/);
+  assert.match(membershipScript,/Subscription รายเดือนครบ 12 เดือน/);
   assert.match(supportScript,/checkout\/support/);
   assert.match(successScript,/ดูใบเสร็จ/);
   assert.match(successScript,/จัดการสมาชิก/);
