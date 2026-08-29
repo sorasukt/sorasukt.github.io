@@ -32,6 +32,7 @@ test("support Checkout uses THB, PromptPay, card, and a required Thailand shippi
     assert.deepEqual(params.getAll("payment_method_types[1]"),["promptpay"]);
     assert.equal(params.get("billing_address_collection"),"required");
     assert.equal(params.get("shipping_address_collection[allowed_countries][0]"),"TH");
+    assert.equal(params.get("locale"),"auto");
   }finally{globalThis.fetch=originalFetch}
 });
 
@@ -52,6 +53,7 @@ test("membership Checkout selects only the server-configured Price ID",async()=>
     assert.equal(checkout.get("payment_method_types[0]"),"card");
     assert.equal(checkout.get("payment_method_types[1]"),"promptpay");
     assert.equal(checkout.get("allow_promotion_codes"),"true");
+    assert.equal(checkout.get("locale"),"auto");
   }finally{globalThis.fetch=originalFetch}
 });
 
@@ -67,6 +69,7 @@ test("PromptPay is excluded from Subscription Checkout",async()=>{
     assert.equal(checkout.get("payment_method_types[0]"),"card");
     assert.equal(checkout.has("payment_method_types[1]"),false);
     assert.equal(checkout.get("allow_promotion_codes"),"true");
+    assert.equal(checkout.get("locale"),"auto");
   }finally{globalThis.fetch=originalFetch}
 });
 
