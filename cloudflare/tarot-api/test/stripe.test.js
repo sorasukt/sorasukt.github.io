@@ -51,6 +51,7 @@ test("membership Checkout selects only the server-configured Price ID",async()=>
     assert.equal(checkout.get("metadata[user_sub]"),session.sub);
     assert.equal(checkout.get("payment_method_types[0]"),"card");
     assert.equal(checkout.get("payment_method_types[1]"),"promptpay");
+    assert.equal(checkout.get("allow_promotion_codes"),"true");
   }finally{globalThis.fetch=originalFetch}
 });
 
@@ -65,6 +66,18 @@ test("PromptPay is excluded from Subscription Checkout",async()=>{
     assert.equal(response.status,200);
     assert.equal(checkout.get("payment_method_types[0]"),"card");
     assert.equal(checkout.has("payment_method_types[1]"),false);
+    assert.equal(checkout.get("allow_promotion_codes"),"true");
+  }finally{globalThis.fetch=originalFetch}
+});
+
+test("support Checkout does not discount a user-defined contribution",async()=>{
+  const originalFetch=globalThis.fetch;let checkoutBody="";
+  globalThis.fetch=async (_url,options={})=>{checkoutBody=options.body||"";return Response.json({id:"cs_test_support",url:"https://checkout.stripe.com/c/pay/support"})};
+  try{
+    const request=new Request("https://api.sorasukt.com/api/billing/checkout/support",{method:"POST",headers,body:JSON.stringify({amount:399,accepted:true,requestId:"123e4567-e89b-12d3-a456-426614174010"})});
+    const response=await handleBilling(request,{STRIPE_SECRET_KEY:"sk_test"},headers);
+    assert.equal(response.status,200);
+    assert.equal(new URLSearchParams(checkoutBody).has("allow_promotion_codes"),false);
   }finally{globalThis.fetch=originalFetch}
 });
 

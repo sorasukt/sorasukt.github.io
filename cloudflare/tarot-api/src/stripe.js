@@ -133,6 +133,7 @@ async function membershipCheckout(request,env,headers,session){
   params.set("client_reference_id",session.sub);
   params.set("line_items[0][price]",priceId);
   params.set("line_items[0][quantity]","1");
+  params.set("allow_promotion_codes","true");
   params.set("success_url",`${siteUrl(env)}/tarot/billing/success/?session_id={CHECKOUT_SESSION_ID}`);
   params.set("cancel_url",`${siteUrl(env)}/tarot/membership/?canceled=1`);
   params.set("locale","th");
