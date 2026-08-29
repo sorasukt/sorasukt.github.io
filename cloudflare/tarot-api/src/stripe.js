@@ -136,7 +136,7 @@ async function membershipCheckout(request,env,headers,session){
   params.set("allow_promotion_codes","true");
   params.set("success_url",`${siteUrl(env)}/tarot/billing/success/?session_id={CHECKOUT_SESSION_ID}`);
   params.set("cancel_url",`${siteUrl(env)}/tarot/membership/?canceled=1`);
-  params.set("locale","th");
+  params.set("locale","auto");
   params.set("metadata[kind]","membership");
   params.set("metadata[user_sub]",session.sub);
   params.set("metadata[period]",period);
@@ -175,7 +175,7 @@ async function supportCheckout(request,env,headers,session){
   params.set("customer_creation","always");
   params.set("invoice_creation[enabled]","true");
   params.set("submit_type","donate");
-  params.set("locale","th");
+  params.set("locale","auto");
   params.set("success_url",`${siteUrl(env)}/tarot/billing/success/?session_id={CHECKOUT_SESSION_ID}`);
   params.set("cancel_url",`${siteUrl(env)}/tarot/support/?canceled=1`);
   params.set("metadata[kind]","support");
