@@ -17,12 +17,12 @@
   function renderPlans(){
     const type=document.querySelector('input[name="paymentType"]:checked')?.value||"subscription";$("planGrid").replaceChildren();
     periods.forEach(period=>{
-      const plan=findPlan(period,type),card=document.createElement("article");card.className=`plan-card${type==="subscription"&&period==="yearly"?" is-featured":""}`;
+      const plan=findPlan(period,type),card=document.createElement("article");card.className=`plan-card${period==="yearly"?" is-featured":""}`;
       const title=document.createElement("h2");title.textContent=labels[period];
       const eyebrow=document.createElement("p");eyebrow.className="eyebrow";eyebrow.textContent=period.toUpperCase();
-      if(type==="subscription"&&period==="yearly"){const badge=document.createElement("span");badge.className="plan-badge";badge.textContent="คุ้มระยะยาว";card.append(badge)}
+      if(period==="yearly"){const badge=document.createElement("span");badge.className="plan-badge";badge.textContent="คุ้มที่สุด";card.append(badge)}
       const price=document.createElement("p");price.className="plan-price";price.textContent=plan?.amount&&plan.currency?formatMoney(plan.amount,plan.currency):"ยังไม่เปิดขาย";
-      const comparison=document.createElement("p");comparison.className="plan-compare";comparison.textContent=type==="subscription"?comparisonText(period):"ชำระเท่าที่ต้องการ ไม่มีการต่ออายุ";
+      const comparison=document.createElement("p");comparison.className="plan-compare";comparison.textContent=comparisonText(period,type);
       const detail=document.createElement("p");detail.className="plan-detail";detail.textContent=!plan?.configured||!plan.active?"ยังไม่เปิดรับชำระ":type==="subscription"?"ต่ออายุอัตโนมัติ · ชำระด้วยบัตร":"ชำระครั้งเดียว · PromptPay หรือบัตร";
       const button=document.createElement("button");button.type="button";button.textContent=type==="subscription"?"สมัครสมาชิก":"ซื้อสิทธิ์ครั้งเดียว";button.disabled=!plan?.configured||!plan.active;button.addEventListener("click",()=>checkout(period,type,button));
       card.append(eyebrow,title,price,comparison,detail,button);$("planGrid").append(card)
@@ -30,12 +30,14 @@
     renderComparison();
   }
   function findPlan(period,paymentType){return plans.find(item=>item.period===period&&item.paymentType===paymentType)}
-  function comparisonText(period){const subscription=findPlan(period,"subscription"),oneTime=findPlan(period,"one_time");if(!subscription?.amount||!oneTime?.amount)return "ต่ออายุอัตโนมัติ";return `ประหยัด ${formatMoney(oneTime.amount-subscription.amount,subscription.currency)} เทียบ Pay as you go`}
+  function comparisonText(period,paymentType){const plan=findPlan(period,paymentType),weekly=findPlan("weekly",paymentType),monthly=findPlan("monthly",paymentType);if(!plan?.amount||!weekly?.amount||!monthly?.amount)return "เลือกช่วงเวลาที่เหมาะกับคุณ";if(period==="weekly")return "เหมาะกับการเริ่มต้นระยะสั้น";const saving=period==="monthly"?weekly.amount*52-monthly.amount*12:monthly.amount*12-plan.amount;return `ประหยัด ${formatMoney(saving,plan.currency)} ต่อปี เมื่อเทียบ${period==="monthly"?"แผนรายสัปดาห์":"แผนรายเดือน"}`}
   function renderComparison(){
     const body=$("priceComparisonBody");body.replaceChildren();
-    const ready=periods.every(period=>findPlan(period,"subscription")?.amount&&findPlan(period,"one_time")?.amount);$("priceComparison").hidden=!ready;if(!ready)return;
-    periods.forEach(period=>{const subscription=findPlan(period,"subscription"),oneTime=findPlan(period,"one_time"),row=document.createElement("tr");[labels[period],formatMoney(subscription.amount,subscription.currency),formatMoney(oneTime.amount,oneTime.currency),formatMoney(oneTime.amount-subscription.amount,subscription.currency)].forEach((value,index)=>{const cell=document.createElement(index===0?"th":"td");if(index===0)cell.scope="row";cell.textContent=value;row.append(cell)});body.append(row)});
-    const monthly=findPlan("monthly","subscription"),yearly=findPlan("yearly","subscription"),annualSaving=monthly.amount*12-yearly.amount;$("yearlySaving").textContent=`แผนรายปีเฉลี่ย ${formatMoney(yearly.amount/12,yearly.currency)} ต่อเดือน และประหยัด ${formatMoney(annualSaving,yearly.currency)} ต่อปี เมื่อเทียบกับ Subscription รายเดือนครบ 12 เดือน`;
+    const paymentType=document.querySelector('input[name="paymentType"]:checked')?.value||"subscription",ready=periods.every(period=>findPlan(period,paymentType)?.amount);$("priceComparison").hidden=!ready;if(!ready)return;
+    const methodLabel=paymentType==="subscription"?"Subscription":"Pay as you go",weekly=findPlan("weekly",paymentType),monthly=findPlan("monthly",paymentType),yearly=findPlan("yearly",paymentType),weeklyAnnual=weekly.amount*52;
+    $("priceComparisonTitle").textContent=`เปรียบเทียบแผน ${methodLabel}`;$("priceComparisonDescription").textContent=`เปรียบเทียบรายสัปดาห์ รายเดือน และรายปีภายใน ${methodLabel} เท่านั้น`;$("priceComparisonCaption").textContent=`เปรียบเทียบช่วงเวลาของ ${methodLabel}`;
+    periods.forEach(period=>{const plan=findPlan(period,paymentType),annualCost=period==="weekly"?weeklyAnnual:period==="monthly"?plan.amount*12:plan.amount,monthlyAverage=annualCost/12,saving=weeklyAnnual-annualCost,row=document.createElement("tr");[labels[period],formatMoney(plan.amount,plan.currency),formatMoney(monthlyAverage,plan.currency),saving>0?formatMoney(saving,plan.currency):"—"].forEach((value,index)=>{const cell=document.createElement(index===0?"th":"td");if(index===0)cell.scope="row";cell.textContent=value;row.append(cell)});body.append(row)});
+    const annualSaving=monthly.amount*12-yearly.amount;$("yearlySaving").textContent=`${methodLabel} รายปีเฉลี่ย ${formatMoney(yearly.amount/12,yearly.currency)} ต่อเดือน และประหยัด ${formatMoney(annualSaving,yearly.currency)} ต่อปี เมื่อเทียบกับแผนรายเดือนของวิธีเดียวกัน`;
   }
   async function checkout(period,paymentType,button){
     if(!member?.success){location.assign(`https://api.sorasukt.com/auth/login?returnTo=${encodeURIComponent(location.href)}`);return}
