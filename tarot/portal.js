@@ -61,7 +61,7 @@
     error.code=data?.error?.code||"REQUEST_FAILED";
     const supportUrl=data?.error?.supportUrl;
     if(typeof supportUrl==="string"&&(/^https:\/\/([a-z0-9-]+\.)*stripe\.com\//i.test(supportUrl)||supportUrl==="https://sorasukt.com/tarot/support/"))error.supportUrl=supportUrl;
-    error.supportLabel=data?.error?.supportLabel||"สนับสนุนการพัฒนาระบบ";
+    error.supportLabel=data?.error?.supportLabel||"สนับสนุนเรา";
     return error;
   }
 
