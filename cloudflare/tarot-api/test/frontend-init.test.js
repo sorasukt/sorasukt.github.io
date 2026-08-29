@@ -115,6 +115,16 @@ test("Tarot reading shuffles before enabling card selection", async () => {
   assert.match(styles,/@media \(prefers-reduced-motion: reduce\)/);
 });
 
+test("all Tarot pages share the reading-page visual language",async()=>{
+  const pages=["tarot/index.html","tarot/reading/index.html","tarot/astrology/index.html","tarot/zodiac/index.html","tarot/colors/index.html","tarot/numbers/index.html","tarot/naming/index.html","tarot/me/index.html","tarot/membership/index.html","tarot/support/index.html","tarot/about/index.html","tarot/billing/success/index.html"];
+  const [styles,...documents]=await Promise.all([readFile(new URL("tarot/experience.css",repositoryRoot),"utf8"),...pages.map(path=>readFile(new URL(path,repositoryRoot),"utf8"))]);
+  assert.match(styles,/font-family:Georgia,"IBM Plex Sans Thai",serif/);
+  assert.match(styles,/font-size:clamp\(48px,7vw,92px\)/);
+  assert.match(styles,/--experience-width:1180px/);
+  documents.forEach((html,index)=>assert.match(html,/experience\.css\?v=20260829-reading1/,pages[index]));
+  ["อ่านจังหวะของคุณ<br>ผ่านดวงดาว","วันเกิดของคุณ<br>บอกอะไรได้บ้าง","เลือกวันที่<br>แล้วค้นหาสีของคุณ","มองความหมาย<br>ผ่านตัวเลขของคุณ","เริ่มจากความหมาย<br>แล้วค้นหาชื่อที่ใช่","ทุกอย่างของคุณ<br>อยู่ที่นี่"].forEach(heading=>assert.ok(documents.some(html=>html.includes(heading)),heading));
+});
+
 test("lucky-color pages expose an accessible member result and selected-date tool",async()=>{
   const [home,page,script]=await Promise.all([
     readFile(new URL("tarot/index.html",repositoryRoot),"utf8"),
