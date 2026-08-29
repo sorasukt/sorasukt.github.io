@@ -138,9 +138,11 @@ test("billing pages use Stripe-hosted payment, shipping, receipts, and Customer 
     readFile(new URL("tarot/support/support.js",repositoryRoot),"utf8"),
     readFile(new URL("tarot/billing/success/success.js",repositoryRoot),"utf8")
   ]);
-  assert.match(membership,/Subscription · ต่ออายุอัตโนมัติ/);
-  assert.match(membership,/Pay as you go · ชำระครั้งเดียว/);
-  assert.match(membership,/Subscription คุ้มกว่าอย่างไร/);
+  assert.match(membership,/<strong>Subscription<\/strong><em>ต่ออายุอัตโนมัติ<\/em>/);
+  assert.match(membership,/<strong>Pay as you go<\/strong><em>ชำระครั้งเดียว<\/em>/);
+  assert.match(membership,/เลือกรูปแบบที่เหมาะกับคุณ/);
+  assert.match(membership,/เลือกช่วงเวลาที่พอดี/);
+  assert.match(membership,/เปรียบเทียบแผน Subscription/);
   assert.match(membership,/id="priceComparisonBody"/);
   assert.match(support,/PromptPay/);assert.match(support,/ที่อยู่จัดส่ง/);
   assert.match(support,/id="supportButton"[^>]*>ดำเนินต่อ</);
@@ -148,7 +150,8 @@ test("billing pages use Stripe-hosted payment, shipping, receipts, and Customer 
   assert.match(membershipScript,/\/api\/billing\/portal/);
   assert.match(membershipScript,/ลงชื่อใช้งานเพื่อสมัคร/);
   assert.match(membershipScript,/ประหยัด/);
-  assert.match(membershipScript,/Subscription รายเดือนครบ 12 เดือน/);
+  assert.match(membershipScript,/ภายใน.*เท่านั้น/);
+  assert.match(membershipScript,/แผนรายเดือนของวิธีเดียวกัน/);
   assert.match(supportScript,/checkout\/support/);
   assert.match(successScript,/ดูใบเสร็จ/);
   assert.match(successScript,/จัดการสมาชิก/);
