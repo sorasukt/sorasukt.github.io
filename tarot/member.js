@@ -84,7 +84,7 @@
     $("dailyAvoid").textContent = data.horoscope?.avoid || "";
     $("dailyAdvice").textContent = data.horoscope?.advice || "";
     $("dailyContent").hidden = false;
-    setStatus(data.cached ? "ดวงวันนี้ถูกบันทึกไว้แล้ว จะรีเซ็ตเมื่อเข้าสู่วันใหม่ตามเวลาไทย" : "สร้างดวงวันนี้เรียบร้อยแล้ว");
+    setStatus(data.cached ? "ดวงวันนี้พร้อมให้คุณอ่านแล้ว" : "เตรียมดวงวันนี้เรียบร้อยแล้ว");
   }
 
   async function saveProfile(event) {
@@ -106,7 +106,7 @@
       await loadDaily();
     } catch (error) {
       console.error("Profile save failed", error);
-      setStatus(error?.message === "Load failed" ? "เชื่อมต่อระบบสมาชิกไม่สำเร็จ กรุณาลองอีกครั้ง" : (error?.message || "บันทึกข้อมูลไม่สำเร็จ"));
+      setStatus(error?.message === "Load failed" ? "ยังเปิดข้อมูลสมาชิกไม่ได้ กรุณาลองอีกครั้ง" : (error?.message || "บันทึกข้อมูลไม่สำเร็จ"));
     } finally {
       $("saveProfile").disabled = false;
     }
@@ -121,7 +121,7 @@
     $("editProfile").addEventListener("click", () => { $("profileForm").hidden = false; });
     init().catch(error => {
       console.error("Member initialization failed", error);
-      setStatus(`ไม่สามารถโหลดระบบสมาชิกได้: ${error?.message || "Unknown error"}`);
+      setStatus(error?.message||"ยังเปิดข้อมูลสมาชิกไม่ได้ กรุณาลองอีกครั้ง");
     });
   });
 })();

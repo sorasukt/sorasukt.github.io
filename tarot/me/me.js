@@ -56,13 +56,13 @@
     const title=$('#accountMembershipTitle'),detail=$('#accountMembershipDetail'),portal=$('#accountPortalButton');
     if(!membership){title.textContent='ยังไม่มีสมาชิกพิเศษ';detail.textContent='เลือก Subscription หรือชำระครั้งเดียวได้จากหน้าแผนสมาชิก';portal.hidden=true;return;}
     title.textContent=membership.active?'Tarot for your daily กำลังใช้งาน':`สถานะสมาชิก: ${membership.status||'ยังไม่ใช้งาน'}`;
-    detail.textContent=membership.currentPeriodEnd?`ใช้สิทธิ์ได้ถึง ${new Intl.DateTimeFormat('th-TH',{dateStyle:'long',timeZone:'Asia/Bangkok'}).format(new Date(membership.currentPeriodEnd))}`:'จัดการรายละเอียดผ่าน Customer Portal';
+    detail.textContent=membership.currentPeriodEnd?`ใช้สิทธิ์ได้ถึง ${new Intl.DateTimeFormat('th-TH',{dateStyle:'long',timeZone:'Asia/Bangkok'}).format(new Date(membership.currentPeriodEnd))}`:'ดูหรือแก้ไขรายละเอียดสมาชิกและการชำระเงินได้ที่นี่';
     portal.hidden=false;
   }
 
   async function openPortal(){
     const button=$('#accountPortalButton');window.TarotPortal.setButtonBusy(button,true,'กำลังเปิด…');
-    try{const response=await window.TarotPortal.api('/api/billing/portal',{method:'POST',timeout:15000}),data=await response.json();if(!response.ok)throw window.TarotPortal.apiError(data,'เปิด Customer Portal ไม่สำเร็จ');if(!/^https:\/\/billing\.stripe\.com\//.test(data.url||''))throw new Error('ลิงก์ Customer Portal ไม่ถูกต้อง');location.assign(data.url)}catch(error){$('#profileStatus').textContent=error?.message||'เปิด Customer Portal ไม่สำเร็จ';window.TarotPortal.setButtonBusy(button,false)}
+    try{const response=await window.TarotPortal.api('/api/billing/portal',{method:'POST',timeout:15000}),data=await response.json();if(!response.ok)throw window.TarotPortal.apiError(data,'เปิดหน้าจัดการสมาชิกไม่สำเร็จ');if(!/^https:\/\/billing\.stripe\.com\//.test(data.url||''))throw new Error('ลิงก์จัดการสมาชิกไม่ถูกต้อง');location.assign(data.url)}catch(error){$('#profileStatus').textContent=error?.message||'เปิดหน้าจัดการสมาชิกไม่สำเร็จ';window.TarotPortal.setButtonBusy(button,false)}
   }
 
   async function searchPlaces(){

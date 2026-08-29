@@ -8,11 +8,11 @@
     if(new URLSearchParams(location.search).has("canceled"))$("billingMessage").textContent="ยังไม่มีการเรียกเก็บเงิน คุณสามารถเลือกแผนใหม่เมื่อพร้อม";
   }
   function renderStatus(value){
-    if(!member?.success){$("membershipTitle").textContent="ลงชื่อใช้งานเพื่อเริ่มสมาชิกพิเศษ";$("membershipDetail").textContent="ยอมรับนโยบายสำหรับการใช้งานครั้งแรก แล้วลงชื่อเข้าใช้เพื่อบันทึกสิทธิ์สมาชิกในบัญชีของคุณ";$("portalButton").textContent="ลงชื่อใช้งานเพื่อสมัคร";$("portalButton").hidden=false;return}
+    if(!member?.success){$("membershipTitle").textContent="ลงชื่อใช้งานเพื่อเริ่มสมาชิกพิเศษ";$("membershipDetail").textContent="ลงชื่อเข้าใช้เพื่อสมัครและดูสิทธิ์ของคุณได้ทุกเมื่อ";$("portalButton").textContent="ลงชื่อใช้งานเพื่อสมัคร";$("portalButton").hidden=false;return}
     if(!value){$("membershipTitle").textContent="ยังไม่มีสมาชิกพิเศษ";$("membershipDetail").textContent="เลือกแผนด้านล่างเพื่อเริ่มใช้งาน";$("portalButton").hidden=true;return}
     $("membershipTitle").textContent=value.active?"Tarot for your daily กำลังใช้งาน":"สถานะสมาชิก: "+statusLabel(value.status);
     $("membershipDetail").textContent=`${labels[value.period]||"แผนสมาชิก"}${value.currentPeriodEnd?` · ใช้ได้ถึง ${formatDate(value.currentPeriodEnd)}`:""}${value.cancelAtPeriodEnd?" · จะไม่ต่ออายุ":""}`;
-    $("portalButton").textContent="จัดการสมาชิกและการชำระเงิน";$("portalButton").hidden=false;
+    $("portalButton").textContent="ดูข้อมูลสมาชิกในหน้า ฉัน";$("portalButton").hidden=false;
   }
   function renderPlans(){
     const type=document.querySelector('input[name="paymentType"]:checked')?.value||"subscription";$("planGrid").replaceChildren();
@@ -41,11 +41,10 @@
   }
   async function checkout(period,paymentType,button){
     if(!member?.success){location.assign(`https://api.sorasukt.com/auth/login?returnTo=${encodeURIComponent(location.href)}`);return}
-    window.TarotPortal.setButtonBusy(button,true,"กำลังเปิด Stripe…");$("billingMessage").textContent="กำลังพาคุณไปยังหน้าชำระเงินที่ปลอดภัย";
+    window.TarotPortal.setButtonBusy(button,true,"กำลังเปิดหน้าชำระเงิน…");$("billingMessage").textContent="กำลังพาคุณไปยังหน้าชำระเงินที่ปลอดภัย";
     try{const response=await billingApi("/api/billing/checkout/membership",{period,paymentType,requestId:crypto.randomUUID()}),data=await response.json();if(!response.ok)throw window.TarotPortal.apiError(data,"เริ่มชำระเงินไม่สำเร็จ");if(!/^https:\/\/checkout\.stripe\.com\//.test(data.url||""))throw new Error("ลิงก์ชำระเงินไม่ถูกต้อง");location.assign(data.url)}catch(error){window.TarotPortal.renderError($("billingMessage"),error);window.TarotPortal.setButtonBusy(button,false)}
   }
-  function accountAction(){if(!member?.success){location.assign(`https://api.sorasukt.com/auth/login?returnTo=${encodeURIComponent(location.href)}`);return}void openPortal()}
-  async function openPortal(){const button=$("portalButton");window.TarotPortal.setButtonBusy(button,true,"กำลังเปิด…");try{const response=await window.TarotPortal.api("/api/billing/portal",{method:"POST",headers:policyHeaders(),timeout:15000}),data=await response.json();if(!response.ok)throw window.TarotPortal.apiError(data,"เปิด Customer Portal ไม่สำเร็จ");if(!/^https:\/\/billing\.stripe\.com\//.test(data.url||""))throw new Error("ลิงก์ Customer Portal ไม่ถูกต้อง");location.assign(data.url)}catch(error){window.TarotPortal.renderError($("billingMessage"),error);window.TarotPortal.setButtonBusy(button,false)}}
+  function accountAction(){if(!member?.success){location.assign(`https://api.sorasukt.com/auth/login?returnTo=${encodeURIComponent(location.href)}`);return}location.assign("../me/")}
   function billingApi(path,body){return window.TarotPortal.api(path,{method:"POST",headers:policyHeaders(),body:JSON.stringify(body),timeout:20000})}
   function policyHeaders(){return {"Content-Type":"application/json","X-Tarot-Policy-Version":window.TarotPortal.policyVersion}}
   function formatMoney(amount,currency){if(!Number.isFinite(amount)||!currency)return "—";return new Intl.NumberFormat("th-TH",{style:"currency",currency:currency.toUpperCase(),maximumFractionDigits:2}).format(amount/100)}
