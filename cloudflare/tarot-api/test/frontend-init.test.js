@@ -129,14 +129,16 @@ test("lucky-color pages expose an accessible member result and selected-date too
   assert.ok(script.includes("^#[0-9A-Fa-f]{6}$"));
 });
 
-test("billing pages use Stripe-hosted payment, shipping, receipts, and Customer Portal",async()=>{
-  const [membership,support,success,membershipScript,supportScript,successScript]=await Promise.all([
+test("billing pages use simple provider-neutral copy and keep membership management in My Account",async()=>{
+  const [membership,support,success,account,membershipScript,supportScript,successScript,accountScript]=await Promise.all([
     readFile(new URL("tarot/membership/index.html",repositoryRoot),"utf8"),
     readFile(new URL("tarot/support/index.html",repositoryRoot),"utf8"),
     readFile(new URL("tarot/billing/success/index.html",repositoryRoot),"utf8"),
+    readFile(new URL("tarot/me/index.html",repositoryRoot),"utf8"),
     readFile(new URL("tarot/membership/membership.js",repositoryRoot),"utf8"),
     readFile(new URL("tarot/support/support.js",repositoryRoot),"utf8"),
-    readFile(new URL("tarot/billing/success/success.js",repositoryRoot),"utf8")
+    readFile(new URL("tarot/billing/success/success.js",repositoryRoot),"utf8"),
+    readFile(new URL("tarot/me/me.js",repositoryRoot),"utf8")
   ]);
   assert.match(membership,/<strong>Subscription<\/strong><em>ต่ออายุอัตโนมัติ<\/em>/);
   assert.match(membership,/<strong>Pay as you go<\/strong><em>ชำระครั้งเดียว<\/em>/);
@@ -147,12 +149,20 @@ test("billing pages use Stripe-hosted payment, shipping, receipts, and Customer 
   assert.match(support,/PromptPay/);assert.match(support,/ที่อยู่จัดส่ง/);
   assert.match(support,/id="supportButton"[^>]*>ดำเนินต่อ</);
   assert.match(success,/aria-live="polite"/);
-  assert.match(membershipScript,/\/api\/billing\/portal/);
+  assert.doesNotMatch(membership,/Stripe|Customer Portal|Promotion Code/);
+  assert.doesNotMatch(support,/Stripe|Customer Portal/);
+  assert.doesNotMatch(success,/Stripe|Customer Portal/);
+  assert.doesNotMatch(membershipScript,/\/api\/billing\/portal|กำลังเปิด Stripe|Customer Portal/);
   assert.match(membershipScript,/ลงชื่อใช้งานเพื่อสมัคร/);
   assert.match(membershipScript,/ประหยัด/);
   assert.match(membershipScript,/ภายใน.*เท่านั้น/);
   assert.match(membershipScript,/แผนรายเดือนของวิธีเดียวกัน/);
   assert.match(supportScript,/checkout\/support/);
+  assert.doesNotMatch(supportScript,/กำลังเปิด Stripe|บน Stripe/);
   assert.match(successScript,/ดูใบเสร็จ/);
-  assert.match(successScript,/จัดการสมาชิก/);
+  assert.match(successScript,/href="\.\.\/\.\.\/me\/"/);
+  assert.doesNotMatch(successScript,/\/api\/billing\/portal|Customer Portal/);
+  assert.match(account,/id="accountPortalButton"[^>]*>จัดการสมาชิกและการชำระเงิน</);
+  assert.match(accountScript,/\/api\/billing\/portal/);
+  assert.doesNotMatch(account+accountScript,/Customer Portal/);
 });
