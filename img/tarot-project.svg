@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title description">
+  <title id="title">sorasukt Tarot</title>
+  <desc id="description">Minimal black and white illustration of five tarot cards beneath a celestial star.</desc>
+  <rect width="1600" height="900" fill="#f7f7f5"/>
+  <g fill="none" stroke="#111" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="800" cy="225" r="92" stroke-width="4"/>
+    <path d="M800 87v-40M800 403v-40M662 225h-40M978 225h-40" stroke-width="4"/>
+    <path d="m800 146 18 57 57 18-57 18-18 57-18-57-57-18 57-18z" fill="#111" stroke-width="3"/>
+    <path d="M704 129 680 94M896 129l24-35M704 321l-24 35M896 321l24 35" stroke-width="3"/>
+  </g>
+  <g fill="#fff" stroke="#111" stroke-width="5">
+    <rect x="242" y="440" width="196" height="314" rx="16" transform="rotate(-12 340 597)"/>
+    <rect x="472" y="400" width="196" height="314" rx="16" transform="rotate(-6 570 557)"/>
+    <rect x="702" y="380" width="196" height="314" rx="16"/>
+    <rect x="932" y="400" width="196" height="314" rx="16" transform="rotate(6 1030 557)"/>
+    <rect x="1162" y="440" width="196" height="314" rx="16" transform="rotate(12 1260 597)"/>
+  </g>
+  <g fill="none" stroke="#111" stroke-width="4">
+    <circle cx="800" cy="515" r="43"/>
+    <path d="M800 466v98M751 515h98"/>
+    <path d="m570 487 17 35 38 6-28 27 7 38-34-18-34 18 7-38-28-27 38-6z"/>
+    <path d="M1027 472c-24 11-39 35-36 61 3 31 29 55 60 55 18 0 34-8 45-20-8 4-16 6-25 6-33 0-60-27-60-60 0-16 6-30 16-42z"/>
+    <path d="M312 543h56M340 515v56M1226 548h68M1260 514v68"/>
+  </g>
+  <text x="800" y="824" fill="#111" font-family="Georgia, serif" font-size="44" letter-spacing="12" text-anchor="middle">SORASUKT TAROT</text>
+</svg>
