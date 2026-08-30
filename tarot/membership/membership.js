@@ -23,7 +23,7 @@
       if(period==="yearly"){const badge=document.createElement("span");badge.className="plan-badge";badge.textContent="คุ้มที่สุด";card.append(badge)}
       const price=document.createElement("p");price.className="plan-price";price.textContent=plan?.amount&&plan.currency?formatMoney(plan.amount,plan.currency):"ยังไม่เปิดขาย";
       const comparison=document.createElement("p");comparison.className="plan-compare";comparison.textContent=comparisonText(period,type);
-      const detail=document.createElement("p");detail.className="plan-detail";detail.textContent=!plan?.configured||!plan.active?"ยังไม่เปิดรับชำระ":type==="subscription"?"ต่ออายุอัตโนมัติ · ชำระด้วยบัตร":"ชำระครั้งเดียว · PromptPay หรือบัตร";
+      const detail=document.createElement("p");detail.className="plan-detail";detail.textContent=!plan?.configured||!plan.active?"ยังไม่เปิดรับชำระ":type==="subscription"?"ต่ออายุอัตโนมัติ":"ชำระครั้งเดียว";
       const button=document.createElement("button");button.type="button";button.textContent=type==="subscription"?"สมัครสมาชิก":"ซื้อสิทธิ์ครั้งเดียว";button.disabled=!plan?.configured||!plan.active;button.addEventListener("click",()=>checkout(period,type,button));
       card.append(eyebrow,title,price,comparison,detail,button);$("planGrid").append(card)
     });

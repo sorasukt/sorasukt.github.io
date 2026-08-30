@@ -18,7 +18,7 @@ test("Stripe webhook signature accepts the raw body and rejects tampering or sta
   assert.equal(await verifyStripeSignature(payload,`t=${now-301},v1=${await signature(payload,secret,now-301)}`,secret,now),false);
 });
 
-test("support Checkout uses THB, PromptPay, card, and a required Thailand shipping address",async()=>{
+test("support Checkout uses eligible Dashboard payment methods and a required Thailand shipping address",async()=>{
   const originalFetch=globalThis.fetch;let requestBody="";
   globalThis.fetch=async (url,options)=>{assert.equal(url,"https://api.stripe.com/v1/checkout/sessions");requestBody=options.body;return Response.json({id:"cs_test_support",url:"https://checkout.stripe.com/c/pay/test"})};
   try{
@@ -28,8 +28,7 @@ test("support Checkout uses THB, PromptPay, card, and a required Thailand shippi
     const params=new URLSearchParams(requestBody);
     assert.equal(params.get("line_items[0][price_data][currency]"),"thb");
     assert.equal(params.get("line_items[0][price_data][unit_amount]"),"39900");
-    assert.deepEqual(params.getAll("payment_method_types[0]"),["card"]);
-    assert.deepEqual(params.getAll("payment_method_types[1]"),["promptpay"]);
+    assert.equal(params.has("payment_method_types[0]"),false);
     assert.equal(params.get("billing_address_collection"),"required");
     assert.equal(params.get("shipping_address_collection[allowed_countries][0]"),"TH");
     assert.equal(params.get("locale"),"auto");
@@ -50,8 +49,8 @@ test("membership Checkout selects only the server-configured Price ID",async()=>
     assert.equal(checkout.get("line_items[0][price]"),"price_trusted");
     assert.notEqual(checkout.get("line_items[0][price]"),"price_attacker");
     assert.equal(checkout.get("metadata[user_sub]"),session.sub);
-    assert.equal(checkout.get("payment_method_types[0]"),"card");
-    assert.equal(checkout.get("payment_method_types[1]"),"promptpay");
+    assert.equal(checkout.has("payment_method_types[0]"),false);
+    assert.equal(checkout.has("excluded_payment_method_types[0]"),false);
     assert.equal(checkout.get("allow_promotion_codes"),"true");
     assert.equal(checkout.get("locale"),"auto");
   }finally{globalThis.fetch=originalFetch}
@@ -66,8 +65,8 @@ test("PromptPay is excluded from Subscription Checkout",async()=>{
     const response=await handleBilling(request,{DB,STRIPE_SECRET_KEY:"sk_test",STRIPE_PRICE_SUB_MONTHLY:"price_subscription"},headers,{sub:"auth0|subscriber"});
     const checkout=new URLSearchParams(checkoutBody);
     assert.equal(response.status,200);
-    assert.equal(checkout.get("payment_method_types[0]"),"card");
-    assert.equal(checkout.has("payment_method_types[1]"),false);
+    assert.equal(checkout.has("payment_method_types[0]"),false);
+    assert.equal(checkout.get("excluded_payment_method_types[0]"),"promptpay");
     assert.equal(checkout.get("allow_promotion_codes"),"true");
     assert.equal(checkout.get("locale"),"auto");
   }finally{globalThis.fetch=originalFetch}

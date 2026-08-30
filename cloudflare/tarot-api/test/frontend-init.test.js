@@ -140,7 +140,7 @@ test("lucky-color pages expose an accessible member result and selected-date too
 });
 
 test("billing pages use simple provider-neutral copy and keep membership management in My Account",async()=>{
-  const [membership,support,success,account,membershipScript,supportScript,successScript,accountScript]=await Promise.all([
+  const [membership,support,success,account,membershipScript,supportScript,successScript,accountScript,billingStyles]=await Promise.all([
     readFile(new URL("tarot/membership/index.html",repositoryRoot),"utf8"),
     readFile(new URL("tarot/support/index.html",repositoryRoot),"utf8"),
     readFile(new URL("tarot/billing/success/index.html",repositoryRoot),"utf8"),
@@ -148,7 +148,8 @@ test("billing pages use simple provider-neutral copy and keep membership managem
     readFile(new URL("tarot/membership/membership.js",repositoryRoot),"utf8"),
     readFile(new URL("tarot/support/support.js",repositoryRoot),"utf8"),
     readFile(new URL("tarot/billing/success/success.js",repositoryRoot),"utf8"),
-    readFile(new URL("tarot/me/me.js",repositoryRoot),"utf8")
+    readFile(new URL("tarot/me/me.js",repositoryRoot),"utf8"),
+    readFile(new URL("tarot/billing.css",repositoryRoot),"utf8")
   ]);
   assert.match(membership,/<strong>Subscription<\/strong><em>ต่ออายุอัตโนมัติ<\/em>/);
   assert.match(membership,/<strong>Pay as you go<\/strong><em>ชำระครั้งเดียว<\/em>/);
@@ -156,6 +157,10 @@ test("billing pages use simple provider-neutral copy and keep membership managem
   assert.match(membership,/เลือกช่วงเวลาที่พอดี/);
   assert.match(membership,/เปรียบเทียบแผน Subscription/);
   assert.match(membership,/id="priceComparisonBody"/);
+  assert.match(membership,/aria-label="รองรับ Visa, Mastercard, Apple Pay และ Google Pay"/);
+  assert.match(membership,/aria-label="รองรับ Visa, Mastercard, Apple Pay, Google Pay และ PromptPay"/);
+  assert.match(membership,/logo-visa/);assert.match(membership,/logo-mastercard/);assert.match(membership,/logo-apple-pay/);assert.match(membership,/logo-google-pay/);assert.match(membership,/logo-promptpay/);
+  assert.match(billingStyles,/\.logo-visa/);assert.match(billingStyles,/\.logo-mastercard/);assert.match(billingStyles,/\.logo-apple-pay/);assert.match(billingStyles,/\.logo-google-pay/);assert.match(billingStyles,/\.logo-promptpay/);
   assert.match(support,/PromptPay/);assert.match(support,/ที่อยู่จัดส่ง/);
   assert.match(support,/id="supportButton"[^>]*>ดำเนินต่อ</);
   assert.match(success,/aria-live="polite"/);
