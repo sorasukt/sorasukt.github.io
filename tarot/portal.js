@@ -10,7 +10,7 @@
   let acceptedInMemory=false;
 
   function ensureEnhancementStyles(){
-    const styles=[['/tarot/portal-enhancements.css?v=20260827-1322','tarotEnhancements'],['/tarot/interaction.css?v=20260827-consent1','tarotInteraction']];
+    const styles=[['/tarot/experience.css?v=20260829-reading1','tarotExperience'],['/tarot/portal-enhancements.css?v=20260827-1322','tarotEnhancements'],['/tarot/interaction.css?v=20260827-consent1','tarotInteraction']];
     styles.forEach(([href,key])=>{const path=href.split('?')[0];if(document.querySelector(`link[href*="${path}"]`))return;const link=document.createElement('link');link.rel='stylesheet';link.href=href;link.dataset[key]='true';document.head.append(link);});
   }
 
