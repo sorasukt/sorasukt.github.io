@@ -26,6 +26,12 @@ A digital solution for English education designed to support language learning, 
 
 A podcast project sharing stories and experiences before they disappear, produced in collaboration with STNET Radio.
 
+### sorasukt Tarot
+
+A standalone Tarot and daily-fortune experience published at <https://sorasukt.com/tarot/>.
+
+**Source:** https://github.com/sorasukt/tarot
+
 ## 👨‍💻 About Me
 
 My interests include:
