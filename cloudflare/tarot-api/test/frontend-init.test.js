@@ -179,7 +179,9 @@ test("billing pages use simple provider-neutral copy and keep membership managem
   assert.match(successScript,/ดูใบเสร็จ/);
   assert.match(successScript,/href="\.\.\/\.\.\/me\/"/);
   assert.doesNotMatch(successScript,/\/api\/billing\/portal|Customer Portal/);
-  assert.match(account,/id="accountPortalButton"[^>]*>จัดการสมาชิกและการชำระเงิน</);
+  assert.match(account,/id="accountPortalButton"[^>]*>เปลี่ยนแพ็กเกจหรือยกเลิกสมาชิก</);
   assert.match(accountScript,/\/api\/billing\/portal/);
+  assert.match(accountScript,/\/api\/billing\/status\?refresh=1/);
+  assert.match(accountScript,/cancelAtPeriodEnd/);
   assert.doesNotMatch(account+accountScript,/Customer Portal/);
 });

@@ -66,6 +66,7 @@ STRIPE_PRICE_SUB_YEARLY
 STRIPE_PRICE_ONETIME_WEEKLY
 STRIPE_PRICE_ONETIME_MONTHLY
 STRIPE_PRICE_ONETIME_YEARLY
+STRIPE_PORTAL_CONFIGURATION_ID
 ```
 
 ราคาที่กำหนดใน Stripe ต้องเป็นสกุลเงินบาทตามตารางนี้:
@@ -87,9 +88,16 @@ Checkout ใช้ `locale=auto` เพื่อแสดงภาษาตา�
 https://api.sorasukt.com/api/stripe/webhook
 ```
 
-เลือก event อย่างน้อย `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `checkout.session.expired`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.paid`, `invoice.payment_failed`, `charge.succeeded` และ `charge.updated` จากนั้นนำ endpoint signing secret ไปตั้งเป็น `STRIPE_WEBHOOK_SECRET`
+เลือก event อย่างน้อย `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `checkout.session.expired`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `customer.subscription.paused`, `customer.subscription.resumed`, `invoice.paid`, `invoice.payment_action_required`, `invoice.payment_failed`, `charge.succeeded` และ `charge.updated` จากนั้นนำ endpoint signing secret ไปตั้งเป็น `STRIPE_WEBHOOK_SECRET`
 
-เปิด PromptPay และ Card ใน Stripe payment-method settings, เปิด Customer Portal สำหรับการแก้ไขวิธีชำระ/ยกเลิก Subscription และเปิด automatic email receipts ตามความต้องการทางธุรกิจ ระบบสนับสนุนใช้ THB และขอ billing/shipping address ในประเทศไทยผ่าน Stripe Checkout
+เปิด PromptPay และ Card ใน Stripe payment-method settings และตั้ง Customer Portal ดังนี้:
+
+1. เปิด `Switch plan` แล้วเพิ่ม recurring Price รายสัปดาห์ รายเดือน และรายปีของ `Tarot for your daily` เป็นแพ็กเกจที่เลือกเปลี่ยนได้
+2. เปิด `Cancel subscription`, การแก้ไขวิธีชำระเงิน และประวัติใบแจ้งหนี้
+3. กำหนดว่าจะคิดส่วนต่างทันทีหรือเมื่อจบรอบบิลให้ตรงกับนโยบายธุรกิจ โดยแนะนำให้การลดแพ็กเกจมีผลเมื่อจบรอบ เพื่อไม่ตัดสิทธิ์ที่ผู้ใช้จ่ายแล้ว
+4. นำ Configuration ID (`bpc_...`) ไปตั้งเป็น GitHub Actions variable `STRIPE_PORTAL_CONFIGURATION_ID` หากเว้นว่าง Worker จะใช้ default portal configuration ของบัญชี
+
+เมื่อผู้ใช้เปลี่ยนแพ็กเกจ ต่ออายุ หยุด ยกเลิก หรือชำระไม่สำเร็จ Webhook จะอัปเดตสถานะ รอบแพ็กเกจ วันสิ้นสุด และการยกเลิกใน D1 เมื่อกลับจากหน้าจัดการ หน้า “ฉัน” จะตรวจสถานะล่าสุดกับผู้ให้บริการอีกครั้งเพื่อครอบคลุมกรณี Webhook ยังมาถึงไม่ทัน ระบบสนับสนุนใช้ THB และขอ billing/shipping address ในประเทศไทยผ่าน Stripe Checkout
 
 Billing routes:
 
@@ -102,6 +110,8 @@ POST /api/billing/checkout/support
 POST /api/billing/portal
 POST /api/stripe/webhook
 ```
+
+ใช้ `GET /api/billing/status?refresh=1` เฉพาะเมื่อผู้ใช้กลับจากหน้าจัดการสมาชิก เพื่อดึง Subscription ล่าสุดและบันทึกลง D1 โดยไม่เรียกผู้ให้บริการซ้ำทุกครั้งที่เปิดหน้า
 
 สิทธิ์สมาชิกเปลี่ยนจาก webhook ที่ตรวจ HMAC-SHA256 ของ `Stripe-Signature` แล้วเท่านั้น หน้า success ใช้สำหรับแสดงผลและใบเสร็จ ไม่ใช่หลักฐานเปิดสิทธิ์ D1 ไม่เก็บเลขบัตร, CVC หรือที่อยู่จัดส่งฉบับเต็ม
 

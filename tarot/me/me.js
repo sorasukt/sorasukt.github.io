@@ -21,10 +21,14 @@
 
       renderAccount(member.user||{},member.completion||{});
       renderProfile(member.profile||null);
-      renderMembership(member.membership||null);
+      const returnedFromBilling=(location.search||'').includes('billing=updated'),manageRequested=(location.search||'').includes('manage=membership');
+      let membership=member.membership||null;
+      if(returnedFromBilling){const response=await window.TarotPortal.api('/api/billing/status?refresh=1',{timeout:15000}),data=await response.json();if(response.ok)membership=data.membership||null;}
+      renderMembership(membership);
       $('#profileForm').hidden=false;
       $('#memberBadge').hidden=false;
-      status.textContent=member.profile?'ข้อมูลของคุณพร้อมใช้งาน':'เพิ่มวันเดือนปีเกิดเพื่อเริ่มใช้ประสบการณ์สำหรับสมาชิก';
+      status.textContent=returnedFromBilling?'อัปเดตข้อมูลสมาชิกเรียบร้อยแล้ว':member.profile?'ข้อมูลของคุณพร้อมใช้งาน':'เพิ่มวันเดือนปีเกิดเพื่อเริ่มใช้ประสบการณ์สำหรับสมาชิก';
+      if(manageRequested&&membership?.paymentType==='subscription')await openPortal();
     }catch(e){
       $('#profileForm').hidden=true;
       status.textContent=e?.message||'โหลดข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง';
@@ -55,9 +59,10 @@
   function renderMembership(membership){
     const title=$('#accountMembershipTitle'),detail=$('#accountMembershipDetail'),portal=$('#accountPortalButton');
     if(!membership){title.textContent='ยังไม่มีสมาชิกพิเศษ';detail.textContent='เลือก Subscription หรือชำระครั้งเดียวได้จากหน้าแผนสมาชิก';portal.hidden=true;return;}
-    title.textContent=membership.active?'Tarot for your daily กำลังใช้งาน':`สถานะสมาชิก: ${membership.status||'ยังไม่ใช้งาน'}`;
-    detail.textContent=membership.currentPeriodEnd?`ใช้สิทธิ์ได้ถึง ${new Intl.DateTimeFormat('th-TH',{dateStyle:'long',timeZone:'Asia/Bangkok'}).format(new Date(membership.currentPeriodEnd))}`:'ดูหรือแก้ไขรายละเอียดสมาชิกและการชำระเงินได้ที่นี่';
-    portal.hidden=false;
+    const period=({weekly:'รายสัปดาห์',monthly:'รายเดือน',yearly:'รายปี'})[membership.period]||'สมาชิกพิเศษ',ending=membership.currentPeriodEnd?new Intl.DateTimeFormat('th-TH',{dateStyle:'long',timeZone:'Asia/Bangkok'}).format(new Date(membership.currentPeriodEnd)):'';
+    title.textContent=membership.active?`Tarot for your daily · ${period}`:`สถานะสมาชิก: ${statusLabel(membership.status)}`;
+    detail.textContent=membership.cancelAtPeriodEnd?`ยกเลิกการต่ออายุแล้ว · ยังใช้สิทธิ์ได้ถึง ${ending}`:ending?`${membership.paymentType==='subscription'?'ต่ออายุ':'ใช้สิทธิ์ได้'}ถึง ${ending} · เปลี่ยนแพ็กเกจ วิธีชำระ หรือยกเลิกได้ด้านล่าง`:'เปลี่ยนแพ็กเกจ วิธีชำระ หรือยกเลิกได้ด้านล่าง';
+    portal.hidden=membership.paymentType!=='subscription';
   }
 
   async function openPortal(){
@@ -113,6 +118,7 @@
   }
 
   function formatDateTime(value){try{return new Intl.DateTimeFormat('th-TH',{dateStyle:'medium',timeStyle:'short',timeZone:'Asia/Bangkok'}).format(new Date(value.endsWith('Z')?value:`${value}Z`));}catch{return value;}}
+  function statusLabel(value){return ({active:'กำลังใช้งาน',trialing:'ช่วงทดลอง',past_due:'รอการชำระ',paused:'หยุดชั่วคราว',canceled:'ยกเลิกแล้ว',unpaid:'ยังไม่ชำระ',incomplete:'ยังไม่สมบูรณ์',incomplete_expired:'หมดเวลาชำระ'})[value]||'ยังไม่ใช้งาน';}
   function escapeHtml(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
 
   addEventListener('DOMContentLoaded',()=>{

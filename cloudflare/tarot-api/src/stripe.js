@@ -28,7 +28,7 @@ export async function handleBilling(request,env,headers,session=null){
     if(url.pathname==="/api/billing/status"){
       if(request.method!=="GET")return methodNotAllowed(headers);
       if(!session)return unauthorized(headers);
-      return membershipStatus(env,headers,session.sub);
+      return membershipStatus(env,headers,session.sub,url.searchParams.get("refresh")==="1");
     }
     if(url.pathname==="/api/billing/checkout/membership"){
       if(request.method!=="POST")return methodNotAllowed(headers);
@@ -124,6 +124,10 @@ async function membershipCheckout(request,env,headers,session){
   if(!priceId)return json({success:false,error:{code:"PLAN_NOT_CONFIGURED",message:"แผนนี้ยังไม่พร้อมรับชำระเงิน"}},503,headers);
   const price=await stripeRequest(env,`/prices/${encodeURIComponent(priceId)}`);
   if(!validMembershipPrice(price,period,paymentType))throw new StripeApiError(503,"PRICE_CONFIGURATION_INVALID");
+  if(paymentType==="subscription"){
+    const current=await env.DB.prepare("SELECT stripe_subscription_id,status FROM tarot_memberships WHERE user_sub=?").bind(session.sub).first();
+    if(current?.stripe_subscription_id&&!['canceled','incomplete_expired'].includes(current.status))return json({success:false,error:{code:"MANAGE_EXISTING_SUBSCRIPTION",message:"คุณมี Subscription อยู่แล้ว กรุณาเปลี่ยนแพ็กเกจหรือยกเลิกจากหน้า ฉัน"}},409,headers);
+  }
   const customerId=await getOrCreateCustomer(env,session);
   const params=new URLSearchParams();
   params.set("mode",paymentType==="subscription"?"subscription":"payment");
@@ -190,15 +194,24 @@ async function customerPortal(env,headers,session){
   assertStripe(env);assertDb(env);
   const row=await env.DB.prepare("SELECT stripe_customer_id FROM stripe_customers WHERE user_sub=?").bind(session.sub).first();
   if(!row?.stripe_customer_id)return json({success:false,error:{code:"CUSTOMER_NOT_FOUND",message:"ยังไม่พบข้อมูลการชำระเงินของบัญชีนี้"}},404,headers);
-  const params=new URLSearchParams({customer:row.stripe_customer_id,return_url:`${siteUrl(env)}/tarot/membership/`});
+  const params=new URLSearchParams({customer:row.stripe_customer_id,return_url:`${siteUrl(env)}/tarot/me/?billing=updated`});
+  if(typeof env.STRIPE_PORTAL_CONFIGURATION_ID==="string"&&/^bpc_[A-Za-z0-9]+$/.test(env.STRIPE_PORTAL_CONFIGURATION_ID))params.set("configuration",env.STRIPE_PORTAL_CONFIGURATION_ID);
   const portal=await stripeRequest(env,"/billing_portal/sessions",{method:"POST",body:params});
   if(typeof portal.url!=="string"||!portal.url.startsWith("https://billing.stripe.com/"))throw new StripeApiError(502,"INVALID_PORTAL_URL");
   return json({success:true,url:portal.url},200,headers);
 }
 
-async function membershipStatus(env,headers,userSub){
+async function membershipStatus(env,headers,userSub,refresh=false){
   assertDb(env);
+  if(refresh)await refreshSubscription(env,userSub);
   return json({success:true,membership:await loadMembership(env,userSub)},200,headers);
+}
+
+async function refreshSubscription(env,userSub){
+  const row=await env.DB.prepare("SELECT stripe_subscription_id,payment_type FROM tarot_memberships WHERE user_sub=?").bind(userSub).first();
+  if(row?.payment_type!=="subscription"||!row.stripe_subscription_id)return;
+  const subscription=await stripeRequest(env,`/subscriptions/${encodeURIComponent(row.stripe_subscription_id)}?expand[]=items.data.price`);
+  await syncSubscription(env,subscription);
 }
 
 async function checkoutResult(url,env,headers,session){
@@ -227,7 +240,7 @@ async function processStripeEvent(event,env){
   if(event.type==="checkout.session.async_payment_failed"){await recordCheckout(object,env,"failed");return}
   if(event.type==="checkout.session.expired"){await recordCheckout(object,env,"expired");return}
   if(event.type.startsWith("customer.subscription.")){await syncSubscription(env,object);return}
-  if(event.type==="invoice.paid"&&subscriptionIdFromInvoice(object)){const subscription=await stripeRequest(env,`/subscriptions/${encodeURIComponent(subscriptionIdFromInvoice(object))}`);await syncSubscription(env,subscription);return}
+  if(["invoice.paid","invoice.payment_action_required","invoice.payment_failed"].includes(event.type)&&subscriptionIdFromInvoice(object)){const subscription=await stripeRequest(env,`/subscriptions/${encodeURIComponent(subscriptionIdFromInvoice(object))}`);await syncSubscription(env,subscription);return}
   if(event.type==="invoice.payment_failed"){await env.DB.prepare("UPDATE tarot_memberships SET status='past_due',updated_at=CURRENT_TIMESTAMP WHERE stripe_customer_id=?").bind(idOf(object.customer)).run();return}
   if((event.type==="charge.succeeded"||event.type==="charge.updated")&&object.payment_intent){await env.DB.prepare("UPDATE stripe_payments SET receipt_url=?,updated_at=CURRENT_TIMESTAMP WHERE stripe_payment_intent_id=?").bind(safeStripeDocumentUrl(object.receipt_url||""),idOf(object.payment_intent)).run()}
 }
@@ -255,7 +268,7 @@ async function activateOneTime(env,userSub,period,checkout){
 async function syncSubscription(env,subscription){
   const userSub=subscription.metadata?.user_sub||await userSubForCustomer(env,idOf(subscription.customer));
   if(!userSub)return;
-  const period=PERIODS.has(subscription.metadata?.period)?subscription.metadata.period:periodFromSubscription(subscription);
+  const period=periodFromSubscription(subscription,env)||(PERIODS.has(subscription.metadata?.period)?subscription.metadata.period:"monthly");
   const end=subscriptionPeriodEnd(subscription);
   await env.DB.prepare(`INSERT INTO tarot_memberships(user_sub,stripe_customer_id,stripe_subscription_id,plan_period,payment_type,status,current_period_end,cancel_at_period_end,updated_at)
     VALUES(?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP)
@@ -304,7 +317,7 @@ function idOf(value){return typeof value==="string"?value:value?.id||""}
 function timingSafeEqual(a,b){if(a.length!==b.length)return false;let diff=0;for(let i=0;i<a.length;i++)diff|=a.charCodeAt(i)^b.charCodeAt(i);return diff===0}
 function addPeriod(date,period){const next=new Date(date);next.setUTCDate(next.getUTCDate()+(period==="weekly"?7:period==="yearly"?365:30));return next}
 function subscriptionPeriodEnd(subscription){const seconds=Number(subscription.current_period_end||Math.max(0,...(subscription.items?.data||[]).map(item=>Number(item.current_period_end)||0)));return seconds?new Date(seconds*1000).toISOString():null}
-function periodFromSubscription(subscription){const interval=subscription.items?.data?.[0]?.price?.recurring?.interval;return interval==="week"?"weekly":interval==="year"?"yearly":"monthly"}
+function periodFromSubscription(subscription,env){const price=subscription.items?.data?.[0]?.price||null,priceId=idOf(price);for(const period of PERIODS)if(priceId&&priceId===membershipPriceId(env,period,"subscription"))return period;const interval=price?.recurring?.interval;return interval==="week"?"weekly":interval==="month"?"monthly":interval==="year"?"yearly":""}
 function subscriptionIdFromInvoice(invoice){return idOf(invoice.subscription)||idOf(invoice.parent?.subscription_details?.subscription)}
 async function userSubForCustomer(env,customerId){if(!customerId)return "";const row=await env.DB.prepare("SELECT user_sub FROM stripe_customers WHERE stripe_customer_id=?").bind(customerId).first();return row?.user_sub||""}
 async function expandedPaymentIntent(env,value){if(!value)return null;if(typeof value==="object")return value;const query=new URLSearchParams();query.append("expand[]","latest_charge");return stripeRequest(env,`/payment_intents/${encodeURIComponent(value)}?${query}`)}
