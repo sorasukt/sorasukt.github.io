@@ -24,7 +24,8 @@
       const price=document.createElement("p");price.className="plan-price";price.textContent=plan?.amount&&plan.currency?formatMoney(plan.amount,plan.currency):"ยังไม่เปิดขาย";
       const comparison=document.createElement("p");comparison.className="plan-compare";comparison.textContent=comparisonText(period,type);
       const detail=document.createElement("p");detail.className="plan-detail";detail.textContent=!plan?.configured||!plan.active?"ยังไม่เปิดรับชำระ":type==="subscription"?"ต่ออายุอัตโนมัติ":"ชำระครั้งเดียว";
-      const button=document.createElement("button");button.type="button";button.textContent=type==="subscription"?"สมัครสมาชิก":"ซื้อสิทธิ์ครั้งเดียว";button.disabled=!plan?.configured||!plan.active;button.addEventListener("click",()=>checkout(period,type,button));
+      const hasSubscription=type==="subscription"&&member?.membership?.paymentType==="subscription"&&member.membership.status!=="canceled";
+      const button=document.createElement("button");button.type="button";button.textContent=hasSubscription?"เปลี่ยนแพ็กเกจในหน้า ฉัน":type==="subscription"?"สมัครสมาชิก":"ซื้อสิทธิ์ครั้งเดียว";button.disabled=!plan?.configured||!plan.active;button.addEventListener("click",()=>hasSubscription?location.assign("../me/?manage=membership"):checkout(period,type,button));
       card.append(eyebrow,title,price,comparison,detail,button);$("planGrid").append(card)
     });
     renderComparison();
@@ -42,7 +43,7 @@
   async function checkout(period,paymentType,button){
     if(!member?.success){location.assign(`https://api.sorasukt.com/auth/login?returnTo=${encodeURIComponent(location.href)}`);return}
     window.TarotPortal.setButtonBusy(button,true,"กำลังเปิดหน้าชำระเงิน…");$("billingMessage").textContent="กำลังพาคุณไปยังหน้าชำระเงินที่ปลอดภัย";
-    try{const response=await billingApi("/api/billing/checkout/membership",{period,paymentType,requestId:crypto.randomUUID()}),data=await response.json();if(!response.ok)throw window.TarotPortal.apiError(data,"เริ่มชำระเงินไม่สำเร็จ");if(!/^https:\/\/checkout\.stripe\.com\//.test(data.url||""))throw new Error("ลิงก์ชำระเงินไม่ถูกต้อง");location.assign(data.url)}catch(error){window.TarotPortal.renderError($("billingMessage"),error);window.TarotPortal.setButtonBusy(button,false)}
+    try{const response=await billingApi("/api/billing/checkout/membership",{period,paymentType,requestId:crypto.randomUUID()}),data=await response.json();if(!response.ok)throw window.TarotPortal.apiError(data,"เริ่มชำระเงินไม่สำเร็จ");if(!/^https:\/\/checkout\.stripe\.com\//.test(data.url||""))throw new Error("ลิงก์ชำระเงินไม่ถูกต้อง");location.assign(data.url)}catch(error){if(error?.code==="MANAGE_EXISTING_SUBSCRIPTION"){location.assign("../me/?manage=membership");return}window.TarotPortal.renderError($("billingMessage"),error);window.TarotPortal.setButtonBusy(button,false)}
   }
   function accountAction(){if(!member?.success){location.assign(`https://api.sorasukt.com/auth/login?returnTo=${encodeURIComponent(location.href)}`);return}location.assign("../me/")}
   function billingApi(path,body){return window.TarotPortal.api(path,{method:"POST",headers:policyHeaders(),body:JSON.stringify(body),timeout:20000})}

@@ -160,7 +160,9 @@ test("billing pages use simple provider-neutral copy and keep membership managem
   assert.match(membership,/aria-label="รองรับ Visa, Mastercard, Apple Pay และ Google Pay"/);
   assert.match(membership,/aria-label="รองรับ Visa, Mastercard, Apple Pay, Google Pay และ PromptPay"/);
   assert.match(membership,/logo-visa/);assert.match(membership,/logo-mastercard/);assert.match(membership,/logo-apple-pay/);assert.match(membership,/logo-google-pay/);assert.match(membership,/logo-promptpay/);
-  assert.match(billingStyles,/\.logo-visa/);assert.match(billingStyles,/\.logo-mastercard/);assert.match(billingStyles,/\.logo-apple-pay/);assert.match(billingStyles,/\.logo-google-pay/);assert.match(billingStyles,/\.logo-promptpay/);
+  ["visa-brandmark.png","ma_symbol.svg","Apple_Pay_logo.svg.png","Google_Pay_Logo.svg.png","PromptPay-logo.png"].forEach(asset=>assert.match(membership,new RegExp(`assets/payments/${asset.replace(".","\\.")}`)));
+  assert.match(billingStyles,/\.logo-mastercard/);assert.match(billingStyles,/\.logo-apple-pay/);assert.match(billingStyles,/\.logo-google-pay/);assert.match(billingStyles,/\.logo-promptpay/);
+  assert.match(billingStyles,/\.payment-logo img/);
   assert.match(support,/PromptPay/);assert.match(support,/ที่อยู่จัดส่ง/);
   assert.match(support,/id="supportButton"[^>]*>ดำเนินต่อ</);
   assert.match(success,/aria-live="polite"/);
@@ -177,7 +179,9 @@ test("billing pages use simple provider-neutral copy and keep membership managem
   assert.match(successScript,/ดูใบเสร็จ/);
   assert.match(successScript,/href="\.\.\/\.\.\/me\/"/);
   assert.doesNotMatch(successScript,/\/api\/billing\/portal|Customer Portal/);
-  assert.match(account,/id="accountPortalButton"[^>]*>จัดการสมาชิกและการชำระเงิน</);
+  assert.match(account,/id="accountPortalButton"[^>]*>เปลี่ยนแพ็กเกจหรือยกเลิกสมาชิก</);
   assert.match(accountScript,/\/api\/billing\/portal/);
+  assert.match(accountScript,/\/api\/billing\/status\?refresh=1/);
+  assert.match(accountScript,/cancelAtPeriodEnd/);
   assert.doesNotMatch(account+accountScript,/Customer Portal/);
 });

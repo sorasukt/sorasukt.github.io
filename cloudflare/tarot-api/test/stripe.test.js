@@ -72,6 +72,20 @@ test("PromptPay is excluded from Subscription Checkout",async()=>{
   }finally{globalThis.fetch=originalFetch}
 });
 
+test("Customer Portal uses the package-management configuration and returns to My Account",async()=>{
+  const originalFetch=globalThis.fetch;let requestBody="";
+  globalThis.fetch=async (url,options={})=>{assert.equal(url,"https://api.stripe.com/v1/billing_portal/sessions");requestBody=options.body||"";return Response.json({url:"https://billing.stripe.com/p/session/test"})};
+  const DB={prepare(){return {bind(){return this},async first(){return {stripe_customer_id:"cus_portal"}}}}};
+  try{
+    const response=await handleBilling(new Request("https://api.sorasukt.com/api/billing/portal",{method:"POST"}),{DB,STRIPE_SECRET_KEY:"sk_test",STRIPE_PORTAL_CONFIGURATION_ID:"bpc_membership"},headers,{sub:"auth0|member"});
+    const params=new URLSearchParams(requestBody);
+    assert.equal(response.status,200);
+    assert.equal(params.get("customer"),"cus_portal");
+    assert.equal(params.get("configuration"),"bpc_membership");
+    assert.equal(params.get("return_url"),"https://sorasukt.com/tarot/me/?billing=updated");
+  }finally{globalThis.fetch=originalFetch}
+});
+
 test("support Checkout does not discount a user-defined contribution",async()=>{
   const originalFetch=globalThis.fetch;let checkoutBody="";
   globalThis.fetch=async (_url,options={})=>{checkoutBody=options.body||"";return Response.json({id:"cs_test_support",url:"https://checkout.stripe.com/c/pay/support"})};
@@ -115,4 +129,29 @@ test("a paid one-time membership is activated once by the verified webhook",asyn
   assert.equal((await handleStripeWebhook(makeRequest(),{DB,STRIPE_WEBHOOK_SECRET:secret})).status,200);
   assert.equal(membershipWrites.length,1);
   assert.deepEqual(membershipWrites[0].slice(0,5),["auth0|member","cus_member","monthly","one_time","active"]);
+});
+
+test("a subscription package change updates its period and cancellation state in D1",async()=>{
+  const secret="whsec_test",timestamp=Math.floor(Date.now()/1000),membershipWrites=[];
+  const event={id:"evt_subscription_change",type:"customer.subscription.updated",data:{object:{id:"sub_member",customer:"cus_member",status:"active",cancel_at_period_end:true,current_period_end:1_900_000_000,metadata:{user_sub:"auth0|member",period:"monthly"},items:{data:[{price:{id:"price_yearly",recurring:{interval:"year"}}}]}}}};
+  const payload=JSON.stringify(event),digest=await signature(payload,secret,timestamp);
+  const DB={prepare(sql){let values=[];return {bind(...bound){values=bound;return this},async run(){if(sql.includes("INSERT INTO tarot_memberships"))membershipWrites.push(values);return {meta:{changes:1}}}}}};
+  const request=new Request("https://api.sorasukt.com/api/stripe/webhook",{method:"POST",headers:{"Stripe-Signature":`t=${timestamp},v1=${digest}`},body:payload});
+  const response=await handleStripeWebhook(request,{DB,STRIPE_WEBHOOK_SECRET:secret,STRIPE_PRICE_SUB_YEARLY:"price_yearly"});
+  assert.equal(response.status,200);
+  assert.equal(membershipWrites.length,1);
+  assert.deepEqual(membershipWrites[0].slice(0,8),["auth0|member","cus_member","sub_member","yearly","subscription","active","2030-03-17T17:46:40.000Z",1]);
+});
+
+test("membership status refresh reconciles the latest subscription before responding",async()=>{
+  const originalFetch=globalThis.fetch;let membership={plan_period:"weekly",payment_type:"subscription",status:"active",current_period_end:null,cancel_at_period_end:0,updated_at:"before"};
+  globalThis.fetch=async url=>{assert.match(url,/\/subscriptions\/sub_refresh\?expand\[\]=items\.data\.price$/);return Response.json({id:"sub_refresh",customer:"cus_refresh",status:"active",cancel_at_period_end:false,current_period_end:1_900_000_000,metadata:{user_sub:"auth0|refresh"},items:{data:[{price:{id:"price_monthly",recurring:{interval:"month"}}}]}})};
+  const DB={prepare(sql){let values=[];return {bind(...bound){values=bound;return this},async first(){if(sql.includes("stripe_subscription_id,payment_type"))return {stripe_subscription_id:"sub_refresh",payment_type:"subscription"};if(sql.includes("SELECT plan_period"))return membership;return null},async run(){if(sql.includes("INSERT INTO tarot_memberships"))membership={plan_period:values[3],payment_type:values[4],status:values[5],current_period_end:values[6],cancel_at_period_end:values[7],updated_at:"after"};return {meta:{changes:1}}}}}};
+  try{
+    const response=await handleBilling(new Request("https://api.sorasukt.com/api/billing/status?refresh=1"),{DB,STRIPE_SECRET_KEY:"sk_test",STRIPE_PRICE_SUB_MONTHLY:"price_monthly"},headers,{sub:"auth0|refresh"});
+    const data=await response.json();
+    assert.equal(response.status,200);
+    assert.equal(data.membership.period,"monthly");
+    assert.equal(data.membership.active,true);
+  }finally{globalThis.fetch=originalFetch}
 });
