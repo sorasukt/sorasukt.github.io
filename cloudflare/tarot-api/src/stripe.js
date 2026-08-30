@@ -127,8 +127,7 @@ async function membershipCheckout(request,env,headers,session){
   const customerId=await getOrCreateCustomer(env,session);
   const params=new URLSearchParams();
   params.set("mode",paymentType==="subscription"?"subscription":"payment");
-  params.set("payment_method_types[0]","card");
-  if(paymentType==="one_time")params.set("payment_method_types[1]","promptpay");
+  if(paymentType==="subscription")params.set("excluded_payment_method_types[0]","promptpay");
   params.set("customer",customerId);
   params.set("client_reference_id",session.sub);
   params.set("line_items[0][price]",priceId);
@@ -163,8 +162,6 @@ async function supportCheckout(request,env,headers,session){
   if(!Number.isInteger(amount)||amount<50||amount>100000||!requestId||body?.accepted!==true)return json({success:false,error:{code:"INVALID_SUPPORT_PAYMENT",message:"กรุณาระบุจำนวนเงิน 50–100,000 บาทและยอมรับเงื่อนไข"}},400,headers);
   const params=new URLSearchParams();
   params.set("mode","payment");
-  params.set("payment_method_types[0]","card");
-  params.set("payment_method_types[1]","promptpay");
   params.set("line_items[0][price_data][currency]","thb");
   params.set("line_items[0][price_data][unit_amount]",String(amount*100));
   params.set("line_items[0][price_data][product_data][name]","สนับสนุน sorasukt Tarot");
