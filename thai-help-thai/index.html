@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="เครื่องคำนวณสิทธิไทยช่วยไทย พลัส 60/40 — คำนวณว่าประชาชนจ่ายเท่าไร รัฐช่วยเท่าไร และเหลือสิทธิเท่าไร">
+  <meta name="robots" content="index,follow">
+  <link rel="canonical" href="https://sorasukt.com/thai-help-thai/">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="th_TH">
+  <meta property="og:title" content="คำนวณไทยช่วยไทย พลัส 60/40">
+  <meta property="og:description" content="คำนวณยอดที่คุณจ่าย รัฐช่วย และสิทธิคงเหลือแบบง่าย ๆ">
+  <meta property="og:url" content="https://sorasukt.com/thai-help-thai/">
+  <title>คำนวณไทยช่วยไทย พลัส 60/40</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Kanit:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#f7f7f8;
+      --card:#fff;
+      --text:#121212;
+      --muted:#686868;
+      --line:#e6e6e8;
+      --red:#e21b23;
+      --red-soft:#fff1f2;
+      --green:#147a43;
+      --green-soft:#ecf8f0;
+      --blue:#1456a0;
+      --blue-soft:#edf4ff;
+      --radius:22px;
+      --shadow:0 14px 38px rgba(0,0,0,.07);
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family:'IBM Plex Sans Thai',system-ui,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      line-height:1.65;
+    }
+    button,input{font:inherit}
+    .page{max-width:920px;margin:auto;padding:24px 18px 56px}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:28px}
+    .brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}
+    .brand-mark{width:42px;height:42px;border-radius:14px;background:#111;color:#fff;display:grid;place-items:center;font:700 18px/1 'Kanit',sans-serif;box-shadow:inset 0 -3px 0 rgba(255,255,255,.12)}
+    .brand-text strong{display:block;font-family:'Kanit',sans-serif;font-size:15px;line-height:1.2}
+    .brand-text span{font-size:12px;color:var(--muted)}
+    .home{color:var(--muted);text-decoration:none;font-weight:600;font-size:14px}
+    .hero{background:linear-gradient(145deg,#151515,#2b2b2b);color:#fff;border-radius:30px;padding:34px;box-shadow:var(--shadow);margin-bottom:20px;position:relative;overflow:hidden}
+    .hero:after{content:'60/40';position:absolute;right:-12px;bottom:-38px;font:700 96px/1 'Kanit',sans-serif;color:rgba(255,255,255,.055);letter-spacing:-5px}
+    .eyebrow{display:inline-flex;gap:8px;align-items:center;padding:7px 11px;border:1px solid rgba(255,255,255,.16);border-radius:999px;font-size:12px;color:#dedede;margin-bottom:16px}
+    .dot{width:8px;height:8px;background:#ff4951;border-radius:50%}
+    h1{font:700 clamp(28px,6vw,48px)/1.14 'Kanit',sans-serif;margin:0 0 12px;max-width:680px;letter-spacing:-.7px}
+    .hero p{margin:0;color:#cfcfcf;max-width:660px;font-size:15px}
+    .notice{display:flex;gap:12px;align-items:flex-start;background:#fff8e7;border:1px solid #f0dfaa;border-radius:16px;padding:14px 16px;margin-top:18px;color:#5d4a12;font-size:13px}
+    .grid{display:grid;grid-template-columns:1.08fr .92fr;gap:20px;align-items:start}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 8px 24px rgba(0,0,0,.035)}
+    .card-pad{padding:24px}
+    .section-title{font:600 20px/1.3 'Kanit',sans-serif;margin:0 0 4px}
+    .section-sub{margin:0 0 20px;color:var(--muted);font-size:13px}
+    label{display:block;font-size:13px;font-weight:700;margin-bottom:7px}
+    .field{margin-bottom:16px}
+    .input-wrap{position:relative}
+    input[type=number]{width:100%;height:58px;border:1px solid var(--line);border-radius:16px;background:#fff;padding:0 50px 0 16px;font-weight:700;font-size:20px;outline:none;transition:.18s}
+    input[type=number]:focus{border-color:#111;box-shadow:0 0 0 4px rgba(0,0,0,.05)}
+    .suffix{position:absolute;right:16px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;font-weight:600}
+    .quick{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+    .chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer;color:#333}
+    .chip:hover{border-color:#111}
+    .switcher{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:#f1f1f2;padding:5px;border-radius:14px;margin-bottom:18px}
+    .switcher button{border:0;border-radius:10px;padding:10px 8px;background:transparent;font-weight:700;font-size:13px;cursor:pointer;color:#666}
+    .switcher button.active{background:#fff;color:#111;box-shadow:0 2px 7px rgba(0,0,0,.08)}
+    .result-stack{display:grid;gap:12px}
+    .result{border-radius:18px;padding:18px;border:1px solid var(--line)}
+    .result small{display:block;color:var(--muted);font-weight:600;margin-bottom:4px}
+    .result strong{font:700 29px/1.1 'Kanit',sans-serif;display:block}
+    .result.you{background:var(--red-soft);border-color:#ffd9db}.result.you strong{color:var(--red)}
+    .result.gov{background:var(--green-soft);border-color:#d7eddc}.result.gov strong{color:var(--green)}
+    .result.total{background:#f7f7f7}
+    .progress-box{margin-top:14px;border-top:1px solid var(--line);padding-top:18px}
+    .progress-head{display:flex;justify-content:space-between;gap:12px;font-size:13px;margin-bottom:8px}
+    .progress-track{height:12px;background:#ececee;border-radius:999px;overflow:hidden}
+    .progress-bar{height:100%;width:0;background:#111;border-radius:999px;transition:width .25s ease}
+    .summary{font-size:13px;color:var(--muted);margin-top:10px}
+    .warning{margin-top:12px;background:#fff6f6;color:#8d2024;border:1px solid #ffdada;border-radius:14px;padding:12px 14px;font-size:12.5px;display:none}
+    .tips{margin-top:20px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .tip{padding:16px;border:1px solid var(--line);border-radius:17px;background:#fff}
+    .tip strong{display:block;font:600 15px/1.3 'Kanit',sans-serif;margin-bottom:5px}
+    .tip span{font-size:12.5px;color:var(--muted)}
+    .info{margin-top:20px;padding:22px}
+    .facts{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+    .fact{background:#fafafa;border:1px solid var(--line);border-radius:15px;padding:14px}
+    .fact b{display:block;font:600 18px/1.1 'Kanit',sans-serif;margin-bottom:4px}
+    .fact span{font-size:11.5px;color:var(--muted)}
+    footer{padding-top:28px;text-align:center;color:#8a8a8a;font-size:11.5px;max-width:720px;margin:auto}
+    footer a{color:inherit}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    @media(max-width:760px){
+      .page{padding:16px 12px 40px}.topbar{margin-bottom:18px}.home{display:none}.hero{padding:26px 22px;border-radius:24px}.hero:after{font-size:70px}.grid{grid-template-columns:1fr}.card-pad{padding:20px}.tips{grid-template-columns:1fr}.facts{grid-template-columns:1fr 1fr}.result strong{font-size:26px}
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="topbar">
+      <a class="brand" href="/">
+        <div class="brand-mark">ส</div>
+        <div class="brand-text"><strong>/sorasukt</strong><span>Simple public calculator</span></div>
+      </a>
+      <a class="home" href="/">← กลับหน้าหลัก</a>
+    </div>
+
+    <section class="hero">
+      <div class="eyebrow"><span class="dot"></span> โครงการไทยช่วยไทย พลัส</div>
+      <h1>คำนวณสิทธิ 60/40<br>ก่อนจ่ายจริง</h1>
+      <p>กรอกยอดซื้อ แล้วดูทันทีว่าคุณต้องจ่ายเท่าไร รัฐช่วยเท่าไร และสิทธิของวันนี้หรือเดือนนี้เหลือเท่าไร</p>
+      <div class="notice">ℹ️ <span>เครื่องมือนี้เป็นตัวช่วยคำนวณอย่างไม่เป็นทางการ ผลจริงให้ยึดตามยอดที่แสดงในแอป “เป๋าตัง” ณ เวลาชำระเงิน</span></div>
+    </section>
+
+    <div class="grid">
+      <section class="card card-pad">
+        <h2 class="section-title">กรอกยอดที่ต้องการซื้อ</h2>
+        <p class="section-sub">ระบบจะคำนวณตามสัดส่วน รัฐ 60% / คุณ 40%</p>
+
+        <div class="field">
+          <label for="purchase">ยอดสินค้าและบริการ</label>
+          <div class="input-wrap">
+            <input id="purchase" type="number" inputmode="decimal" min="0" step="0.01" value="100" aria-describedby="purchaseHelp">
+            <span class="suffix">บาท</span>
+          </div>
+          <span id="purchaseHelp" class="sr-only">กรอกยอดซื้อเป็นเงินบาท</span>
+          <div class="quick" aria-label="ยอดซื้อแนะนำ">
+            <button class="chip" data-amount="50">50</button>
+            <button class="chip" data-amount="100">100</button>
+            <button class="chip" data-amount="200">200</button>
+            <button class="chip" data-amount="333">333</button>
+            <button class="chip" data-amount="500">500</button>
+          </div>
+        </div>
+
+        <div class="switcher" role="tablist" aria-label="รูปแบบสิทธิคงเหลือ">
+          <button id="modeDaily" class="active" type="button">คำนวณจากสิทธิวันนี้</button>
+          <button id="modeMonthly" type="button">คำนวณจากสิทธิเดือนนี้</button>
+        </div>
+
+        <div id="dailyFields">
+          <div class="field">
+            <label for="dailyRemaining">สิทธิรัฐที่เหลือวันนี้</label>
+            <div class="input-wrap"><input id="dailyRemaining" type="number" min="0" max="200" step="0.01" value="200"><span class="suffix">บาท</span></div>
+          </div>
+          <div class="field">
+            <label for="monthlyRemainingDaily">สิทธิรัฐที่เหลือเดือนนี้</label>
+            <div class="input-wrap"><input id="monthlyRemainingDaily" type="number" min="0" max="1000" step="0.01" value="1000"><span class="suffix">บาท</span></div>
+          </div>
+        </div>
+
+        <div id="monthlyFields" hidden>
+          <div class="field">
+            <label for="monthlyRemaining">สิทธิรัฐที่เหลือเดือนนี้</label>
+            <div class="input-wrap"><input id="monthlyRemaining" type="number" min="0" max="1000" step="0.01" value="1000"><span class="suffix">บาท</span></div>
+          </div>
+          <p class="section-sub" style="margin-bottom:0">โหมดนี้เหมาะสำหรับวางแผนว่าเดือนนี้ยังซื้อได้อีกประมาณเท่าไร โดยไม่จำลองเพดาน 200 บาท/วัน</p>
+        </div>
+      </section>
+
+      <aside class="card card-pad" aria-live="polite">
+        <h2 class="section-title">ผลการคำนวณ</h2>
+        <p class="section-sub" id="calcModeText">อิงสิทธิคงเหลือของวันนี้และเดือนนี้</p>
+        <div class="result-stack">
+          <div class="result you"><small>คุณจ่ายเอง</small><strong id="userPays">฿40.00</strong></div>
+          <div class="result gov"><small>รัฐช่วยจ่าย</small><strong id="govPays">฿60.00</strong></div>
+          <div class="result total"><small>ยอดซื้อทั้งหมด</small><strong id="totalAmount">฿100.00</strong></div>
+        </div>
+        <div class="progress-box">
+          <div class="progress-head"><span>ใช้สิทธิรัฐ</span><strong id="usedLabel">60 / 200 บาทวันนี้</strong></div>
+          <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
+          <div class="summary" id="remainingText">หลังรายการนี้ สิทธิรัฐวันนี้จะเหลือ 140 บาท</div>
+          <div class="warning" id="limitWarning"></div>
+        </div>
+      </aside>
+    </div>
+
+    <section class="tips">
+      <div class="tip"><strong>รัฐช่วย 60%</strong><span>คำนวณจากยอดซื้อ แต่ไม่เกินเพดานสิทธิที่ยังเหลือ</span></div>
+      <div class="tip"><strong>สูงสุด 200 บาท/วัน</strong><span>ถ้าใช้ครบแล้ว ยอดที่เกินจากนั้นคุณจะเป็นผู้ชำระเอง</span></div>
+      <div class="tip"><strong>สูงสุด 1,000 บาท/เดือน</strong><span>สิทธิคงเหลือไม่ทบไปเดือนถัดไป</span></div>
+    </section>
+
+    <section class="card info">
+      <h2 class="section-title">ข้อมูลสำคัญของโครงการ</h2>
+      <div class="facts">
+        <div class="fact"><b>60%</b><span>สัดส่วนที่รัฐร่วมจ่าย</span></div>
+        <div class="fact"><b>40%</b><span>สัดส่วนที่ประชาชนจ่ายเอง</span></div>
+        <div class="fact"><b>200 บาท</b><span>เพดานรัฐช่วยต่อวัน</span></div>
+        <div class="fact"><b>1,000 บาท</b><span>เพดานรัฐช่วยต่อเดือน</span></div>
+      </div>
+    </section>
+
+    <footer>
+      ข้อมูลอ้างอิงตามรายละเอียดโครงการของรัฐบาล ณ ปี 2569 • ใช้สิทธิได้ถึง 30 กันยายน 2569 • เว็บนี้ไม่ใช่เว็บไซต์ของรัฐบาลและไม่เชื่อมต่อกับแอปเป๋าตัง
+    </footer>
+  </main>
+
+  <script>
+    const el = id => document.getElementById(id);
+    const purchase = el('purchase');
+    const dailyRemaining = el('dailyRemaining');
+    const monthlyRemainingDaily = el('monthlyRemainingDaily');
+    const monthlyRemaining = el('monthlyRemaining');
+    const dailyFields = el('dailyFields');
+    const monthlyFields = el('monthlyFields');
+    const modeDaily = el('modeDaily');
+    const modeMonthly = el('modeMonthly');
+    let mode = 'daily';
+
+    const money = n => new Intl.NumberFormat('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}).format(Math.max(0,n));
+    const clamp = (n,min,max) => Math.min(max,Math.max(min,Number.isFinite(n)?n:0));
+    const val = node => Number.parseFloat(node.value) || 0;
+
+    function calculate(){
+      const total = Math.max(0,val(purchase));
+      let gov = 0, cap = 0, label = '', remaining = 0;
+      const theoretical = total * .60;
+
+      if(mode === 'daily'){
+        const dayLeft = clamp(val(dailyRemaining),0,200);
+        const monthLeft = clamp(val(monthlyRemainingDaily),0,1000);
+        cap = Math.min(dayLeft,monthLeft);
+        gov = Math.min(theoretical,cap);
+        remaining = Math.max(0,dayLeft-gov);
+        label = `${money(gov)} / ${money(dayLeft)} บาทจากสิทธิที่เหลือวันนี้`;
+        el('remainingText').textContent = `หลังรายการนี้ สิทธิรัฐวันนี้จะเหลือ ${money(remaining)} บาท และสิทธิเดือนนี้จะเหลือ ${money(Math.max(0,monthLeft-gov))} บาท`;
+        el('calcModeText').textContent = 'อิงสิทธิคงเหลือของวันนี้และเดือนนี้';
+      }else{
+        const monthLeft = clamp(val(monthlyRemaining),0,1000);
+        cap = monthLeft;
+        gov = Math.min(theoretical,cap);
+        remaining = Math.max(0,monthLeft-gov);
+        label = `${money(gov)} / ${money(monthLeft)} บาทจากสิทธิที่เหลือเดือนนี้`;
+        el('remainingText').textContent = `หลังรายการนี้ สิทธิรัฐเดือนนี้จะเหลือ ${money(remaining)} บาท`;
+        el('calcModeText').textContent = 'ใช้สำหรับวางแผนยอดรวมของเดือน โดยยังไม่หักเพดานรายวัน 200 บาท';
+      }
+
+      const user = total - gov;
+      el('userPays').textContent = `฿${money(user)}`;
+      el('govPays').textContent = `฿${money(gov)}`;
+      el('totalAmount').textContent = `฿${money(total)}`;
+      el('usedLabel').textContent = label;
+      el('progressBar').style.width = `${cap > 0 ? Math.min(100,(gov/cap)*100) : 0}%`;
+
+      const warning = el('limitWarning');
+      if(theoretical > cap && total > 0){
+        warning.style.display='block';
+        warning.textContent = mode === 'daily'
+          ? `ยอดนี้ต้องใช้สิทธิรัฐ ${money(theoretical)} บาท แต่คุณมีสิทธิที่ใช้ได้กับรายการนี้สูงสุด ${money(cap)} บาท ส่วนต่างจึงต้องจ่ายเองเพิ่ม`
+          : `ยอดนี้ต้องใช้สิทธิรัฐ ${money(theoretical)} บาท แต่สิทธิเดือนนี้เหลือ ${money(cap)} บาท ส่วนต่างจึงต้องจ่ายเองเพิ่ม`;
+      }else{
+        warning.style.display='none';
+        warning.textContent='';
+      }
+    }
+
+    function setMode(next){
+      mode=next;
+      const daily=mode==='daily';
+      dailyFields.hidden=!daily;
+      monthlyFields.hidden=daily;
+      modeDaily.classList.toggle('active',daily);
+      modeMonthly.classList.toggle('active',!daily);
+      calculate();
+    }
+
+    [purchase,dailyRemaining,monthlyRemainingDaily,monthlyRemaining].forEach(node=>node.addEventListener('input',calculate));
+    modeDaily.addEventListener('click',()=>setMode('daily'));
+    modeMonthly.addEventListener('click',()=>setMode('monthly'));
+    document.querySelectorAll('.chip').forEach(btn=>btn.addEventListener('click',()=>{purchase.value=btn.dataset.amount;calculate();purchase.focus()}));
+    calculate();
+  </script>
+</body>
+</html>
