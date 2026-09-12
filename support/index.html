@@ -139,8 +139,7 @@
 
   <script>
     (() => {
-      const API = "https://api.sorasukt.com";
-      const POLICY_VERSION = "2026-08-28-payments1";
+      const CHECKOUT_API = "https://support-api.sorasukt.com/checkout";
       const body = document.body;
       const amount = document.getElementById("supportAmount");
       const message = document.getElementById("supportMessage");
@@ -177,10 +176,10 @@
         submitButton.disabled = true;
         message.textContent = language === "th" ? "กำลังเปิดหน้าชำระเงินที่ปลอดภัย…" : "Opening secure checkout…";
         try {
-          const response = await fetch(API + "/api/billing/checkout/support", {
+          const response = await fetch(CHECKOUT_API, {
             method: "POST",
             credentials: "include",
-            headers: {"Content-Type":"application/json","X-Tarot-Policy-Version":POLICY_VERSION},
+            headers: {"Content-Type":"application/json"},
             body: JSON.stringify({amount:value,accepted:true,requestId:crypto.randomUUID()})
           });
           const data = await response.json().catch(() => ({}));
