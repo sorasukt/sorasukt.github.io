@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Support Us | สนับสนุน sorasukt</title>
+  <meta name="description" content="ร่วมสนับสนุนผลงานด้านการศึกษา เทคโนโลยี และโปรเจกต์ที่เปิดให้ทุกคนใช้งาน โดยชำระผ่าน PromptPay หรือบัตรอย่างปลอดภัย">
+  <meta name="robots" content="index,follow,max-image-preview:large">
+  <link rel="canonical" href="https://sorasukt.com/support/">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="th_TH">
+  <meta property="og:title" content="Support Us | สนับสนุน sorasukt">
+  <meta property="og:description" content="ทุกการสนับสนุนช่วยให้โปรเจกต์เพื่อการศึกษาและชุมชนเดินหน้าต่อไป">
+  <meta property="og:url" content="https://sorasukt.com/support/">
+  <meta property="og:image" content="https://sorasukt.com/img/logo.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/png" href="/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#fff;--soft:#f7f7f7;--text:#111;--muted:#696969;--line:#e8e8e8;--red:#f00000;--radius:12px;--max:1060px}
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{font-family:"IBM Plex Sans Thai","Montserrat",sans-serif;background:var(--bg);color:var(--text);line-height:1.7}
+    body.en [data-th],body.th [data-en]{display:none!important}
+    a{color:inherit}
+    button,input{font:inherit}
+    .nav{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+    .nav-inner{max-width:var(--max);height:64px;margin:auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between}
+    .brand{text-decoration:none;font-family:"Montserrat",sans-serif;font-weight:800;letter-spacing:-.5px}.brand em{color:var(--red);font-style:normal}
+    .nav-actions{display:flex;align-items:center;gap:12px}.back{text-decoration:none;font-size:.84rem;font-weight:600;color:var(--muted)}.back:hover{color:var(--red)}
+    .language{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}.language button{border:0;background:#fff;color:var(--muted);padding:6px 10px;font-size:.72rem;font-weight:700;cursor:pointer}.language button.active{background:var(--text);color:#fff}
+    main{max-width:var(--max);margin:auto;padding:84px 24px 100px}
+    .hero{max-width:760px;margin-bottom:68px}
+    .eyebrow{font-family:"Montserrat",sans-serif;color:var(--red);font-size:.72rem;font-weight:700;letter-spacing:2.4px;margin-bottom:16px}
+    h1{font-family:"Montserrat","IBM Plex Sans Thai",sans-serif;font-size:clamp(2.7rem,8vw,5.6rem);line-height:1.02;letter-spacing:-3px;margin-bottom:24px}
+    h1 span{color:var(--red)}
+    .lead{max-width:650px;color:var(--muted);font-size:clamp(1rem,2vw,1.18rem)}
+    .layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(330px,.82fr);gap:64px;align-items:start}
+    h2{font-size:1.3rem;line-height:1.35;margin-bottom:20px}
+    .impact-list{list-style:none;display:grid;gap:8px}
+    .impact-list li{display:grid;grid-template-columns:46px 1fr;gap:16px;padding:18px 0;border-bottom:1px solid var(--line)}
+    .impact-list li:first-child{border-top:1px solid var(--line)}
+    .icon{width:46px;height:46px;display:grid;place-items:center;background:var(--soft);border-radius:50%;color:var(--red)}
+    .icon svg{width:21px;height:21px}
+    .impact-list strong{display:block;font-size:.95rem;margin-bottom:2px}.impact-list p{font-size:.85rem;color:var(--muted);line-height:1.55}
+    .note{margin-top:24px;color:var(--muted);font-size:.82rem}
+    .support-card{border:1px solid var(--line);border-radius:var(--radius);padding:28px;box-shadow:0 18px 54px rgba(0,0,0,.055)}
+    .support-card label.title{display:block;font-weight:600;font-size:.9rem;margin-bottom:12px}
+    .amount{display:flex;align-items:center;border-bottom:2px solid var(--text);padding:2px 0 8px;margin-bottom:8px}
+    .amount span{font-family:"Montserrat",sans-serif;font-size:1.5rem;font-weight:600}
+    .amount input{width:100%;border:0;outline:0;background:transparent;padding-left:10px;font-family:"Montserrat",sans-serif;font-size:2.2rem;font-weight:700;color:var(--text)}
+    .help{font-size:.76rem;color:var(--muted);margin-bottom:18px}
+    .presets{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:24px}
+    .presets button{border:1px solid var(--line);border-radius:8px;background:#fff;padding:9px 4px;font-size:.78rem;font-weight:600;cursor:pointer;transition:.2s}
+    .presets button:hover,.presets button.selected{border-color:var(--red);color:var(--red);background:#fff8f8}
+    .methods{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}.method{display:flex;align-items:center;gap:7px;padding:7px 10px;border-radius:999px;background:var(--soft);font-size:.74rem;font-weight:600}.method svg{width:15px;height:15px}
+    .consent{display:flex;align-items:flex-start;gap:10px;font-size:.75rem;color:var(--muted);line-height:1.55;margin-bottom:18px}.consent input{margin-top:4px;accent-color:var(--red)}.consent a{text-underline-offset:2px}
+    .submit{width:100%;border:0;border-radius:9px;background:var(--red);color:#fff;padding:13px 18px;font-weight:600;cursor:pointer;transition:.2s}.submit:hover{background:#d80000;transform:translateY(-1px)}.submit:disabled{opacity:.55;cursor:wait;transform:none}
+    .secure{display:flex;justify-content:center;align-items:center;gap:6px;color:var(--muted);font-size:.72rem;margin-top:13px}.secure svg{width:13px;height:13px}
+    .message{min-height:22px;margin-top:10px;text-align:center;color:var(--red);font-size:.78rem}
+    footer{border-top:1px solid var(--line);padding:28px 24px;text-align:center;color:var(--muted);font-size:.76rem}
+    @media(max-width:780px){main{padding-top:58px}.layout{grid-template-columns:1fr;gap:44px}.back{display:none}.hero{margin-bottom:48px}h1{letter-spacing:-2px}.support-card{padding:22px}.presets{grid-template-columns:repeat(2,1fr)}}
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+  </style>
+</head>
+<body class="th">
+  <header class="nav">
+    <div class="nav-inner">
+      <a class="brand" href="/"><em>/</em>sorasukt</a>
+      <div class="nav-actions">
+        <a class="back" href="/">
+          <span data-th>กลับหน้าแรก</span><span data-en>Back home</span>
+        </a>
+        <div class="language" aria-label="Language">
+          <button type="button" data-lang="th" class="active">TH</button>
+          <button type="button" data-lang="en">EN</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <p class="eyebrow">SUPPORT US</p>
+      <h1><span data-th>ช่วยให้ไอเดียดี ๆ<br><span>ไปต่อได้</span></span><span data-en>Help good ideas<br><span>keep moving.</span></span></h1>
+      <p class="lead">
+        <span data-th>ทุกการสนับสนุนช่วยให้ผมดูแลเครื่องมือเพื่อการศึกษา สร้างเนื้อหาที่เป็นประโยชน์ และพัฒนาโปรเจกต์ใหม่ที่ทุกคนเข้าถึงได้</span>
+        <span data-en>Every contribution helps me maintain educational tools, create useful content, and build new projects that remain accessible to everyone.</span>
+      </p>
+    </section>
+
+    <div class="layout">
+      <section aria-labelledby="impactTitle">
+        <h2 id="impactTitle"><span data-th>เงินสนับสนุนของคุณช่วยอะไรบ้าง</span><span data-en>What your support makes possible</span></h2>
+        <ul class="impact-list">
+          <li>
+            <span class="icon" aria-hidden="true"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 016.5 17H20M4 19.5A2.5 2.5 0 006.5 22H20V5H6.5A2.5 2.5 0 004 7.5v12z"/></svg></span>
+            <div><strong><span data-th>สื่อและเครื่องมือการเรียนรู้</span><span data-en>Learning tools and resources</span></strong><p><span data-th>พัฒนาเนื้อหา แบบฝึกหัด และเครื่องมือที่นำไปใช้ได้จริง</span><span data-en>Practical content, exercises, and tools for learners and teachers.</span></p></div>
+          </li>
+          <li>
+            <span class="icon" aria-hidden="true"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M8 18l-6-6 6-6M16 6l6 6-6 6M14 3l-4 18"/></svg></span>
+            <div><strong><span data-th>ค่าใช้จ่ายของระบบ</span><span data-en>Project running costs</span></strong><p><span data-th>ช่วยดูแลเซิร์ฟเวอร์ โดเมน และบริการที่ทำให้โปรเจกต์ทำงานต่อเนื่อง</span><span data-en>Servers, domains, and services that keep each project available.</span></p></div>
+          </li>
+          <li>
+            <span class="icon" aria-hidden="true"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M12 21s8-4.35 8-11a4.5 4.5 0 00-8-2.8A4.5 4.5 0 004 10c0 6.65 8 11 8 11z"/></svg></span>
+            <div><strong><span data-th>โปรเจกต์ที่เข้าถึงได้</span><span data-en>Accessible projects</span></strong><p><span data-th>เปิดโอกาสให้ผลงานบางส่วนใช้งานได้ฟรีและพัฒนาต่ออย่างสม่ำเสมอ</span><span data-en>Helps keep selected work free and continuously improved.</span></p></div>
+          </li>
+        </ul>
+        <p class="note"><span data-th>การสนับสนุนเป็นความสมัครใจ ไม่กระทบต่อการใช้งานบริการฟรีที่มีอยู่ ขอบคุณที่ร่วมเป็นส่วนหนึ่งของการเติบโตครับ</span><span data-en>Supporting is entirely optional and does not affect existing free services. Thank you for being part of this journey.</span></p>
+      </section>
+
+      <section class="support-card" aria-labelledby="amountTitle">
+        <form id="supportForm">
+          <label class="title" id="amountTitle" for="supportAmount"><span data-th>เลือกจำนวนเงิน</span><span data-en>Choose an amount</span></label>
+          <div class="amount"><span>฿</span><input id="supportAmount" type="number" inputmode="numeric" min="50" max="100000" step="1" value="300" required aria-describedby="amountHelp"></div>
+          <p class="help" id="amountHelp"><span data-th>ขั้นต่ำ ฿50 · สูงสุด ฿100,000</span><span data-en>Minimum ฿50 · Maximum ฿100,000</span></p>
+          <div class="presets" aria-label="Suggested amounts">
+            <button type="button" data-amount="100">฿100</button><button type="button" data-amount="300" class="selected">฿300</button><button type="button" data-amount="500">฿500</button><button type="button" data-amount="1000">฿1,000</button>
+          </div>
+          <div class="methods">
+            <span class="method"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg><span data-th>บัตรเครดิต/เดบิต</span><span data-en>Credit/debit card</span></span>
+            <span class="method"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM15 14h1M19 14h1M14 18h2M19 18h1M16 20h4"/></svg>PromptPay</span>
+          </div>
+          <label class="consent">
+            <input id="supportAccepted" type="checkbox" required>
+            <span><span data-th>ฉันยอมรับ <a href="/terms/" target="_blank" rel="noopener">ข้อกำหนดการใช้บริการ</a> และ <a href="/privacy/" target="_blank" rel="noopener">นโยบายความเป็นส่วนตัว</a></span><span data-en>I accept the <a href="/terms/" target="_blank" rel="noopener">Terms of Service</a> and <a href="/privacy/" target="_blank" rel="noopener">Privacy Policy</a>.</span></span>
+          </label>
+          <button class="submit" id="supportButton" type="submit"><span data-th>สนับสนุนตอนนี้</span><span data-en>Support now</span></button>
+          <p class="secure"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg><span data-th>ชำระอย่างปลอดภัยผ่านผู้ให้บริการชำระเงิน</span><span data-en>Secure checkout with our payment provider</span></p>
+          <p class="message" id="supportMessage" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <footer>© 2026 /sorasukt · <span data-th>ขอบคุณสำหรับทุกการสนับสนุน</span><span data-en>Thank you for your support</span></footer>
+
+  <script>
+    (() => {
+      const CHECKOUT_API = "https://support-api.sorasukt.com/checkout";
+      const body = document.body;
+      const amount = document.getElementById("supportAmount");
+      const message = document.getElementById("supportMessage");
+      const submitButton = document.getElementById("supportButton");
+      let language = localStorage.getItem("sorasukt-language") || (navigator.language.startsWith("th") ? "th" : "en");
+
+      function setLanguage(lang) {
+        language = lang;
+        body.className = lang;
+        document.documentElement.lang = lang;
+        document.querySelectorAll("[data-lang]").forEach(button => button.classList.toggle("active", button.dataset.lang === lang));
+        localStorage.setItem("sorasukt-language", lang);
+      }
+
+      document.querySelectorAll("[data-lang]").forEach(button => button.addEventListener("click", () => setLanguage(button.dataset.lang)));
+      document.querySelectorAll("[data-amount]").forEach(button => button.addEventListener("click", () => {
+        amount.value = button.dataset.amount;
+        document.querySelectorAll("[data-amount]").forEach(item => item.classList.toggle("selected", item === button));
+        amount.focus();
+      }));
+      amount.addEventListener("input", () => document.querySelectorAll("[data-amount]").forEach(item => item.classList.toggle("selected", item.dataset.amount === amount.value)));
+
+      document.getElementById("supportForm").addEventListener("submit", async event => {
+        event.preventDefault();
+        const value = Number(amount.value);
+        if (!Number.isInteger(value) || value < 50 || value > 100000) {
+          message.textContent = language === "th" ? "กรุณาระบุจำนวนเงินระหว่าง 50–100,000 บาท" : "Please enter an amount between ฿50 and ฿100,000.";
+          return;
+        }
+        if (!document.getElementById("supportAccepted").checked) {
+          message.textContent = language === "th" ? "กรุณายอมรับข้อกำหนดก่อนดำเนินการ" : "Please accept the terms before continuing.";
+          return;
+        }
+        submitButton.disabled = true;
+        message.textContent = language === "th" ? "กำลังเปิดหน้าชำระเงินที่ปลอดภัย…" : "Opening secure checkout…";
+        try {
+          const response = await fetch(CHECKOUT_API, {
+            method: "POST",
+            credentials: "include",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify({amount:value,accepted:true,requestId:crypto.randomUUID()})
+          });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(data?.error?.message || "Checkout unavailable");
+          if (!/^https:\/\/checkout\.stripe\.com\//.test(data.url || "")) throw new Error("Invalid checkout URL");
+          location.assign(data.url);
+        } catch (error) {
+          message.textContent = language === "th" ? "ยังเปิดหน้าชำระเงินไม่ได้ กรุณาลองใหม่อีกครั้ง" : "Checkout could not be opened. Please try again.";
+          submitButton.disabled = false;
+        }
+      });
+
+      if (new URLSearchParams(location.search).has("canceled")) message.textContent = language === "th" ? "ยังไม่มีการเรียกเก็บเงิน คุณกลับมาสนับสนุนได้เสมอ" : "No payment was made. You can come back anytime.";
+      setLanguage(language);
+    })();
+  </script>
+</body>
+</html>
