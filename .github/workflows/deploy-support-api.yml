@@ -1,0 +1,104 @@
+name: Deploy Support API
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "support-api/**"
+      - ".github/workflows/deploy-support-api.yml"
+  push:
+    branches: [main]
+    paths:
+      - "support-api/**"
+      - ".github/workflows/deploy-support-api.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sorasukt-support-api-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  validate:
+    name: Validate Support API
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: support-api
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Check Worker syntax
+        run: node --check worker.js
+
+      - name: Validate Worker bundle
+        run: npm run check
+
+  deploy:
+    name: Deploy Support API
+    if: github.event_name != 'pull_request'
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    defaults:
+      run:
+        working-directory: support-api
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Verify deployment secrets
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+          test -n "$STRIPE_SECRET_KEY"
+
+      - name: Deploy Worker with Stripe secret
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+        run: |
+          jq -n --arg value "$STRIPE_SECRET_KEY" '{STRIPE_SECRET_KEY:$value}' > /tmp/sorasukt-support-secrets.json
+          npx wrangler deploy --secrets-file /tmp/sorasukt-support-secrets.json
+          rm -f /tmp/sorasukt-support-secrets.json
+
+      - name: Verify live API
+        run: |
+          for attempt in 1 2 3 4 5; do
+            if curl --fail --silent --show-error https://support-api.sorasukt.com/health; then
+              exit 0
+            fi
+            sleep 5
+          done
+          exit 1
+
+      - name: Add deployment summary
+        run: |
+          echo "## /sorasukt Support API" >> "$GITHUB_STEP_SUMMARY"
+          echo "Worker deployed to https://support-api.sorasukt.com" >> "$GITHUB_STEP_SUMMARY"
