@@ -59,8 +59,7 @@
     body.th .submit,
     body.th .secure,
     body.th .thanks h2,
-    body.th .thanks p,
-    body.th .phone-ui{
+    body.th .thanks p{
       font-family:"IBM Plex Sans Thai",sans-serif;
     }
     a{color:inherit;text-decoration:none}
@@ -175,157 +174,23 @@
       font-style:normal;
     }
 
-    /* ── Phone mock ── */
+    /* ── Phone mock (real screenshot) ── */
     .phone{
-      position:relative;
       width:min(280px,72vw);
-      aspect-ratio:9/19.2;
       border-radius:36px;
-      background:#0d0d0d;
-      border:2px solid #2a2a28;
+      overflow:hidden;
+      border:6px solid #0e0e0e;
       box-shadow:
-        0 0 0 1px rgba(214,255,61,.08),
-        0 28px 64px rgba(0,0,0,.65),
-        0 8px 24px rgba(0,0,0,.4),
-        inset 0 0 0 1px rgba(255,255,255,.04);
-      overflow:hidden;
+        0 0 0 2px #333,
+        0 28px 60px rgba(0,0,0,.45);
+      background:#0e0e0e;
+      line-height:0;
       flex-shrink:0;
     }
-    .phone-notch{
-      position:absolute;
-      top:10px;left:50%;
-      transform:translateX(-50%);
-      width:88px;height:22px;
-      background:#0a0a0a;
-      border-radius:14px;
-      z-index:3;
-    }
-    .phone-ui{
-      height:100%;
-      display:flex;
-      flex-direction:column;
-      padding:42px 16px 18px;
-      background:
-        radial-gradient(ellipse at 80% 0%,rgba(214,255,61,.08) 0%,transparent 50%),
-        #141414;
-      font-family:Inter,"IBM Plex Sans Thai",sans-serif;
-      text-align:left;
-    }
-    .phone-status{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      font-size:10px;
-      color:var(--muted);
-      margin-bottom:18px;
-      font-family:Inter,sans-serif;
-    }
-    .phone-greeting{
-      font-size:12px;
-      color:var(--muted);
-      margin-bottom:4px;
-    }
-    .phone-balance-label{
-      font-size:11px;
-      color:var(--muted);
-      letter-spacing:.04em;
-      margin-bottom:2px;
-    }
-    .phone-balance{
-      font-family:Fraunces,serif;
-      font-weight:600;
-      font-size:32px;
-      letter-spacing:-1px;
-      color:#f6f6f2;
-      line-height:1.1;
-      margin-bottom:4px;
-    }
-    .phone-balance span{color:var(--lime)}
-    .phone-delta{
-      font-size:11px;
-      color:var(--lime);
-      margin-bottom:18px;
-    }
-    .phone-row{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:8px;
-      margin-bottom:16px;
-    }
-    .phone-chip{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:12px;
-      padding:10px 12px;
-    }
-    .phone-chip .lbl{
-      font-size:10px;
-      color:var(--muted);
-      margin-bottom:2px;
-    }
-    .phone-chip .val{
-      font-size:14px;
-      font-weight:600;
-      font-family:Inter,sans-serif;
-      color:#f6f6f2;
-    }
-    .phone-chip .val.lime{color:var(--lime)}
-    .phone-section{
-      font-size:11px;
-      font-weight:600;
-      color:var(--muted);
-      letter-spacing:.06em;
-      text-transform:uppercase;
-      margin-bottom:8px;
-      font-family:Inter,sans-serif;
-    }
-    .phone-cat{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      padding:8px 0;
-      border-bottom:1px solid rgba(48,48,46,.6);
-    }
-    .phone-cat:last-child{border-bottom:0}
-    .phone-dot{
-      width:8px;height:8px;border-radius:50%;
-      background:var(--lime);
-      flex-shrink:0;
-    }
-    .phone-dot.dim{opacity:.45}
-    .phone-dot.mid{opacity:.7}
-    .phone-cat-name{
-      flex:1;
-      font-size:12px;
-      color:#f6f6f2;
-    }
-    .phone-cat-amt{
-      font-size:12px;
-      font-weight:500;
-      font-family:Inter,sans-serif;
-      color:var(--muted);
-    }
-    .phone-bar-wrap{margin-top:auto;padding-top:12px}
-    .phone-bar{
-      height:6px;
-      border-radius:99px;
-      background:#2a2a28;
-      overflow:hidden;
-    }
-    .phone-bar > i{
+    .phone-shot{
+      width:100%;
+      height:auto;
       display:block;
-      height:100%;
-      width:62%;
-      background:var(--lime);
-      border-radius:99px;
-    }
-    .phone-bar-meta{
-      display:flex;
-      justify-content:space-between;
-      font-size:10px;
-      color:var(--muted);
-      margin-top:6px;
-      font-family:Inter,sans-serif;
     }
 
     .btn-primary{
@@ -458,7 +323,6 @@
       .scene-main{gap:22px;padding:24px 0 12px}
       .hero-copy{font-size:clamp(20px,5.5vw,28px)}
       .phone{width:min(248px,78vw);border-radius:30px}
-      .phone-balance{font-size:28px}
       .waitlist-section{padding:56px 18px 72px}
       .waitlist-card{padding:28px 22px}
     }
@@ -492,62 +356,7 @@
         </div>
 
         <div class="phone" aria-hidden="true">
-          <div class="phone-notch"></div>
-          <div class="phone-ui">
-            <div class="phone-status">
-              <span>9:41</span>
-              <span>ปังตังค์</span>
-            </div>
-            <p class="phone-greeting">
-              <span data-th>สวัสดี 👋</span>
-              <span data-en>Hello 👋</span>
-            </p>
-            <p class="phone-balance-label">
-              <span data-th>ยอดคงเหลือ</span>
-              <span data-en>Balance</span>
-            </p>
-            <p class="phone-balance"><span>฿</span>24,850</p>
-            <p class="phone-delta">
-              <span data-th>+฿1,200 เดือนนี้</span>
-              <span data-en>+฿1,200 this month</span>
-            </p>
-            <div class="phone-row">
-              <div class="phone-chip">
-                <div class="lbl"><span data-th>รายรับ</span><span data-en>Income</span></div>
-                <div class="val lime">฿32,000</div>
-              </div>
-              <div class="phone-chip">
-                <div class="lbl"><span data-th>รายจ่าย</span><span data-en>Spent</span></div>
-                <div class="val">฿7,150</div>
-              </div>
-            </div>
-            <p class="phone-section">
-              <span data-th>หมวดหมู่</span>
-              <span data-en>Categories</span>
-            </p>
-            <div class="phone-cat">
-              <span class="phone-dot"></span>
-              <span class="phone-cat-name"><span data-th>อาหาร</span><span data-en>Food</span></span>
-              <span class="phone-cat-amt">฿2,840</span>
-            </div>
-            <div class="phone-cat">
-              <span class="phone-dot mid"></span>
-              <span class="phone-cat-name"><span data-th>เดินทาง</span><span data-en>Transit</span></span>
-              <span class="phone-cat-amt">฿1,260</span>
-            </div>
-            <div class="phone-cat">
-              <span class="phone-dot dim"></span>
-              <span class="phone-cat-name"><span data-th>ช้อปปิ้ง</span><span data-en>Shopping</span></span>
-              <span class="phone-cat-amt">฿980</span>
-            </div>
-            <div class="phone-bar-wrap">
-              <div class="phone-bar"><i></i></div>
-              <div class="phone-bar-meta">
-                <span><span data-th>งบเดือน</span><span data-en>Budget</span></span>
-                <span>62%</span>
-              </div>
-            </div>
-          </div>
+          <img class="phone-shot" src="/pangtang/img/app-overview.jpg" alt="PangTang app overview" width="390" height="844" loading="eager">
         </div>
 
         <a class="btn-primary" href="#waitlist">
