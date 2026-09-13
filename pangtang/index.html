@@ -51,7 +51,6 @@
     [data-th]{font-family:"IBM Plex Sans Thai",sans-serif!important}
     body.th .hero-copy,
     body.th .eyebrow,
-    body.th .btn-primary,
     body.th .waitlist-card h2,
     body.th .card-lead,
     body.th .field label,
@@ -89,7 +88,7 @@
         radial-gradient(ellipse at 50% 42%,rgba(10,10,10,.25) 0%,rgba(10,10,10,.55) 55%,rgba(0,0,0,.82) 100%),
         linear-gradient(180deg,rgba(10,10,10,.84) 0%,rgba(10,10,10,.68) 35%,rgba(10,10,10,.78) 70%,rgba(6,6,6,.97) 100%),
         linear-gradient(90deg,rgba(10,10,10,.72) 0%,rgba(10,10,10,.42) 40%,rgba(10,10,10,.58) 100%),
-        url("/pangtang/img/bts-commute.jpg") center/cover no-repeat;
+        url("/pangtang/img/bts-commute.jpg") 30% 40%/cover no-repeat;
       z-index:0;
     }
     .scene-inner{
@@ -193,23 +192,6 @@
       height:auto;
       display:block;
     }
-
-    .btn-primary{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      background:var(--lime);
-      color:var(--ink);
-      border-radius:10px;
-      padding:13px 24px;
-      min-height:46px;
-      font-size:.9rem;
-      font-weight:600;
-      transition:filter .15s,transform .15s;
-      box-shadow:0 8px 28px rgba(214,255,61,.22);
-    }
-    .btn-primary:hover{filter:brightness(1.08);transform:translateY(-1px)}
 
     /* ── Waitlist ── */
     .waitlist-section{
@@ -357,14 +339,9 @@
         </div>
 
         <div class="phone" aria-hidden="true">
-          <img class="phone-shot" src="/pangtang/img/app-overview.jpg" alt="PangTang app overview" width="390" height="798" loading="eager">
+          <img class="phone-shot" src="/pangtang/img/app-overview.jpg?v=62" alt="PangTang app overview" width="390" height="798" loading="eager">
         </div>
-
-        <a class="btn-primary" href="#waitlist">
-          <span data-en>Get started →</span>
-          <span data-th>เริ่มต้น →</span>
-        </a>
-      </main>
+</main>
     </div>
   </section>
 
