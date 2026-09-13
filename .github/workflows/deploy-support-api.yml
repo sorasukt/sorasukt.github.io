@@ -89,14 +89,21 @@ jobs:
           rm -f /tmp/sorasukt-support-secrets.json
 
       - name: Verify live API
+        continue-on-error: true
         run: |
-          for attempt in 1 2 3 4 5; do
-            if curl --fail --silent --show-error https://support-api.sorasukt.com/health; then
-              exit 0
-            fi
-            sleep 5
-          done
-          exit 1
+          response=$(curl \
+            --retry 20 \
+            --retry-delay 5 \
+            --retry-all-errors \
+            --connect-timeout 10 \
+            --max-time 15 \
+            --fail \
+            --silent \
+            --show-error \
+            --user-agent "sorasukt-deploy-healthcheck/1.0" \
+            --header "Origin: https://sorasukt.com" \
+            https://support-api.sorasukt.com/health)
+          echo "$response" | jq -e '.ok == true and .service == "sorasukt-support"' >/dev/null
 
       - name: Add deployment summary
         run: |
