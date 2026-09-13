@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ปังตังค์ | PangTang — Thai expense & income tracker</title>
+  <meta name="description" content="ปังตังค์ (PangTang) — เว็บบันทึกรายรับรายจ่ายสำหรับคนไทย งบประมาณ เป้าหมายออม และสรุปรายเดือน ลงทะเบียนรอทดลองใช้เว็บเดโม">
+  <meta name="robots" content="index,follow,max-image-preview:large">
+  <link rel="canonical" href="https://sorasukt.com/pangtang/">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="th_TH">
+  <meta property="og:title" content="ปังตังค์ | PangTang — Thai expense & income tracker">
+  <meta property="og:description" content="บันทึกรายรับรายจ่าย งบประมาณ เป้าหมายออม และสรุปรายเดือน — ลงทะเบียนรอทดลองใช้เว็บเดโม">
+  <meta property="og:url" content="https://sorasukt.com/pangtang/">
+  <meta property="og:image" content="https://sorasukt.com/img/logo.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/png" href="/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#fff;--soft:#f7f7f7;--text:#111;--muted:#696969;--line:#e8e8e8;--red:#ff0000;--radius:12px;--max:1060px}
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{font-family:"IBM Plex Sans Thai","Montserrat",sans-serif;background:var(--bg);color:var(--text);line-height:1.7}
+    body.en [data-th],body.th [data-en]{display:none!important}
+    a{color:inherit}
+    button,input,textarea{font:inherit}
+    .nav{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+    .nav-inner{max-width:var(--max);height:64px;margin:auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between}
+    .brand{text-decoration:none;font-family:"Montserrat",sans-serif;font-weight:800;letter-spacing:-.5px}.brand em{color:var(--red);font-style:normal}
+    .nav-actions{display:flex;align-items:center;gap:12px}
+    .back{text-decoration:none;font-size:.84rem;font-weight:600;color:var(--muted)}.back:hover{color:var(--red)}
+    .language{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+    .language button{border:0;background:#fff;color:var(--muted);padding:6px 10px;font-size:.72rem;font-weight:700;cursor:pointer}
+    .language button.active{background:var(--text);color:#fff}
+    main{max-width:var(--max);margin:auto;padding:84px 24px 100px}
+    .hero{max-width:720px;margin-bottom:56px}
+    .eyebrow{font-family:"Montserrat",sans-serif;color:var(--red);font-size:.72rem;font-weight:700;letter-spacing:2.4px;margin-bottom:16px}
+    h1{font-family:"Montserrat","IBM Plex Sans Thai",sans-serif;font-size:clamp(2.4rem,7vw,4.6rem);line-height:1.08;letter-spacing:-2px;margin-bottom:12px}
+    h1 .red{color:var(--red)}
+    .tagline{font-size:clamp(1.05rem,2.2vw,1.25rem);font-weight:600;margin-bottom:16px}
+    .lead{max-width:620px;color:var(--muted);font-size:clamp(.95rem,2vw,1.1rem);margin-bottom:28px}
+    .cta-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+    .btn{display:inline-flex;align-items:center;gap:8px;text-decoration:none;padding:12px 22px;border-radius:9px;font-weight:600;font-size:.9rem;border:1px solid transparent;cursor:pointer;transition:.2s}
+    .btn-solid{background:var(--red);color:#fff;border:0}.btn-solid:hover{background:#d80000;transform:translateY(-1px)}
+    .btn-ghost{border-color:var(--line);color:var(--text);background:#fff}.btn-ghost:hover{border-color:var(--text)}
+    .layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,.88fr);gap:56px;align-items:start}
+    h2{font-size:1.25rem;line-height:1.35;margin-bottom:18px}
+    .features{list-style:none;display:grid;gap:0}
+    .features li{display:grid;grid-template-columns:46px 1fr;gap:14px;padding:16px 0;border-bottom:1px solid var(--line)}
+    .features li:first-child{border-top:1px solid var(--line)}
+    .icon{width:46px;height:46px;display:grid;place-items:center;background:var(--soft);border-radius:50%;color:var(--red);flex-shrink:0}
+    .icon svg{width:20px;height:20px}
+    .features strong{display:block;font-size:.95rem;margin-bottom:2px}
+    .features p{font-size:.84rem;color:var(--muted);line-height:1.55}
+    .note{margin-top:22px;color:var(--muted);font-size:.82rem}
+    .waitlist-card{border:1px solid var(--line);border-radius:var(--radius);padding:28px;box-shadow:0 18px 54px rgba(0,0,0,.055);position:relative}
+    .waitlist-card h2{margin-bottom:8px}
+    .waitlist-card .card-lead{color:var(--muted);font-size:.88rem;margin-bottom:22px}
+    .field{margin-bottom:16px}
+    .field label{display:block;font-weight:600;font-size:.86rem;margin-bottom:6px}
+    .field .req{color:var(--red)}
+    .field input,.field textarea{width:100%;border:1px solid var(--line);border-radius:8px;padding:11px 13px;background:#fff;color:var(--text);outline:0;transition:border-color .2s}
+    .field input:focus,.field textarea:focus{border-color:var(--red)}
+    .field textarea{min-height:88px;resize:vertical}
+    .consent{display:flex;align-items:flex-start;gap:10px;font-size:.78rem;color:var(--muted);line-height:1.55;margin-bottom:18px}
+    .consent input{margin-top:4px;accent-color:var(--red);flex-shrink:0}
+    .submit{width:100%;border:0;border-radius:9px;background:var(--red);color:#fff;padding:13px 18px;font-weight:600;cursor:pointer;transition:.2s}
+    .submit:hover{background:#d80000;transform:translateY(-1px)}
+    .secure{display:flex;justify-content:center;align-items:center;gap:6px;color:var(--muted);font-size:.72rem;margin-top:13px}
+    .secure svg{width:13px;height:13px}
+    .thanks{display:none;text-align:center;padding:28px 8px}
+    .thanks-icon{width:64px;height:64px;margin:0 auto 18px;display:grid;place-items:center;background:#fff0f0;border-radius:50%;color:var(--red)}
+    .thanks-icon svg{width:28px;height:28px}
+    .thanks h2{margin-bottom:10px}
+    .thanks p{color:var(--muted);font-size:.95rem;margin-bottom:22px}
+    body.joined .waitlist-form{display:none}
+    body.joined .thanks{display:block}
+    footer{border-top:1px solid var(--line);padding:28px 24px;text-align:center;color:var(--muted);font-size:.76rem}
+    footer a{color:var(--muted);text-decoration:none;font-weight:600}footer a:hover{color:var(--red)}
+    @media(max-width:780px){
+      main{padding-top:58px}
+      .layout{grid-template-columns:1fr;gap:44px}
+      .back{display:none}
+      .hero{margin-bottom:44px}
+      h1{letter-spacing:-1.5px}
+      .waitlist-card{padding:22px}
+    }
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+  </style>
+</head>
+<body class="th">
+  <header class="nav">
+    <div class="nav-inner">
+      <a class="brand" href="https://sorasukt.com/"><em>/</em>sorasukt</a>
+      <div class="nav-actions">
+        <a class="back" href="https://sorasukt.com/">
+          <span data-th>กลับหน้าแรก</span><span data-en>Back home</span>
+        </a>
+        <div class="language" aria-label="Language">
+          <button type="button" data-lang="th" class="active">TH</button>
+          <button type="button" data-lang="en">EN</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <p class="eyebrow">PANGTANG · ปังตังค์</p>
+      <h1>
+        <span data-th><span class="red">ปังตังค์</span><br>บันทึกรายรับรายจ่าย<br>สำหรับคนไทย</span>
+        <span data-en><span class="red">PangTang</span><br>Thai expense &amp;<br>income tracker</span>
+      </h1>
+      <p class="tagline">
+        <span data-th>รู้ว่าเงินไปไหน — วางแผนง่ายขึ้น</span>
+        <span data-en>See where money goes — plan with clarity</span>
+      </p>
+      <p class="lead">
+        <span data-th>ปังตังค์คือเว็บบันทึกรายรับ–รายจ่ายที่ออกแบบมาให้ใช้จริงในชีวิตประจำวัน มีแดชบอร์ด หมวดหมู่ หลายบัญชี งบประมาณ บิลซ้ำ เป้าหมายออม และรายงานรายเดือน พร้อมส่งออกข้อมูล</span>
+        <span data-en>PangTang is a personal finance web app built for everyday Thai use — dashboard, categories, multi-account tracking, budgets, recurring bills, savings goals, monthly reports, and export.</span>
+      </p>
+      <div class="cta-row">
+        <a class="btn btn-solid" href="#waitlist">
+          <span data-th>ลงทะเบียนรอทดลองใช้</span>
+          <span data-en>Join the web demo waitlist</span>
+        </a>
+        <a class="btn btn-ghost" href="https://sorasukt.com/">
+          <span data-th>กลับพอร์ตโฟลิโอ</span>
+          <span data-en>Back to portfolio</span>
+        </a>
+      </div>
+    </section>
+
+    <div class="layout">
+      <section aria-labelledby="featuresTitle">
+        <h2 id="featuresTitle">
+          <span data-th>สิ่งที่จะได้ในปังตังค์</span>
+          <span data-en>What’s inside PangTang</span>
+        </h2>
+        <ul class="features">
+          <li>
+            <span class="icon" aria-hidden="true"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18M7 16l4-5 3 3 5-7"/></svg></span>
+            <div>
+              <strong><span data-th>แดชบอร์ดชัดเจน</span><span data-en>Clear dashboard</span></strong>
+              <p><span data-th>เห็นภาพรวมรายรับ รายจ่าย และยอดคงเหลือได้อย่างรวดเร็ว</span><span data-en>See income, spending, and balances at a glance.</span></p>
+            </div>
+          </li>
+          <li>
+            <span class="icon" aria-hidden="true"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/><rect x="3" y="3" width="18" height="18" rx="3"/></svg></span>
+            <div>
+              <strong><span data-th>บันทึกธุรกรรมเร็ว</span><span data-en>Quick transactions</span></strong>
+              <p><span data-th>เพิ่มรายรับ–รายจ่ายได้เร็ว ไม่ต้องยุ่งยาก</span><span data-en>Log income and expenses in seconds, without friction.</span></p>
+            </div>
+          </li>
+          <li>
+            <span class="icon" aria-hidden="true"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h10M4 17h7"/></svg></span>
+            <div>
+              <strong><span data-th>หมวดหมู่ใช้งานง่าย</span><span data-en>Useful categories</span></strong>
+              <p><span data-th>จัดกลุ่มค่าใช้จ่ายให้ดูง่าย และวิเคราะห์ได้ชัดขึ้น</span><span data-en>Organize spending so patterns are easy to spot.</span></p>
+            </div>
+          </li>
+          <li>
+            <span class="icon" aria-hidden="true"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M2 10h20"/></svg></span>
+            <div>
+              <strong><span data-th>หลายบัญชีในที่เดียว</span><span data-en>Multi-account</span></strong>
+              <p><span data-th>เงินสด ธนาคาร อีวอลเล็ต และบัตรเครดิต — รวมไว้ที่เดียว</span><span data-en>Cash, bank, e-wallet, and credit — all in one place.</span></p>
+            </div>
+          </li>
+          <li>
+            <span class="icon" aria-hidden="true"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+            <div>
+              <strong><span data-th>งบประมาณ &amp; บิลซ้ำ</span><span data-en>Budgets &amp; recurring bills</span></strong>
+              <p><span data-th>ตั้งงบแต่ละหมวด และไม่พลาดบิลที่ต้องจ่ายซ้ำ</span><span data-en>Set category budgets and stay on top of repeating bills.</span></p>
+            </div>
+          </li>
+          <li>
+            <span class="icon" aria-hidden="true"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M12 21s8-4.35 8-11a4.5 4.5 0 00-8-2.8A4.5 4.5 0 004 10c0 6.65 8 11 8 11z"/></svg></span>
+            <div>
+              <strong><span data-th>เป้าหมายออมเงิน</span><span data-en>Savings goals</span></strong>
+              <p><span data-th>ตั้งเป้าและติดตามความคืบหน้าทีละก้าว</span><span data-en>Set targets and track progress one step at a time.</span></p>
+            </div>
+          </li>
+          <li>
+            <span class="icon" aria-hidden="true"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M8 7V3m8 4V3M3 11h18M5 5h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2z"/></svg></span>
+            <div>
+              <strong><span data-th>รายงานรายเดือน &amp; ส่งออก</span><span data-en>Monthly reports &amp; export</span></strong>
+              <p><span data-th>สรุปภาพรวมแต่ละเดือน และส่งออกข้อมูลเมื่อต้องการ</span><span data-en>Review each month at a glance and export when you need it.</span></p>
+            </div>
+          </li>
+        </ul>
+        <p class="note">
+          <span data-th>ตอนนี้อยู่ระหว่างเตรียมเว็บเดโม — ลงทะเบียนไว้แล้วเราจะติดต่อเมื่อพร้อมให้ทดลองใช้</span>
+          <span data-en>The web demo is coming soon — join the waitlist and we’ll reach out when it’s ready to try.</span>
+        </p>
+      </section>
+
+      <section class="waitlist-card" id="waitlist" aria-labelledby="waitlistTitle">
+        <div class="waitlist-form">
+          <h2 id="waitlistTitle">
+            <span data-th>ลงทะเบียนรอทดลองใช้</span>
+            <span data-en>Join the waitlist</span>
+          </h2>
+          <p class="card-lead">
+            <span data-th>บอกชื่อและอีเมลไว้ เราจะแจ้งเมื่อเว็บเดโมพร้อม</span>
+            <span data-en>Leave your name and email — we’ll let you know when the demo is ready.</span>
+          </p>
+          <form action="https://formsubmit.co/sorasukt@stnetradio.com" method="POST">
+            <input type="hidden" name="_subject" value="PangTang waitlist | ปังตังค์ รอทดลองใช้">
+            <input type="hidden" name="_captcha" value="false">
+            <input type="hidden" name="_template" value="table">
+            <input type="hidden" name="_next" value="https://sorasukt.com/pangtang/?joined=1">
+
+            <div class="field">
+              <label for="name"><span data-th>ชื่อ</span><span data-en>Name</span> <span class="req">*</span></label>
+              <input id="name" name="name" type="text" required autocomplete="name" placeholder=" ">
+            </div>
+            <div class="field">
+              <label for="email"><span data-th>อีเมล</span><span data-en>Email</span> <span class="req">*</span></label>
+              <input id="email" name="email" type="email" required autocomplete="email" placeholder="you@example.com">
+            </div>
+            <div class="field">
+              <label for="note"><span data-th>ข้อความเพิ่มเติม (ไม่บังคับ)</span><span data-en>Optional note</span></label>
+              <textarea id="note" name="note" placeholder=""></textarea>
+            </div>
+            <label class="consent">
+              <input id="consent" name="consent" type="checkbox" value="yes" required>
+              <span>
+                <span data-th>ฉันยินยอมให้ติดต่อเกี่ยวกับการทดลองใช้เว็บเดโมปังตังค์</span>
+                <span data-en>I agree to be contacted about the PangTang web demo.</span>
+              </span>
+            </label>
+            <button class="submit" type="submit">
+              <span data-th>ส่งลงทะเบียน</span>
+              <span data-en>Join waitlist</span>
+            </button>
+            <p class="secure">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg>
+              <span data-th>ส่งผ่าน FormSubmit · ไม่แชร์อีเมลกับบุคคลที่สาม</span>
+              <span data-en>Sent via FormSubmit · we won’t share your email</span>
+            </p>
+          </form>
+        </div>
+
+        <div class="thanks" role="status" aria-live="polite">
+          <div class="thanks-icon" aria-hidden="true">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          </div>
+          <h2>
+            <span data-th>ขอบคุณที่ลงทะเบียน!</span>
+            <span data-en>You’re on the list!</span>
+          </h2>
+          <p>
+            <span data-th>เราได้รับข้อมูลแล้ว และจะติดต่อเมื่อเว็บเดโมปังตังค์พร้อมให้ทดลองใช้</span>
+            <span data-en>Thanks for joining. We’ll reach out when the PangTang web demo is ready to try.</span>
+          </p>
+          <a class="btn btn-ghost" href="https://sorasukt.com/">
+            <span data-th>กลับหน้าแรก</span>
+            <span data-en>Back home</span>
+          </a>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    © 2026 <a href="https://sorasukt.com/">/sorasukt</a>
+    · <span data-th>ปังตังค์ · รอทดลองใช้เว็บเดโม</span>
+    <span data-en>PangTang · web demo waitlist</span>
+  </footer>
+
+  <script>
+    (() => {
+      const body = document.body;
+      let language = localStorage.getItem("sorasukt-language") || (navigator.language.startsWith("th") ? "th" : "en");
+
+      function setLanguage(lang) {
+        language = lang;
+        body.classList.remove("th", "en");
+        body.classList.add(lang);
+        document.documentElement.lang = lang;
+        document.querySelectorAll("[data-lang]").forEach(btn => btn.classList.toggle("active", btn.dataset.lang === lang));
+        localStorage.setItem("sorasukt-language", lang);
+      }
+
+      document.querySelectorAll("[data-lang]").forEach(btn =>
+        btn.addEventListener("click", () => setLanguage(btn.dataset.lang))
+      );
+
+      if (new URLSearchParams(location.search).get("joined") === "1") {
+        body.classList.add("joined");
+      }
+
+      setLanguage(language);
+    })();
+  </script>
+</body>
+</html>
