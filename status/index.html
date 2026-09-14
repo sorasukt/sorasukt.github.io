@@ -7,20 +7,22 @@
 <title>สถานะระบบ · sorasukt</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="./status.css">
 </head>
 <body>
 <header class="topbar">
-  <a href="/" class="brand">/sorasukt</a>
+  <a href="/" class="brand">sorasukt</a>
   <span class="topbar-label">สถานะระบบ</span>
 </header>
 
 <main>
-  <section class="hero" aria-labelledby="overall">
-    <p class="eyebrow">SERVICE &amp; STATUS</p>
-    <h1 id="overall">กำลังตรวจสอบระบบ…</h1>
-    <p id="updated" class="muted"></p>
+  <section class="banner" id="banner" aria-labelledby="overall">
+    <span class="banner-mark" id="banner-mark" aria-hidden="true"></span>
+    <div class="banner-body">
+      <h1 id="overall">กำลังตรวจสอบระบบ</h1>
+      <p id="updated" class="meta"></p>
+    </div>
     <button id="refresh" type="button">รีเฟรช</button>
   </section>
 
@@ -35,20 +37,20 @@
     <div class="section-head">
       <h2>เหตุการณ์ล่าสุด</h2>
     </div>
-    <div id="incidents" class="timeline"></div>
+    <div id="incidents" class="incidents"></div>
   </section>
 
   <section class="panel">
     <div class="section-head">
       <h2>ประวัติสถานะ</h2>
     </div>
-    <div id="events" class="timeline compact"></div>
+    <div id="events" class="events"></div>
   </section>
 </main>
 
 <footer>
   <a href="/">sorasukt.com</a>
-  <span>เวลาทั้งหมดแสดงตามประเทศไทย</span>
+  <span>เวลาทั้งหมดแสดงตามเวลาประเทศไทย (UTC+7)</span>
 </footer>
 <script src="./status.js"></script>
 </body>
