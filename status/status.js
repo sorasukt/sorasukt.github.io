@@ -25,6 +25,9 @@ async function load() {
     const data = await response.json();
     if (!response.ok) throw new Error();
 
+    const bySlug = Object.fromEntries((data.services || []).map(s => [s.slug, s.name]));
+    const byIncident = Object.fromEntries((data.incidents || []).map(i => [i.id, i]));
+
     document.getElementById("overall").textContent = overallLabels[data.overall] || "กำลังตรวจสอบสถานะ";
     document.getElementById("banner-mark").className = "banner-mark " + esc(data.overall || "");
     document.getElementById("updated").textContent = "อัปเดตล่าสุด " + date(data.updatedAt);
@@ -40,25 +43,39 @@ async function load() {
     `).join("");
 
     document.getElementById("incidents").innerHTML = data.incidents.length
-      ? data.incidents.map(i => `
+      ? data.incidents.map(i => {
+          const names = (i.affected_services || [])
+            .map(slug => bySlug[slug] || slug)
+            .filter(Boolean)
+            .join(", ");
+          const meta = names
+            ? `${esc(date(i.updated_at))} | ${esc(names)}`
+            : esc(date(i.updated_at));
+          return `
         <article>
           <div class="event-head">
             <h3>${esc(i.title)}</h3>
-            <span class="badge">${esc(i.status)}</span>
+            <span class="badge">${esc(cap(i.status))}</span>
           </div>
+          <div class="incident-meta">${meta}</div>
           <p>${esc(i.message)}</p>
-          <time>${date(i.updated_at)}</time>
-        </article>
-      `).join("")
+        </article>`;
+        }).join("")
       : '<p class="empty">ยังไม่มีเหตุการณ์ที่รายงาน</p>';
 
     document.getElementById("events").innerHTML = data.events.length
-      ? data.events.map(e => `
+      ? data.events.map(e => {
+          const incident = e.incident_id != null ? byIncident[e.incident_id] : null;
+          const title = incident?.title || e.message || e.status || "";
+          const body = incident ? e.message : "";
+          const showBody = body && body !== title;
+          return `
         <article>
-          <strong>${esc(e.message || e.status)}</strong>
-          <time>${date(e.created_at)}</time>
-        </article>
-      `).join("")
+          <h3>${esc(title)}</h3>
+          ${showBody ? `<p>${esc(body)}</p>` : ""}
+          <time>${esc(date(e.created_at))}</time>
+        </article>`;
+        }).join("")
       : '<p class="empty">ยังไม่มีประวัติสถานะ</p>';
 
   } catch {
@@ -71,6 +88,11 @@ async function load() {
 function date(v) {
   return new Date(String(v).includes("T") ? v : String(v).replace(" ", "T") + "Z")
     .toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Bangkok" });
+}
+
+function cap(v) {
+  const s = String(v ?? "");
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
 }
 
 function esc(v) {
