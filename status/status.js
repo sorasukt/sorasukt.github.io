@@ -1,1 +1,78 @@
-const API="https://api.sorasukt.com";const labels={operational:"ระบบทั้งหมดทำงานปกติ",degraded:"บางบริการทำงานช้าลง",partial_outage:"บางบริการไม่พร้อมใช้งาน",major_outage:"ระบบขัดข้อง",maintenance:"อยู่ระหว่างการบำรุงรักษา"};document.getElementById("refresh").onclick=load;load();async function load(){try{const response=await fetch(API+"/api/status",{headers:{Accept:"application/json"}}),data=await response.json();if(!response.ok)throw new Error();document.getElementById("overall").textContent=labels[data.overall]||"กำลังตรวจสอบสถานะ";document.getElementById("updated").textContent="อัปเดต "+date(data.updatedAt);document.getElementById("services").innerHTML=data.services.map(s=>`<div class="service"><div><strong>${esc(s.name)}</strong><div class="muted">${esc(s.description||"")}</div></div><span class="dot ${esc(s.status)}" title="${esc(labels[s.status]||s.status)}"></span></div>`).join("");document.getElementById("incidents").innerHTML=data.incidents.length?data.incidents.map(i=>`<article><div class="event-head"><h3>${esc(i.title)}</h3><span class="badge">${esc(i.status)}</span></div><p>${esc(i.message)}</p><time>${date(i.updated_at)}</time></article>`).join(""):'<p class="muted">ยังไม่มีเหตุการณ์ที่รายงาน</p>';document.getElementById("events").innerHTML=data.events.map(e=>`<article><div class="event-head"><strong>${esc(e.message||e.status)}</strong><time>${date(e.created_at)}</time></div></article>`).join("")||'<p class="muted">ยังไม่มีประวัติสถานะ</p>'}catch{document.getElementById("overall").textContent="ไม่สามารถโหลดสถานะได้";document.getElementById("updated").textContent="โปรดลองอีกครั้ง"}}function date(v){return new Date(String(v).includes("T")?v:String(v).replace(" ","T")+"Z").toLocaleString("th-TH",{dateStyle:"medium",timeStyle:"short",timeZone:"Asia/Bangkok"})}function esc(v){return String(v??"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]))}
+const API = "https://api.sorasukt.com";
+
+const labels = {
+  operational: "ปกติ",
+  degraded: "ทำงานช้าลง",
+  partial_outage: "ไม่พร้อมใช้งานบางส่วน",
+  major_outage: "ขัดข้อง",
+  maintenance: "บำรุงรักษา"
+};
+
+const overallLabels = {
+  operational: "ระบบทั้งหมดทำงานปกติ",
+  degraded: "บางบริการทำงานช้าลง",
+  partial_outage: "บางบริการไม่พร้อมใช้งาน",
+  major_outage: "ระบบขัดข้อง",
+  maintenance: "อยู่ระหว่างการบำรุงรักษา"
+};
+
+document.getElementById("refresh").onclick = load;
+load();
+
+async function load() {
+  try {
+    const response = await fetch(API + "/api/status", { headers: { Accept: "application/json" } });
+    const data = await response.json();
+    if (!response.ok) throw new Error();
+
+    document.getElementById("overall").textContent = overallLabels[data.overall] || "กำลังตรวจสอบสถานะ";
+    document.getElementById("banner-mark").className = "banner-mark " + esc(data.overall || "");
+    document.getElementById("updated").textContent = "อัปเดตล่าสุด " + date(data.updatedAt);
+
+    document.getElementById("services").innerHTML = data.services.map(s => `
+      <div class="service">
+        <div>
+          <div class="service-name">${esc(s.name)}</div>
+          ${s.description ? `<div class="service-desc">${esc(s.description)}</div>` : ""}
+        </div>
+        <span class="status-pill ${esc(s.status)}">${esc(labels[s.status] || s.status)}</span>
+      </div>
+    `).join("");
+
+    document.getElementById("incidents").innerHTML = data.incidents.length
+      ? data.incidents.map(i => `
+        <article>
+          <div class="event-head">
+            <h3>${esc(i.title)}</h3>
+            <span class="badge">${esc(i.status)}</span>
+          </div>
+          <p>${esc(i.message)}</p>
+          <time>${date(i.updated_at)}</time>
+        </article>
+      `).join("")
+      : '<p class="empty">ยังไม่มีเหตุการณ์ที่รายงาน</p>';
+
+    document.getElementById("events").innerHTML = data.events.length
+      ? data.events.map(e => `
+        <article>
+          <strong>${esc(e.message || e.status)}</strong>
+          <time>${date(e.created_at)}</time>
+        </article>
+      `).join("")
+      : '<p class="empty">ยังไม่มีประวัติสถานะ</p>';
+
+  } catch {
+    document.getElementById("overall").textContent = "ไม่สามารถโหลดสถานะได้";
+    document.getElementById("updated").textContent = "โปรดลองอีกครั้ง";
+    document.getElementById("banner-mark").className = "banner-mark";
+  }
+}
+
+function date(v) {
+  return new Date(String(v).includes("T") ? v : String(v).replace(" ", "T") + "Z")
+    .toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Bangkok" });
+}
+
+function esc(v) {
+  return String(v ?? "").replace(/[&<>'"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[c]));
+}
