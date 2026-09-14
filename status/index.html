@@ -11,63 +11,44 @@
 <link rel="stylesheet" href="./status.css">
 </head>
 <body>
-<!-- Hero background: morning desk — person with laptop & coffee by a window (soft natural light).
-     Photo: Pexels #1181244 — free to use; credit in footer. -->
-<div class="page-bg" role="img" aria-label="เช้าที่โต๊ะทำงาน คนนั่งหน้าแล็ปท็อปพร้อมกาแฟใกล้หน้าต่าง"></div>
-<div class="page-wash" aria-hidden="true"></div>
-
 <header class="topbar">
   <a href="/" class="brand">/sorasukt</a>
   <span class="topbar-label">สถานะระบบ</span>
 </header>
 
 <main>
-  <section class="card card-overall" aria-labelledby="overall">
+  <section class="hero" aria-labelledby="overall">
     <p class="eyebrow">SERVICE &amp; STATUS</p>
     <h1 id="overall">กำลังตรวจสอบระบบ…</h1>
     <p id="updated" class="muted"></p>
-    <div class="hero-actions">
-      <button id="refresh" type="button">รีเฟรช</button>
-    </div>
+    <button id="refresh" type="button">รีเฟรช</button>
   </section>
 
-  <section class="card card-services">
+  <section class="panel">
     <div class="section-head">
-      <div>
-        <p class="eyebrow">LIVE</p>
-        <h2>บริการ</h2>
-      </div>
+      <h2>บริการ</h2>
     </div>
     <div id="services" class="services" aria-live="polite"></div>
   </section>
 
-  <div class="card-row">
-    <section class="card">
-      <div class="section-head">
-        <div>
-          <p class="eyebrow">INCIDENTS</p>
-          <h2>เหตุการณ์ล่าสุด</h2>
-        </div>
-      </div>
-      <div id="incidents" class="timeline"></div>
-    </section>
+  <section class="panel">
+    <div class="section-head">
+      <h2>เหตุการณ์ล่าสุด</h2>
+    </div>
+    <div id="incidents" class="timeline"></div>
+  </section>
 
-    <section class="card">
-      <div class="section-head">
-        <div>
-          <p class="eyebrow">HISTORY</p>
-          <h2>ประวัติสถานะ</h2>
-        </div>
-      </div>
-      <div id="events" class="timeline compact"></div>
-    </section>
-  </div>
+  <section class="panel">
+    <div class="section-head">
+      <h2>ประวัติสถานะ</h2>
+    </div>
+    <div id="events" class="timeline compact"></div>
+  </section>
 </main>
 
 <footer>
   <a href="/">sorasukt.com</a>
   <span>เวลาทั้งหมดแสดงตามประเทศไทย</span>
-  <span class="credits">Photo: Pexels #1181244</span>
 </footer>
 <script src="./status.js"></script>
 </body>
