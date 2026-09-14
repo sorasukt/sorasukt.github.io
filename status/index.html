@@ -8,46 +8,38 @@
 <link rel="stylesheet" href="./status.css">
 </head>
 <body>
+<!-- Hero background: morning desk — person with laptop & coffee by a window (soft natural light).
+     Photo: Pexels #1181244 — free to use; credit in footer. -->
+<div class="page-bg" role="img" aria-label="เช้าที่โต๊ะทำงาน คนนั่งหน้าแล็ปท็อปพร้อมกาแฟใกล้หน้าต่าง"></div>
+<div class="page-wash" aria-hidden="true"></div>
+
 <header class="topbar">
   <a href="/" class="brand">/sorasukt</a>
   <span class="topbar-label">สถานะระบบ</span>
 </header>
 
 <main>
-  <!-- Hero: human moments + overall status -->
-  <section class="hero" aria-labelledby="overall">
-    <div class="hero-media" style="background-image:url('./img/team.jpg')" role="img" aria-label="ทีมงานกำลังร่วมมือกัน"></div>
-    <div class="hero-overlay"></div>
-    <div class="hero-content glass">
-      <p class="eyebrow">SERVICE &amp; STATUS</p>
-      <h1 id="overall">กำลังตรวจสอบระบบ…</h1>
-      <p id="updated" class="muted"></p>
-      <div class="hero-actions">
-        <button id="refresh" type="button">รีเฟรช</button>
-      </div>
+  <section class="card card-overall" aria-labelledby="overall">
+    <p class="eyebrow">SERVICE &amp; STATUS</p>
+    <h1 id="overall">กำลังตรวจสอบระบบ…</h1>
+    <p id="updated" class="muted"></p>
+    <div class="hero-actions">
+      <button id="refresh" type="button">รีเฟรช</button>
     </div>
   </section>
 
-  <!-- Bento: services + people tiles -->
-  <section class="bento">
-    <div class="panel panel-services">
-      <div class="section-head">
-        <div>
-          <p class="eyebrow">LIVE</p>
-          <h2>บริการ</h2>
-        </div>
+  <section class="card card-services">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">LIVE</p>
+        <h2>บริการ</h2>
       </div>
-      <div id="services" class="services" aria-live="polite"></div>
     </div>
-
-    <aside class="visual-stack" aria-hidden="true">
-      <div class="photo-tile tall" style="background-image:url('./img/students.jpg')"></div>
-      <div class="photo-tile" style="background-image:url('./img/laptop.jpg')"></div>
-    </aside>
+    <div id="services" class="services" aria-live="polite"></div>
   </section>
 
-  <section class="bento bento-secondary">
-    <div class="panel">
+  <div class="card-row">
+    <section class="card">
       <div class="section-head">
         <div>
           <p class="eyebrow">INCIDENTS</p>
@@ -55,28 +47,24 @@
         </div>
       </div>
       <div id="incidents" class="timeline"></div>
-    </div>
+    </section>
 
-    <div class="panel panel-with-photo">
-      <div class="panel-photo" style="background-image:url('./img/commute.jpg')" role="img" aria-label="กลุ่มเพื่อนใช้เวลาร่วมกัน"></div>
-      <div class="panel-photo-body">
-        <div class="section-head">
-          <div>
-            <p class="eyebrow">HISTORY</p>
-            <h2>ประวัติสถานะ</h2>
-          </div>
+    <section class="card">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">HISTORY</p>
+          <h2>ประวัติสถานะ</h2>
         </div>
-        <div id="events" class="timeline compact"></div>
       </div>
-    </div>
-  </section>
+      <div id="events" class="timeline compact"></div>
+    </section>
+  </div>
 </main>
 
 <footer>
   <a href="/">sorasukt.com</a>
   <span>เวลาทั้งหมดแสดงตามประเทศไทย</span>
-  <!-- Photo credits: Unsplash — team (photo-1522202176988), students (photo-1523240795612), laptop (photo-1516321318423), friends (photo-1529156069898) -->
-  <span class="credits">Photos: Unsplash</span>
+  <span class="credits">Photo: Pexels #1181244</span>
 </footer>
 <script src="./status.js"></script>
 </body>
