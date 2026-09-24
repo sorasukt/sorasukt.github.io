@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#141414">
+  <title>ศูนย์ช่วยเหลือ PangTang | sorasukt.com</title>
+  <meta name="description" content="คู่มือใช้งาน PangTang การบันทึกรายรับรายจ่าย งบประมาณ เป้าหมาย AI สรุปการเงิน การเข้าสู่ระบบ และการแก้ปัญหา">
+  <meta name="robots" content="index,follow">
+  <link rel="canonical" href="https://sorasukt.com/support/pangtang/">
+  <link rel="icon" type="image/png" href="/pangtang/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#141414;--card:#1c1c1c;--card2:#222220;--text:#f7f7f2;--muted:#b8b8af;--line:#353532;--lime:#d6ff3d;--ink:#182000;--danger:#ff9b7a;--max:1120px;color-scheme:dark}
+    *{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:90px}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,"IBM Plex Sans Thai",sans-serif;line-height:1.72;-webkit-font-smoothing:antialiased}a{color:inherit}button{font:inherit}.wrap{width:min(var(--max),calc(100% - 40px));margin:auto}
+    .nav{position:sticky;top:0;z-index:10;background:rgba(20,20,20,.9);backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}.navin{height:68px;display:flex;align-items:center;justify-content:space-between}.brand{text-decoration:none;font-weight:800}.brand b{color:var(--lime)}.navlinks{display:flex;gap:20px;font-size:.86rem;color:var(--muted)}.navlinks a{text-decoration:none}.navlinks a:hover{color:var(--text)}
+    header{padding:92px 0 56px}.eyebrow{color:var(--lime);font-size:.72rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase}.hero{display:grid;grid-template-columns:1.25fr .75fr;gap:48px;align-items:end}h1{font:700 clamp(3rem,8vw,6.5rem)/.96 Fraunces,serif;letter-spacing:-.045em;margin:18px 0 24px}.lead{max-width:720px;color:var(--muted);font-size:clamp(1rem,2vw,1.18rem);margin:0}.helpbox{background:var(--lime);color:var(--ink);padding:26px;border-radius:22px}.helpbox strong{display:block;font-size:1.1rem}.helpbox a{display:inline-block;margin-top:14px;font-weight:700}
+    .quick{display:flex;flex-wrap:wrap;gap:10px;padding:0 0 56px}.quick a{border:1px solid var(--line);border-radius:999px;padding:9px 15px;text-decoration:none;color:var(--muted);font-size:.86rem}.quick a:hover{border-color:var(--lime);color:var(--text)}
+    .section{padding:58px 0;border-top:1px solid var(--line)}.sectionhead{display:grid;grid-template-columns:.7fr 1.3fr;gap:42px;margin-bottom:30px}.section h2{font:600 clamp(2rem,4vw,3.4rem)/1.08 Fraunces,serif;margin:0}.sectionhead p{color:var(--muted);margin:0;max-width:700px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px}.num{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--lime);color:var(--ink);font-weight:800;margin-bottom:18px}.card h3{margin:0 0 8px;font-size:1.02rem}.card p,.card li{color:var(--muted);font-size:.9rem}.card p{margin:0}.card ul{margin:8px 0 0;padding-left:20px}
+    .featuregrid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.feature{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px}.feature h3{margin:0 0 8px}.feature p{margin:0;color:var(--muted);font-size:.92rem}.tag{display:inline-block;color:var(--lime);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px}
+    .notice{display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center;background:var(--card2);border:1px solid var(--line);border-left:4px solid var(--danger);padding:24px;border-radius:16px}.notice h3{margin:0 0 5px}.notice p{margin:0;color:var(--muted)}.button{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 18px;border-radius:12px;background:var(--lime);color:var(--ink);font-weight:700;text-decoration:none;white-space:nowrap}.button.secondary{background:transparent;color:var(--text);border:1px solid var(--line)}
+    details{border-bottom:1px solid var(--line);padding:18px 0}summary{cursor:pointer;font-weight:600}details p{color:var(--muted);margin:10px 0 0;max-width:830px}.contact{display:flex;flex-wrap:wrap;gap:12px;margin-top:24px}.contact a{color:var(--lime)}
+    footer{border-top:1px solid var(--line);padding:30px 0 48px;color:var(--muted);font-size:.78rem}.footerin{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}.footerin div{display:flex;gap:18px}
+    a:focus-visible,summary:focus-visible{outline:2px solid var(--lime);outline-offset:4px}@media(max-width:820px){.hero,.sectionhead{grid-template-columns:1fr}.grid{grid-template-columns:1fr}.featuregrid{grid-template-columns:1fr}.helpbox{margin-top:8px}.notice{grid-template-columns:1fr}.navlinks a:first-child{display:none}header{padding-top:64px}}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  </style>
+</head>
+<body>
+  <nav class="nav"><div class="wrap navin"><a class="brand" href="/"><b>/</b>sorasukt</a><div class="navlinks"><a href="/pangtang/">เกี่ยวกับ PangTang</a><a href="#contact">ติดต่อเรา</a></div></div></nav>
+  <header class="wrap">
+    <div class="hero"><div><span class="eyebrow">PangTang Support</span><h1>ใช้เงินอย่างเข้าใจ<br>ไม่ใช่แค่จดตัวเลข</h1><p class="lead">คู่มือเริ่มต้นและวิธีใช้ฟีเจอร์สำคัญของ PangTang รวมถึงการเข้าสู่ระบบ ออกจากระบบ และแนวทางแก้ปัญหาที่พบบ่อย</p></div><aside class="helpbox"><strong>ต้องการความช่วยเหลือจากทีม?</strong><span>แจ้งอุปกรณ์ เบราว์เซอร์ และข้อความผิดพลาด โดยไม่ส่งรหัสผ่านหรือข้อมูลธนาคาร</span><br><a href="mailto:team@sorasukt.com">team@sorasukt.com →</a></aside></div>
+  </header>
+  <main class="wrap">
+    <nav class="quick" aria-label="ทางลัด"><a href="#start">เริ่มต้น</a><a href="#features">ฟีเจอร์</a><a href="#account">เข้าสู่ระบบ</a><a href="#shortcuts">Shortcuts</a><a href="#troubleshoot">แก้ปัญหา</a><a href="#faq">คำถามที่พบบ่อย</a></nav>
+
+    <section class="section" id="start"><div class="sectionhead"><h2>เริ่มต้นใน 3 ขั้นตอน</h2><p>ตั้งค่าพื้นฐานเพียงครั้งเดียว จากนั้นใช้ปุ่มเพิ่มรายการเพื่อบันทึกเงินเข้าและเงินออกได้ทุกวัน</p></div><div class="grid">
+      <article class="card"><span class="num">1</span><h3>เข้าสู่ระบบ</h3><p>เลือก “เข้าสู่ระบบ” แล้วดำเนินการผ่านหน้าระบบยืนยันตัวตนที่ปลอดภัย เมื่อสำเร็จระบบจะพากลับมายัง PangTang</p></article>
+      <article class="card"><span class="num">2</span><h3>ตั้งค่าบัญชีและสกุลเงิน</h3><p>สร้างบัญชีเงินสดหรือบัญชีธนาคาร เลือกสกุลเงินหลัก และใส่ยอดเริ่มต้นให้ตรงกับยอดจริง</p></article>
+      <article class="card"><span class="num">3</span><h3>เพิ่มรายการแรก</h3><p>แตะปุ่ม + เลือกรายรับหรือรายจ่าย ระบุจำนวน หมวดหมู่ วันที่ และหมายเหตุ แล้วตรวจสอบก่อนบันทึก</p></article>
+    </div></section>
+
+    <section class="section" id="features"><div class="sectionhead"><h2>ใช้ฟีเจอร์หลัก</h2><p>PangTang รวมภาพรวมการเงิน การวางแผน และเครื่องมือช่วยลดงานบันทึกซ้ำไว้ในที่เดียว</p></div><div class="featuregrid">
+      <article class="feature"><span class="tag">Overview</span><h3>ภาพรวมและ AI สรุปการเงิน</h3><p>ดูรายรับ รายจ่าย กระแสเงินสด การใช้งบ และความคืบหน้าเป้าหมาย ส่วน AI จะสรุปแนวโน้มของวันนี้และสะท้อนภาพรวมจากข้อมูลที่มี ไม่ใช่คำแนะนำทางการเงินจากผู้เชี่ยวชาญ</p></article>
+      <article class="feature"><span class="tag">Transactions</span><h3>รายรับ รายจ่าย และรายการประจำ</h3><p>เพิ่ม แก้ไข ค้นหา และกรองรายการได้ ใช้รายการประจำกับค่าใช้จ่ายหรือรายรับที่เกิดซ้ำ แล้วตรวจวันที่และจำนวนก่อนยืนยันทุกครั้ง</p></article>
+      <article class="feature"><span class="tag">Plan</span><h3>งบประมาณและเป้าหมาย</h3><p>กำหนดวงเงินแยกตามหมวดหมู่และสร้างเป้าหมายออม ระบบจะแสดงสัดส่วนที่ใช้ไปเพื่อให้ปรับแผนได้ก่อนสิ้นเดือน</p></article>
+      <article class="feature"><span class="tag">Premium</span><h3>นำเข้า Statement และรายงาน</h3><p>เลือกไฟล์ที่รองรับ ใส่รหัส PDF เมื่อจำเป็น และตรวจทุกรายการก่อนเพิ่มเข้าบัญชี สามารถใช้รายงานและการส่งออกเพื่อเก็บสำเนาหรือวิเคราะห์ต่อได้ตามแพ็กเกจ</p></article>
+      <article class="feature"><span class="tag">Accounts</span><h3>หลายบัญชีและหลายสกุลเงิน</h3><p>แยกเงินสด ธนาคาร หรือบัญชีอื่น ๆ เพื่อดูยอดชัดเจน หากใช้หลายสกุลเงิน ควรตรวจสกุลเงินของรายการก่อนบันทึก</p></article>
+      <article class="feature"><span class="tag">Privacy</span><h3>จัดการข้อมูลและความเป็นส่วนตัว</h3><p>ตรวจสอบข้อมูลบัญชี ดาวน์โหลดข้อมูลเมื่อมีตัวเลือก และอ่านนโยบายความเป็นส่วนตัวก่อนใช้ฟีเจอร์ที่ส่งข้อมูลไปประมวลผลภายนอก</p></article>
+    </div></section>
+
+    <section class="section" id="account"><div class="sectionhead"><h2>เข้าสู่ระบบและออกจากระบบ</h2><p>ระบบยืนยันตัวตนแยกจากหน้าแอปเพื่อดูแลเซสชันอย่างปลอดภัย อย่ากรอกรหัสผ่านในหน้าที่โดเมนไม่ถูกต้อง</p></div><div class="grid">
+      <article class="card"><h3>เข้าสู่ระบบ</h3><ul><li>เปิด PangTang และเลือกเข้าสู่ระบบ</li><li>ตรวจว่าอยู่บนโดเมนของ sorasukt.com หรือหน้าระบบยืนยันตัวตนที่เชื่อถือได้</li><li>เมื่อสำเร็จ รอให้ระบบพากลับมายังแอปโดยไม่ปิดแท็บกลางทาง</li></ul></article>
+      <article class="card"><h3>ออกจากระบบ</h3><ul><li>ไปที่เมนูบัญชีหรือ More แล้วเลือกออกจากระบบ</li><li>รอจนกลับสู่หน้าสำหรับผู้ที่ยังไม่ได้เข้าสู่ระบบ</li><li>บนเครื่องที่ใช้ร่วมกัน ให้ปิดแท็บและหน้าต่างเบราว์เซอร์หลังออกจากระบบ</li></ul></article>
+      <article class="card"><h3>เข้าสู่ระบบวนซ้ำ</h3><ul><li>ตรวจอินเทอร์เน็ตและตั้งวันที่ของอุปกรณ์ให้ถูกต้อง</li><li>อนุญาตคุกกี้ที่จำเป็นและปิด content blocker ชั่วคราว</li><li>ลองหน้าต่างส่วนตัว หรือออกจากระบบแล้วเข้าใหม่</li></ul></article>
+    </div></section>
+
+    <section class="section" id="shortcuts"><div class="sectionhead"><h2>บันทึกผ่าน Apple Shortcuts</h2><p>เหมาะกับรายการที่บันทึกบ่อยบน iPhone หรือ iPad และช่วยลดจำนวนขั้นตอนโดยไม่ต้องเปิดแอปก่อน</p></div><div class="grid">
+      <article class="card"><span class="num">1</span><h3>คัดลอก URL</h3><p>ไปที่ More ใน PangTang แล้วคัดลอก Income shortcut หรือ Expense shortcut ตามประเภทที่ต้องการ</p></article>
+      <article class="card"><span class="num">2</span><h3>สร้าง Shortcut</h3><p>ในแอป Shortcuts เพิ่ม Ask for Input สำหรับจำนวนเงินและหมายเหตุ จากนั้นนำค่าไปใส่ใน URL ที่คัดลอก</p></article>
+      <article class="card"><span class="num">3</span><h3>เปิดและตรวจสอบ</h3><p>เพิ่มคำสั่ง Open URLs เมื่อเรียกใช้ PangTang จะเปิดหน้ารายการให้ตรวจสอบรายละเอียดก่อนบันทึก</p></article>
+    </div></section>
+
+    <section class="section" id="troubleshoot"><div class="sectionhead"><h2>เมื่อเกิดปัญหา</h2><p>เริ่มจากรีเฟรชหน้า ตรวจเครือข่าย และอัปเดตเบราว์เซอร์ การล้างข้อมูลเว็บไซต์ควรเป็นขั้นตอนสุดท้ายเพราะอาจทำให้ต้องเข้าสู่ระบบใหม่</p></div>
+      <div class="notice"><div><h3>พบ Error ระหว่างออกจากระบบ?</h3><p>ใช้เส้นทางกู้การออกจากระบบ ระบบจะพาไปยังบริการยืนยันตัวตนเพื่อปิดเซสชันอีกครั้ง</p></div><a class="button" href="/auth/logouterror">แก้ปัญหาการออกจากระบบ</a></div>
+      <div style="height:14px"></div>
+      <div class="featuregrid">
+        <article class="feature"><h3>หน้าไม่โหลดหรือข้อมูลไม่อัปเดต</h3><p>ตรวจการเชื่อมต่อ รีเฟรชหนึ่งครั้ง และลองเปิดใหม่ หากเพิ่งเปลี่ยนแพ็กเกจให้ออกจากระบบแล้วเข้าใหม่ก่อนติดต่อทีม</p></article>
+        <article class="feature"><h3>นำเข้า Statement ไม่สำเร็จ</h3><p>ตรวจชนิดไฟล์ ขนาดไฟล์ และรหัส PDF จากนั้นลองอีกครั้ง อย่าส่งไฟล์ Statement หรือรหัสผ่านทางอีเมล</p></article>
+        <article class="feature"><h3>ยอดไม่ตรง</h3><p>ตรวจตัวกรองช่วงเวลา บัญชี สกุลเงิน รายการโอน และรายการซ้ำก่อนแก้ยอดเริ่มต้น</p></article>
+        <article class="feature"><h3>ข้อผิดพลาดจากระบบยืนยันตัวตน</h3><p>จดเฉพาะรหัสข้อผิดพลาดและเวลาที่เกิด ส่งภาพหน้าจอที่ปิดบังอีเมลหรือข้อมูลส่วนตัว แล้วติดต่อทีม Support</p></article>
+      </div>
+    </section>
+
+    <section class="section" id="faq"><div class="sectionhead"><h2>คำถามที่พบบ่อย</h2><p>คำตอบสั้น ๆ สำหรับการใช้งานทั่วไป</p></div>
+      <details><summary>AI เห็นข้อมูลอะไรบ้าง?</summary><p>AI ใช้ข้อมูลสรุปที่ระบบจัดเตรียมเพื่ออธิบายแนวโน้มการเงินตามฟีเจอร์ที่เปิดใช้งาน ควรหลีกเลี่ยงการใส่เลขบัตร รหัสผ่าน หรือข้อมูลอ่อนไหวในคำถาม และไม่ควรใช้คำตอบแทนคำแนะนำจากผู้เชี่ยวชาญ</p></details>
+      <details><summary>ลบหรือแก้รายการย้อนหลังได้ไหม?</summary><p>ได้ เปิดรายการจากหน้าธุรกรรม เลือกแก้ไขหรือลบ และตรวจผลกระทบต่องบประมาณกับยอดบัญชีหลังบันทึก</p></details>
+      <details><summary>ควรทำอย่างไรเมื่อใช้อุปกรณ์สาธารณะ?</summary><p>อย่าให้เบราว์เซอร์จำรหัสผ่าน ออกจากระบบเมื่อใช้งานเสร็จ และปิดหน้าต่างทั้งหมด หากสงสัยว่าเซสชันยังเปิดอยู่ ให้ใช้ปุ่มแก้ปัญหาการออกจากระบบด้านบน</p></details>
+      <details><summary>PangTang ให้บริการโดยใคร?</summary><p>PangTang ให้บริการบน sorasukt.com และดำเนินงานโดย Sorasak Tongkham and Team ในฐานะผู้ให้บริการบุคคลธรรมดา ณ กรุงเทพมหานคร ประเทศไทย</p></details>
+    </section>
+
+    <section class="section" id="contact"><div class="sectionhead"><h2>ติดต่อ Support</h2><div><p>ส่งรายละเอียดขั้นตอนก่อนเกิดปัญหา อุปกรณ์ เบราว์เซอร์ เวลา และรหัส Error โดยไม่แนบรหัสผ่าน ข้อมูลบัตร หรือเอกสารธนาคารฉบับเต็ม</p><div class="contact"><a href="mailto:team@sorasukt.com">team@sorasukt.com</a><a href="tel:+66615484814">+66 61 548 4814</a><span>Bangkok, Thailand</span></div></div></div></section>
+  </main>
+  <footer><div class="wrap footerin"><span>© 2026 Sorasak Tongkham and Team · PangTang on sorasukt.com</span><div><a href="/terms/">ข้อกำหนด</a><a href="/privacy/">ความเป็นส่วนตัว</a><a href="/">sorasukt.com</a></div></div></footer>
+</body>
+</html>
