@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="referrer" content="no-referrer">
+  <meta name="theme-color" content="#141414">
+  <title>Authentication error | sorasukt.com</title>
+  <style>
+    :root{color-scheme:dark;--bg:#141414;--card:#1c1c1c;--text:#f7f7f2;--muted:#b8b8af;--line:#353532;--lime:#d6ff3d;--ink:#182000;--danger:#ff9b7a}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:var(--bg);color:var(--text);font:16px/1.65 system-ui,-apple-system,sans-serif}.wrap{width:min(680px,calc(100% - 36px));padding:42px 0}.brand{display:inline-block;margin-bottom:38px;color:var(--text);font-weight:800;text-decoration:none}.brand b{color:var(--lime)}.card{padding:clamp(24px,6vw,48px);border:1px solid var(--line);border-radius:24px;background:var(--card)}.eyebrow{color:var(--danger);font-size:.72rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase}h1{margin:12px 0;font-size:clamp(2rem,7vw,3.6rem);line-height:1.04;letter-spacing:-.04em}p{color:var(--muted)}.code{margin:24px 0;padding:14px;border:1px solid var(--line);border-radius:12px;background:#171717}.code small{display:block;color:var(--muted);margin-bottom:4px}.code code{color:var(--text);overflow-wrap:anywhere}.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}.button{min-height:46px;display:inline-flex;align-items:center;padding:0 17px;border-radius:12px;background:var(--lime);color:var(--ink);font-weight:750;text-decoration:none;border:0;cursor:pointer}.button.secondary{background:transparent;color:var(--text);border:1px solid var(--line)}.logout{margin-top:22px;padding-top:22px;border-top:1px solid var(--line)}.logout[hidden]{display:none}.help{margin-top:24px;font-size:.86rem}.help a{color:var(--lime)}
+  </style>
+</head>
+<body><main class="wrap"><a class="brand" href="/"><b>/</b>sorasukt</a><section class="card" aria-labelledby="title"><span class="eyebrow">Authentication error</span><h1 id="title">ไม่สามารถดำเนินการเข้าสู่ระบบได้</h1><p id="description">เกิดข้อผิดพลาดระหว่างยืนยันตัวตน กรุณาลองใหม่อีกครั้ง</p><div class="code"><small>รหัสข้อผิดพลาด</small><code id="errorCode">authentication_error</code></div><div class="actions"><button class="button" id="retry" type="button">ลองอีกครั้ง</button><a class="button secondary" href="/">กลับหน้าแรก</a><a class="button secondary" href="/support/pangtang/">PangTang Support</a></div><div class="logout" id="logoutHelp" hidden><strong>ปัญหานี้เกี่ยวข้องกับการออกจากระบบหรือไม่?</strong><p>ใช้เส้นทางกู้การออกจากระบบเพื่อปิดเซสชันกับผู้ให้บริการยืนยันตัวตนอีกครั้ง</p><a class="button" href="/auth/logouterror">แก้ปัญหาการออกจากระบบ</a></div><p class="help">หากยังเกิดปัญหา โปรดส่งรหัสด้านบนและเวลาที่เกิดไปที่ <a href="mailto:team@sorasukt.com">team@sorasukt.com</a> โดยไม่ส่งรหัสผ่านหรือข้อมูลส่วนตัวที่ไม่จำเป็น</p></section></main>
+<script>
+(() => {
+  const params = new URLSearchParams(location.search);
+  const rawCode = (params.get("error") || "authentication_error").trim();
+  const rawDescription = (params.get("error_description") || "เกิดข้อผิดพลาดระหว่างยืนยันตัวตน กรุณาลองใหม่อีกครั้ง").trim();
+  const code = rawCode.slice(0, 160);
+  const description = rawDescription.slice(0, 600);
+  document.getElementById("errorCode").textContent = code;
+  document.getElementById("description").textContent = description;
+  const combined = code + " " + description;
+  const logoutRelated = /logout|log[ -]?out|sign[ -]?out|session|ออกจากระบบ/i.test(combined);
+  if (logoutRelated) {
+    document.getElementById("title").textContent = "ไม่สามารถออกจากระบบได้";
+    document.getElementById("logoutHelp").hidden = false;
+  }
+  document.getElementById("retry").addEventListener("click", () => {
+    if (history.length > 1) history.back(); else location.assign("/");
+  });
+})();
+</script></body>
+</html>
