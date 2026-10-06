@@ -1,14 +1,169 @@
-<html>
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>DGBL Motivation and Satisfaction Questionnaire</title>
-    <script async src="https://tally.so/widgets/embed.js"></script>
-    <style type="text/css">
-      html { margin: 0; height: 100%; overflow: hidden; }
-      iframe { position: absolute; top: 0; right: 0; bottom: 0; left: 0; border: 0; }
-    </style>
-  </head>
-  <body>
-    <iframe data-tally-src="https://tally.so/r/vGQq4X?transparentBackground=1" width="100%" height="100%" frameborder="0" marginheight="0" marginwidth="0" title="DGBL Motivation and Satisfaction Questionnaire"></iframe>
-  </body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DGBL Motivation and Satisfaction Questionnaire</title>
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="icon" type="image/png" href="/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #ffffff; --bg2: #f8f8f8; --text: #111111; --muted: #777777;
+      --border: #e5e5e5; --red: #ff0000; --r: 8px;
+    }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      font-family: 'Montserrat', 'IBM Plex Sans Thai', sans-serif;
+      background: var(--bg); color: var(--text);
+      line-height: 1.7; letter-spacing: .2px;
+      display: flex; flex-direction: column; overflow-x: hidden;
+    }
+    body.th-lang { line-height: 1.8; letter-spacing: 0; }
+    [hidden] { display: none !important; }
+
+    .top {
+      flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px; height: 56px; border-bottom: 1px solid var(--border); background: #fff;
+    }
+    .logo { font-weight: 800; font-size: 1.05rem; letter-spacing: -.5px; text-decoration: none; color: var(--text); }
+    .logo em { color: var(--red); font-style: normal; }
+    .change {
+      font-family: inherit; font-size: .78rem; font-weight: 600; color: var(--text);
+      background: #fff; border: 1px solid var(--border); border-radius: var(--r);
+      padding: 6px 12px; cursor: pointer; transition: border-color .2s;
+    }
+    .change:hover { border-color: var(--text); }
+    .change:focus-visible, .choice:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+
+    /* GATE */
+    #gate { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 24px 64px; }
+    .gate-box { width: 100%; max-width: 560px; }
+    h1 { font-size: clamp(1.7rem, 5vw, 2.3rem); font-weight: 800; letter-spacing: -1px; line-height: 1.2; margin-bottom: 14px; }
+    .lead { color: var(--muted); font-size: .95rem; margin-bottom: 28px; max-width: 460px; }
+    .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .choice {
+      text-align: left; font-family: inherit; color: var(--text); background: #fff;
+      border: 1px solid var(--border); border-radius: var(--r); padding: 22px 20px; cursor: pointer;
+      transition: border-color .2s, transform .2s;
+    }
+    .choice:hover { border-color: var(--red); transform: translateY(-2px); }
+    .choice b { display: block; font-size: 1.25rem; font-weight: 800; letter-spacing: -.5px; margin-bottom: 2px; }
+    .choice span { font-size: .8rem; color: var(--muted); }
+    .note { margin-top: 20px; font-size: .78rem; color: var(--muted); }
+
+    /* FORM */
+    #formWrap { flex: 1; position: relative; min-height: 0; }
+    #formWrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+    .loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: .85rem; }
+
+    @media (max-width: 480px) { .choices { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body class="en-lang">
+
+  <header class="top">
+    <a href="/" class="logo"><em>/</em>sorasukt</a>
+    <button class="change" id="changeBtn" hidden></button>
+  </header>
+
+  <!-- STEP 1: choose language -->
+  <main id="gate">
+    <div class="gate-box">
+      <h1>DGBL Motivation and Satisfaction Questionnaire<br><span style="color:var(--muted);font-weight:700">แบบสอบถามแรงจูงใจและความพึงพอใจ DGBL</span></h1>
+      <p class="lead">Choose the language you'd like to answer in.<br>เลือกภาษาที่ต้องการใช้ตอบแบบสอบถาม</p>
+      <div class="choices">
+        <button class="choice" data-pick="en"><b>English</b><span>Start the questionnaire</span></button>
+        <button class="choice" data-pick="th"><b>ภาษาไทย</b><span>เริ่มทำแบบสอบถาม</span></button>
+      </div>
+      <p class="note">Takes a few minutes · ใช้เวลาไม่กี่นาที</p>
+    </div>
+  </main>
+
+  <!-- STEP 2: Tally form -->
+  <div id="formWrap" hidden>
+    <div class="loading" id="loading"></div>
+    <iframe id="tally" title="DGBL Motivation and Satisfaction Questionnaire" frameborder="0" marginheight="0" marginwidth="0"></iframe>
+  </div>
+
+  <script>
+    /* ===== CONFIG ===== */
+    // Tally form IDs per language. If you build a Thai-specific form, put its ID in `th`.
+    const FORMS = { en: 'vGQq4X', th: 'vGQq4X' };
+    // Thank-you page (the ?lang= param is added automatically)
+    const THANKS = '/thanks/';
+
+    const TEXT = {
+      en: { change: 'Change language', loading: 'Loading questionnaire…', title: 'DGBL Motivation and Satisfaction Questionnaire' },
+      th: { change: 'เปลี่ยนภาษา', loading: 'กำลังโหลดแบบสอบถาม…', title: 'แบบสอบถามแรงจูงใจและความพึงพอใจ DGBL' }
+    };
+
+    const $ = id => document.getElementById(id);
+    let current = null;
+
+    function getCookie(n) {
+      const m = document.cookie.match('(?:^|; )' + n + '=([^;]*)');
+      return m ? decodeURIComponent(m[1]) : null;
+    }
+    function setCookie(n, v, days) {
+      const d = new Date(); d.setTime(d.getTime() + days * 864e5);
+      document.cookie = n + '=' + encodeURIComponent(v) + ';expires=' + d.toUTCString() + ';path=/';
+    }
+
+    function startForm(lang) {
+      current = lang;
+      setCookie('lang', lang, 365);
+      document.documentElement.lang = lang;
+      document.body.classList.remove('en-lang', 'th-lang');
+      document.body.classList.add(lang + '-lang');
+      document.title = TEXT[lang].title;
+
+      $('changeBtn').textContent = TEXT[lang].change;
+      $('loading').textContent = TEXT[lang].loading;
+      $('gate').hidden = true;
+      $('formWrap').hidden = false;
+      $('changeBtn').hidden = false;
+
+      // `lang` is passed to Tally as a hidden field (add a hidden field named "lang" in Tally to store it)
+      const params = new URLSearchParams({
+        transparentBackground: '1',
+        formEventsForwarding: '1',
+        hideTitle: '0',
+        lang: lang
+      });
+      const f = $('tally');
+      f.onload = () => { $('loading').hidden = true; };
+      f.src = 'https://tally.so/embed/' + FORMS[lang] + '?' + params.toString();
+    }
+
+    function showGate() {
+      current = null;
+      $('tally').removeAttribute('src');
+      $('loading').hidden = false;
+      $('formWrap').hidden = true;
+      $('changeBtn').hidden = true;
+      $('gate').hidden = false;
+      document.documentElement.lang = 'en';
+      document.title = 'DGBL Motivation and Satisfaction Questionnaire';
+      history.replaceState(null, '', location.pathname);
+    }
+
+    document.querySelectorAll('[data-pick]').forEach(b =>
+      b.addEventListener('click', () => startForm(b.dataset.pick)));
+    $('changeBtn').addEventListener('click', showGate);
+
+    // After the respondent submits, send them to the thank-you page in the same language
+    window.addEventListener('message', e => {
+      if (typeof e.data !== 'string' || e.data.indexOf('Tally.FormSubmitted') === -1) return;
+      location.href = THANKS + '?lang=' + (current || 'en');
+    });
+
+    // Skip the chooser when ?lang=th|en is in the URL
+    const q = new URLSearchParams(location.search).get('lang');
+    if (q === 'en' || q === 'th') startForm(q);
+  </script>
+</body>
 </html>
