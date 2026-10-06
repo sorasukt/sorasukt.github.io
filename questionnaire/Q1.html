@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DGBL Motivation and Satisfaction Questionnaire</title>
-  
   <meta name="description" content="DGBL Motivation and Satisfaction Questionnaire.">
   <meta name="robots" content="noindex,nofollow">
   <link rel="canonical" href="https://sorasukt.com/questionnaire/q1">
@@ -20,7 +19,6 @@
   <meta name="twitter:title" content="DGBL Motivation and Satisfaction Questionnaire">
   <meta name="twitter:description" content="Share your experience with digital game-based learning.">
   <meta name="twitter:image" content="https://sorasukt.com/img/q1.png">
-  
   <link rel="icon" type="image/png" href="/img/logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -109,8 +107,6 @@
     /* ===== CONFIG ===== */
     // Tally form IDs per language. If you build a Thai-specific form, put its ID in `th`.
     const FORMS = { en: 'vGQq4X', th: '2EMO1D' };
-    // Thank-you page (the ?lang= param is added automatically)
-    const THANKS = '/thankyou/';
 
     const TEXT = {
       en: { change: 'Change language', loading: 'Loading questionnaire…', title: 'DGBL Motivation and Satisfaction Questionnaire' },
@@ -146,7 +142,6 @@
       // `lang` is passed to Tally as a hidden field (add a hidden field named "lang" in Tally to store it)
       const params = new URLSearchParams({
         transparentBackground: '1',
-        formEventsForwarding: '1',
         hideTitle: '0',
         lang: lang
       });
@@ -170,12 +165,6 @@
     document.querySelectorAll('[data-pick]').forEach(b =>
       b.addEventListener('click', () => startForm(b.dataset.pick)));
     $('changeBtn').addEventListener('click', showGate);
-
-    // After the respondent submits, send them to the thank-you page in the same language
-    window.addEventListener('message', e => {
-      if (typeof e.data !== 'string' || e.data.indexOf('Tally.FormSubmitted') === -1) return;
-      location.href = THANKS + '?lang=' + (current || 'en');
-    });
 
     // Skip the chooser when ?lang=th|en is in the URL
     const q = new URLSearchParams(location.search).get('lang');
