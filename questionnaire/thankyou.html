@@ -185,8 +185,12 @@
       });
       setCookie('lang', lang, 365);
     }
-    // cookie → browser language → English
-    setLang(getCookie('lang') || (navigator.language || '').toLowerCase().startsWith('th') ? (getCookie('lang') || 'th') : (getCookie('lang') || 'en'));
+    // priority: ?lang= → cookie → browser language → English
+    const q = new URLSearchParams(location.search).get('lang');
+    const valid = l => l === 'en' || l === 'th';
+    const browser = (navigator.language || '').toLowerCase().startsWith('th') ? 'th' : 'en';
+    const cookie = getCookie('lang');
+    setLang(valid(q) ? q : valid(cookie) ? cookie : browser);
   </script>
 </body>
 </html>
