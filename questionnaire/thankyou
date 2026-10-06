@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thank you | sorasukt</title>
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="icon" type="image/png" href="/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --bg2: #f8f8f8;
+      --text: #111111;
+      --muted: #777777;
+      --border: #e5e5e5;
+      --red: #ff0000;
+      --r: 8px;
+    }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { height: 100%; }
+    body {
+      min-height: 100%;
+      font-family: 'Montserrat', 'IBM Plex Sans Thai', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      letter-spacing: .2px;
+      display: flex;
+      flex-direction: column;
+    }
+    body.th-lang { line-height: 1.8; letter-spacing: 0; }
+    body.en-lang [data-th] { display: none !important; }
+    body.th-lang [data-en] { display: none !important; }
+
+    /* NAV */
+    .top {
+      display: flex; align-items: center; justify-content: space-between;
+      max-width: 1100px; width: 100%; margin: auto;
+      padding: 0 24px; height: 64px;
+    }
+    .logo { font-weight: 800; font-size: 1.1rem; letter-spacing: -.5px; text-decoration: none; color: var(--text); }
+    .logo em { color: var(--red); font-style: normal; }
+    .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; }
+    .lang-btn {
+      padding: 6px 12px; cursor: pointer; background: none; border: none;
+      font-family: inherit; font-size: .75rem; font-weight: 700; color: var(--muted);
+      letter-spacing: .5px; transition: background .15s, color .15s;
+    }
+    .lang-btn.active { background: var(--text); color: #fff; }
+
+    /* MAIN */
+    main {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      padding: 40px 24px 64px;
+    }
+    .box {
+      width: 100%; max-width: 560px; text-align: center;
+      padding: 56px 40px; border: 1px solid var(--border); border-radius: var(--r);
+      background: var(--bg);
+    }
+
+    /* the one animated moment: the check draws itself */
+    .check { width: 84px; height: 84px; margin: 0 auto 28px; display: block; }
+    .check circle { fill: none; stroke: var(--red); stroke-width: 3; stroke-dasharray: 189; stroke-dashoffset: 189; animation: draw .7s ease-out forwards; }
+    .check path { fill: none; stroke: var(--red); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 48; stroke-dashoffset: 48; animation: draw .45s .6s ease-out forwards; }
+    @keyframes draw { to { stroke-dashoffset: 0; } }
+
+    h1 { font-size: clamp(1.9rem, 6vw, 2.6rem); font-weight: 800; letter-spacing: -1.2px; line-height: 1.15; margin-bottom: 16px; }
+    body.th-lang h1 { letter-spacing: -.5px; }
+    .lead { color: var(--muted); font-size: .98rem; max-width: 420px; margin: 0 auto 32px; }
+
+    .btn-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px; text-decoration: none;
+      padding: 11px 22px; border-radius: var(--r); font-weight: 600; font-family: inherit;
+      font-size: .875rem; border: 1px solid transparent; transition: opacity .2s, border-color .2s, background .2s, color .2s;
+    }
+    .btn-solid { background: var(--red); color: #fff; }
+    .btn-solid:hover { opacity: .85; }
+    .btn-ghost { border-color: var(--border); color: var(--text); background: #fff; }
+    .btn-ghost:hover { border-color: var(--text); }
+    .btn:focus-visible, .lang-btn:focus-visible, .pill:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+
+    .follow { margin-top: 36px; padding-top: 28px; border-top: 1px solid var(--border); }
+    .follow p { font-size: .8rem; color: var(--muted); margin-bottom: 12px; }
+    .pills { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+    .pill {
+      text-decoration: none; color: var(--text); font-size: .8rem; font-weight: 500;
+      padding: 6px 14px; border: 1px solid var(--border); border-radius: 999px;
+      transition: border-color .2s, color .2s;
+    }
+    .pill:hover { border-color: var(--red); color: var(--red); }
+
+    footer { text-align: center; color: var(--muted); font-size: .8rem; padding: 0 24px 28px; }
+
+    @media (max-width: 520px) {
+      .box { padding: 40px 22px; }
+      .btn { width: 100%; justify-content: center; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .check circle, .check path { animation: none; stroke-dashoffset: 0; }
+    }
+  </style>
+</head>
+<body class="en-lang">
+
+  <header class="top">
+    <a href="/" class="logo"><em>/</em>sorasukt</a>
+    <div class="lang-toggle" role="group" aria-label="Language">
+      <button class="lang-btn active" onclick="setLang('en')" aria-pressed="true">EN</button>
+      <button class="lang-btn" onclick="setLang('th')" aria-pressed="false">TH</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="box" role="status">
+      <svg class="check" viewBox="0 0 84 84" aria-hidden="true">
+        <circle cx="42" cy="42" r="30"/>
+        <path d="M30 43l9 9 17-19"/>
+      </svg>
+
+      <h1>
+        <span data-en>Thank you for your response</span>
+        <span data-th>ขอบคุณที่ตอบแบบสอบถามครับ</span>
+      </h1>
+
+      <p class="lead">
+        <span data-en>Your answers have been submitted. Every response helps me improve my research and the learning tools I build.</span>
+        <span data-th>ระบบบันทึกคำตอบของคุณเรียบร้อยแล้ว ทุกคำตอบช่วยให้ผมพัฒนางานวิจัยและเครื่องมือการเรียนรู้ได้ดียิ่งขึ้นครับ</span>
+      </p>
+
+      <div class="btn-row">
+        <a href="/" class="btn btn-solid">
+          <span data-en>Back to home</span>
+          <span data-th>กลับหน้าแรก</span>
+        </a>
+        <a href="/#projects" class="btn btn-ghost">
+          <span data-en>See my projects</span>
+          <span data-th>ดูผลงานของผม</span>
+        </a>
+      </div>
+
+      <div class="follow">
+        <p>
+          <span data-en>Want to stay in touch?</span>
+          <span data-th>อยากติดตามกันต่อ?</span>
+        </p>
+        <div class="pills">
+          <a class="pill" href="https://instagram.com/sorasukt" target="_blank" rel="noopener noreferrer">Instagram</a>
+          <a class="pill" href="https://youtube.com/@sorasukt" target="_blank" rel="noopener noreferrer">YouTube</a>
+          <a class="pill" href="https://tiktok.com/@sorasukt" target="_blank" rel="noopener noreferrer">TikTok</a>
+          <a class="pill" href="https://github.com/sorasukt" target="_blank" rel="noopener noreferrer">GitHub</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    © 2026
+    <span data-en>All Rights Reserved.</span>
+    <span data-th>สงวนลิขสิทธิ์ทุกประการ</span>
+  </footer>
+
+  <script>
+    function getCookie(n) {
+      const m = document.cookie.match('(?:^|; )' + n + '=([^;]*)');
+      return m ? decodeURIComponent(m[1]) : null;
+    }
+    function setCookie(n, v, days) {
+      const d = new Date(); d.setTime(d.getTime() + days * 864e5);
+      document.cookie = n + '=' + encodeURIComponent(v) + ';expires=' + d.toUTCString() + ';path=/';
+    }
+    function setLang(lang) {
+      document.body.classList.remove('en-lang', 'th-lang');
+      document.body.classList.add(lang + '-lang');
+      document.documentElement.lang = lang;
+      document.title = lang === 'th' ? 'ขอบคุณ | sorasukt' : 'Thank you | sorasukt';
+      document.querySelectorAll('.lang-btn').forEach(b => {
+        const on = b.textContent.toLowerCase() === lang;
+        b.classList.toggle('active', on);
+        b.setAttribute('aria-pressed', on);
+      });
+      setCookie('lang', lang, 365);
+    }
+    // cookie → browser language → English
+    setLang(getCookie('lang') || (navigator.language || '').toLowerCase().startsWith('th') ? (getCookie('lang') || 'th') : (getCookie('lang') || 'en'));
+  </script>
+</body>
+</html>
