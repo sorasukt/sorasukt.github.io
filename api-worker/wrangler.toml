@@ -1,0 +1,18 @@
+name = "sorasukt-podcast-api"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "sorasuktrss"
+database_id = "277f0838-4703-469f-961d-cfacbb40ee2a"
+
+[[r2_buckets]]
+binding = "AUDIO"
+bucket_name = "sorasuktrss"
+
+[vars]
+AUTH0_DOMAIN = "REPLACE_WITH_AUTH0_TENANT_DOMAIN"
+AUTH0_AUDIENCE = "https://api.sorasukt.com/"
+MAX_UPLOAD_BYTES = "104857600"
+PUBLIC_MEDIA_BASE_URL = "https://podcast.sorasukt.com"
