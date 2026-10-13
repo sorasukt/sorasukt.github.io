@@ -1,0 +1,31 @@
+/* Ekkamai Vibe — shared Thai typography for all site pages.
+   The font files are served from this repository so every route uses the same family. */
+@font-face {
+  font-family: "Ekkamai Vibe";
+  src: url("/assets/fonts/EkkamaiVibe-Regular.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Ekkamai Vibe";
+  src: url("/assets/fonts/EkkamaiVibe-Bold.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+:root {
+  --font-thai: "Ekkamai Vibe", "IBM Plex Sans Thai", "Anuphan", "Kanit", sans-serif;
+}
+/* Use Ekkamai Vibe for Thai UI and body text, while preserving each page's English face. */
+html[lang^="th"] body,
+body:lang(th),
+:lang(th) {
+  font-family: var(--font-thai);
+}
+:lang(th) input,
+:lang(th) textarea,
+:lang(th) select,
+:lang(th) button {
+  font-family: var(--font-thai);
+}
