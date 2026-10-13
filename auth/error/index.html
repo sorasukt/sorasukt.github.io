@@ -15,7 +15,7 @@
     :root{--bg:#fff;--bg2:#f8f8f8;--text:#111;--muted:#6f6f6f;--border:#e5e5e5;--red:#f00;--nav:64px;--max:760px;--r:8px}
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     html{color-scheme:light}
-    body{min-height:100vh;background:var(--bg);color:var(--text);font-family:"Montserrat","IBM Plex Sans Thai",sans-serif;line-height:1.7;letter-spacing:.2px}
+    body{min-height:100vh;background:var(--bg);color:var(--text);font-family:"Montserrat","Ekkamai Vibe",sans-serif;line-height:1.7;letter-spacing:.2px}
     body.th-lang{line-height:1.8;letter-spacing:0}
     body.en-lang [data-th],body.th-lang [data-en]{display:none!important}
     nav{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
@@ -42,6 +42,7 @@
     @media(max-width:540px){.nav-inner{padding:0 20px}main{width:min(100% - 32px,var(--max));padding-top:56px}h1{letter-spacing:-1.3px}.actions{flex-direction:column}.button{width:100%}.details{padding:18px}}
     @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
   </style>
+  <link rel="stylesheet" href="/assets/css/ekkamai-vibe.css">
 </head>
 <body class="en-lang">
   <nav aria-label="Primary navigation">
