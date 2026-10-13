@@ -1,17 +1,38 @@
 /* Ekkamai Vibe — shared Thai typography for all site pages.
-   The font files are served from this repository so every route uses the same family. */
+   Font assets are hosted in /assets/font/ and served locally. */
 @font-face {
   font-family: "Ekkamai Vibe";
-  src: url("/assets/fonts/EkkamaiVibe-Regular.woff2") format("woff2");
+  src: url("/assets/font/EkkamaiVibe-thin.woff2") format("woff2");
   font-style: normal;
-  font-weight: 400;
+  font-weight: 100;
   font-display: swap;
 }
 @font-face {
   font-family: "Ekkamai Vibe";
-  src: url("/assets/fonts/EkkamaiVibe-Bold.woff2") format("woff2");
+  src: url("/assets/font/EkkamaiVibe-light.woff2") format("woff2");
   font-style: normal;
-  font-weight: 700;
+  font-weight: 300;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Ekkamai Vibe";
+  src: url("/assets/font/EkkamaiVibe-Regular.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400 500 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Ekkamai Vibe";
+  src: url("/assets/font/EkkamaiVibe-Bold.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 700 800;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Ekkamai Vibe";
+  src: url("/assets/font/EkkamaiVibe-Heavy.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 900;
   font-display: swap;
 }
 :root {
