@@ -15,7 +15,7 @@
   font-display: swap;
 }
 :root {
-  --font-thai: "Ekkamai Vibe", "IBM Plex Sans Thai", "Anuphan", "Kanit", sans-serif;
+  --font-thai: "Ekkamai Vibe", sans-serif;
 }
 /* Use Ekkamai Vibe for Thai UI and body text, while preserving each page's English face. */
 html[lang^="th"] body,
